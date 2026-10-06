@@ -6,7 +6,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 
-from src.engines.shariah.screener import ShariahScreener, FinancialData
+from src.engines.shariah.screener import ShariahScreener
+from src.engines.fundamental.analyzer import FinancialData
 
 router = APIRouter()
 
