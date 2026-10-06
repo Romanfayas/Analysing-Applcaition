@@ -16,6 +16,9 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/halal-equity/backend/internal/config"
+	"github.com/halal-equity/backend/internal/database"
+	"github.com/halal-equity/backend/internal/notifications"
+	"github.com/halal-equity/backend/internal/workers/ingestion"
 )
 
 func main() {
@@ -40,16 +43,27 @@ func main() {
 		cancel()
 	}()
 
-	// TODO: Initialize Redis queue consumer
-	// TODO: Register job handlers:
-	//   - market_data_ingest: Fetch OHLCV from providers
-	//   - calculate_indicators: Run technical indicator calculations
-	//   - run_shariah_screening: Execute Shariah screening
-	//   - generate_signals: Calculate composite signals
-	//   - send_notifications: Dispatch alerts via Telegram/email/push
-	//   - run_backtest: Execute backtest strategies
-	//   - ipo_data_ingest: Fetch IPO data
-	//   - data_quality_check: Run data quality validation
+	// Initialize Database
+	db, err := database.NewDB(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to connect to database")
+	}
+	defer db.Close()
+
+	// Initialize Telegram Notifier (optional)
+	var notifier *notifications.TelegramNotifier
+	if cfg.TelegramBotToken != "" {
+		notifier = notifications.NewTelegramNotifier(cfg.TelegramBotToken, cfg.TelegramChatID)
+	}
+
+	// Initialize and run the market data ingestion worker
+	marketWorker := ingestion.NewWorker(db, notifier)
+	go marketWorker.Run(ctx)
+	
+	// Initialize and run IPO ingestion worker
+	// NOTE: quant client is needed for IPO Worker (pass nil or a valid client if available)
+	// ipoWorker := ingestion.NewIPOWorker(db, nil, notifier)
+	// go ipoWorker.Run(ctx)
 
 	log.Info().Msg("worker running, waiting for jobs...")
 

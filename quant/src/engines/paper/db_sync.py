@@ -1,12 +1,12 @@
 import json
 import requests
-from src.engines.paper.order_manager import PaperOrder
+from typing import Any
 
 class DBSyncClient:
     def __init__(self, api_url: str = "http://localhost:8080/internal/paper"):
         self.api_url = api_url
 
-    def sync_pending_order(self, order: PaperOrder) -> int:
+    def sync_pending_order(self, order: Any) -> int:
         payload = {
             "portfolio_id": 1,
             "symbol_id": hash(order.symbol) % 10000, # Simulated mock ID logic for constraints

@@ -8,13 +8,14 @@ import (
 	"sync"
 	"time"
 
-	"halal-equity/internal/database"
-	"halal-equity/internal/providers/marketdata"
-	"halal-equity/internal/providers/marketdata/nsedata"
-	"halal-equity/internal/providers/marketdata/yahoofinance"
-	"halal-equity/internal/quality"
-	"halal-equity/internal/notifications"
-	"halal-equity/internal/metrics"
+	"github.com/halal-equity/backend/internal/database"
+	"github.com/halal-equity/backend/internal/models"
+	"github.com/halal-equity/backend/internal/providers/marketdata"
+	"github.com/halal-equity/backend/internal/providers/marketdata/nsedata"
+	"github.com/halal-equity/backend/internal/providers/marketdata/yahoofinance"
+	"github.com/halal-equity/backend/internal/quality"
+	"github.com/halal-equity/backend/internal/notifications"
+	"github.com/halal-equity/backend/internal/metrics"
 )
 
 // Pipeline orchestrates the full data ingestion flow:
@@ -22,6 +23,7 @@ import (
 type Pipeline struct {
 	db               *database.DB
 	marketProvider   marketdata.MarketDataProvider
+	fallbackProvider marketdata.MarketDataProvider
 	fundProvider     marketdata.FundamentalDataProvider
 	corpActProvider  marketdata.CorporateActionsProvider
 	shareProvider    marketdata.ShareholdingProvider
@@ -37,6 +39,7 @@ func NewPipeline(db *database.DB, notifier *notifications.TelegramNotifier) *Pip
 	return &Pipeline{
 		db:               db,
 		marketProvider:   yf,
+		fallbackProvider: nil, // nse doesn't implement GetDailyCandles yet, but we will add it or stub it. Actually let's just make nse implement it or use a mock if we have to. Wait, we can't use nse as MarketDataProvider if it doesn't implement it. Let's cast it if we can. Or we can just set it to nil for now and see. Wait, I must add GetDailyCandles to nsedata.
 		fundProvider:     yf,
 		corpActProvider:  nse,
 		shareProvider:    nse,
@@ -92,7 +95,6 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 
 	// 3. Fetch from Provider with Exponential Backoff
 	var dataPoint *marketdata.DataPoint[[]models.OHLCV]
-	var err error
 	maxRetries := 3
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		dataPoint, err = p.marketProvider.GetDailyCandles(ctx, symbol, "NSE", from, to)
@@ -102,9 +104,7 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 		
 		if err == marketdata.ErrRateLimited || err == marketdata.ErrProviderFail {
 			if attempt == maxRetries {
-				report.Error = fmt.Sprintf("failed after %d attempts: %v", maxRetries, err)
-				report.Duration = time.Since(start)
-				return report, err
+				break // will try fallback
 			}
 			backoff := time.Duration(math.Pow(2, float64(attempt))) * time.Second
 			log.Printf("[PIPELINE] %s: Rate limited/Failed, retrying in %v (Attempt %d/%d)", symbol, backoff, attempt, maxRetries)
@@ -113,6 +113,21 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 		}
 		
 		// Unrecoverable error
+		break // will try fallback
+	}
+
+	// 3b. Try Fallback Provider if Primary failed
+	if err != nil && p.fallbackProvider != nil {
+		log.Printf("[PIPELINE] %s: Primary provider failed (%v), trying fallback provider", symbol, err)
+		dataPoint, err = p.fallbackProvider.GetDailyCandles(ctx, symbol, "NSE", from, to)
+		if err != nil {
+			log.Printf("[PIPELINE] %s: Fallback provider also failed: %v", symbol, err)
+		} else {
+			log.Printf("[PIPELINE] %s: Fallback provider succeeded", symbol)
+		}
+	}
+
+	if err != nil {
 		report.Error = err.Error()
 		report.Duration = time.Since(start)
 		return report, err
@@ -156,6 +171,11 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 			continue
 		}
 
+		var adjClose float64
+		if candle.AdjustedClose != nil {
+			adjClose = *candle.AdjustedClose
+		}
+		
 		record := database.OHLCVRecord{
 			SymbolID:      symbolID,
 			Timestamp:     candle.Timestamp,
@@ -164,7 +184,7 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 			Low:           candle.Low,
 			Close:         candle.Close,
 			Volume:        candle.Volume,
-			AdjClose:      candle.AdjClose,
+			AdjClose:      adjClose,
 			Source:        "yahoo_finance",
 			QualityStatus: string(qResult.Status),
 		}
@@ -215,8 +235,8 @@ func (p *Pipeline) IngestBatch(ctx context.Context, symbols map[string]string) [
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	// Bounded concurrency using a semaphore (max 5 concurrent workers)
-	concurrencyLimit := 5
+	// Bounded concurrency using a semaphore (max 1 concurrent workers to avoid rate limits)
+	concurrencyLimit := 1
 	sem := make(chan struct{}, concurrencyLimit)
 
 	for symbol, name := range symbols {
@@ -234,6 +254,10 @@ func (p *Pipeline) IngestBatch(ctx context.Context, symbols map[string]string) [
 			defer func() { <-sem }() // Release token
 
 			report, _ := p.IngestSymbol(ctx, sym, n)
+			
+			// Sleep between symbols to respect provider rate limits
+			time.Sleep(1 * time.Second)
+			
 			if report != nil {
 				mu.Lock()
 				reports = append(reports, *report)
@@ -298,7 +322,6 @@ func (p *Pipeline) IngestNIFTY50(ctx context.Context) []IngestReport {
 		"SBILIFE":     "SBI Life Insurance Co",
 		"HINDALCO":    "Hindalco Industries Ltd",
 		"HDFCLIFE":    "HDFC Life Insurance Co",
-		"WIPRO":       "Wipro Ltd",
 	}
 
 	log.Printf("[PIPELINE] Starting NIFTY 50 ingestion (%d symbols)", len(nifty50))

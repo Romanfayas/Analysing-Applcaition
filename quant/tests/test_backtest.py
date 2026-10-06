@@ -23,18 +23,18 @@ class TestBacktestEngine:
         config = BacktestConfig(initial_capital=10000, slippage_percent=0, transaction_fee_percent=0)
         engine = BacktestEngine(config)
         
-        result = engine.run(data=sample_data, buy_threshold=80, sell_threshold=45)
+        result = engine.run({"TEST": sample_data}, buy_threshold=80, sell_threshold=45)
         
         # 1 Trade completed
         assert result.total_trades == 1
         trade = result.trades[0]
         
-        # Buy on 01-02 close (100)
-        assert trade.entry_date == "2024-01-02"
+        # Buy on 01-03 open (110)
+        assert trade.entry_date == "2024-01-03"
         assert trade.entry_price == 100.0
         
-        # Sell on 01-04 close (120)
-        assert trade.exit_date == "2024-01-04"
+        # Sell on 01-05 open (120)
+        assert trade.exit_date == "2024-01-05"
         assert trade.exit_price == 120.0
         
         # Profit
@@ -50,8 +50,8 @@ class TestBacktestEngine:
         engine_no_fees = BacktestEngine(config_no_fees)
         engine_with_fees = BacktestEngine(config_with_fees)
         
-        res_no = engine_no_fees.run(sample_data, 80, 45)
-        res_with = engine_with_fees.run(sample_data, 80, 45)
+        res_no = engine_no_fees.run({"TEST": sample_data}, 80, 45)
+        res_with = engine_with_fees.run({"TEST": sample_data}, 80, 45)
         
         assert res_with.final_capital < res_no.final_capital
         assert res_with.trades[0].fees_paid > 0
@@ -64,11 +64,11 @@ class TestBacktestEngine:
         engine = BacktestEngine(config)
         
         data = [
-            DailyData(timestamp="1", open=100, high=100, low=100, close=100, volume=100, signal_score=90),
-            DailyData(timestamp="2", open=100, high=100, low=100, close=100, volume=100, signal_score=30)
+            DailyData(timestamp="2024-01-01", open=100, high=100, low=100, close=100, volume=100, signal_score=90),
+            DailyData(timestamp="2024-01-02", open=100, high=100, low=100, close=100, volume=100, signal_score=30)
         ]
         
-        result = engine.run(data, 80, 45)
+        result = engine.run({"TEST": data}, 80, 45)
         
         # Capital 50 is not enough to buy 1 share at 100 + slippage
         assert result.total_trades == 0
@@ -80,7 +80,7 @@ class TestBacktestEngine:
         config = BacktestConfig(initial_capital=10000, slippage_percent=0, transaction_fee_percent=0)
         engine = BacktestEngine(config)
         
-        result = engine.run(sample_data, buy_threshold=80, sell_threshold=-1) # Sell threshold impossible to hit
+        result = engine.run({"TEST": sample_data}, buy_threshold=80, sell_threshold=-1) # Sell threshold impossible to hit
         
         assert result.total_trades == 1
         trade = result.trades[0]

@@ -121,6 +121,7 @@ func setupRouter(cfg *config.Config, jwtManager *auth.JWTManager, db *database.D
 	r.Route("/api/v1", func(r chi.Router) {
 		// Public routes
 		r.Mount("/auth", handlers.NewAuthHandler().Routes())
+		r.Get("/market-data/health", handlers.NewStocksHandler(db, quantClient).GetMarketHealth)
 
 		// Protected routes
 		r.Group(func(r chi.Router) {

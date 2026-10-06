@@ -156,7 +156,13 @@ func (p *Provider) GetHistoricalData(symbol string, from, to time.Time, interval
 		from.Unix(), to.Unix(), interval,
 	)
 
-	resp, err := p.client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)")
+	
+	resp, err := p.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("yahoo finance request failed: %w", err)
 	}
@@ -220,6 +226,9 @@ func (p *Provider) GetHistoricalData(symbol string, from, to time.Time, interval
 
 		candles = append(candles, candle)
 	}
+
+	return candles, nil
+}
 
 // GetDailyCandles implements MarketDataProvider
 func (p *Provider) GetDailyCandles(ctx context.Context, symbol string, exchange string, from time.Time, to time.Time) (*marketdata.DataPoint[[]models.OHLCV], error) {
@@ -378,6 +387,9 @@ func (p *Provider) SearchSymbol(query string) ([]map[string]string, error) {
 			})
 		}
 	}
+
+	return results, nil
+}
 
 // SearchSymbols implements MarketDataProvider
 func (p *Provider) SearchSymbols(ctx context.Context, query string, exchange string) ([]marketdata.SearchResult, error) {

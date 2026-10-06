@@ -1,19 +1,19 @@
+"use client";
+
 import Link from "next/link";
+import { useStocks } from "@/lib/api/hooks";
+import { formatDistanceToNow } from "date-fns";
 
 export default function StocksPage() {
-  const stocks = [
-    { symbol: "RELIANCE", name: "Reliance Industries Ltd", sector: "Energy", price: 2450, change: 2.3, shariah: "PASS", signal: "STRONG_BUY", score: 85 },
-    { symbol: "TCS", name: "Tata Consultancy Services", sector: "Technology", price: 3800, change: 1.1, shariah: "PASS", signal: "BUY", score: 74 },
-    { symbol: "HDFCBANK", name: "HDFC Bank Ltd", sector: "Financial Services", price: 1650, change: -1.2, shariah: "FAIL", signal: "AVOID", score: 45 },
-    { symbol: "INFY", name: "Infosys Ltd", sector: "Technology", price: 1520, change: -0.5, shariah: "PASS", signal: "WATCH", score: 62 },
-    { symbol: "HINDUNILVR", name: "Hindustan Unilever", sector: "FMCG", price: 2380, change: 0.4, shariah: "PASS", signal: "BUY", score: 72 },
-    { symbol: "ITC", name: "ITC Ltd", sector: "FMCG", price: 440, change: 0.8, shariah: "PASS", signal: "BUY", score: 71 },
-    { symbol: "BHARTIARTL", name: "Bharti Airtel Ltd", sector: "Telecom", price: 1180, change: 1.5, shariah: "PASS", signal: "WATCH", score: 65 },
-    { symbol: "WIPRO", name: "Wipro Ltd", sector: "Technology", price: 480, change: -0.3, shariah: "PASS", signal: "AVOID", score: 48 },
-    { symbol: "BAJFINANCE", name: "Bajaj Finance Ltd", sector: "Financial Services", price: 7200, change: 2.1, shariah: "FAIL", signal: "AVOID", score: 40 },
-    { symbol: "TATAMOTORS", name: "Tata Motors Ltd", sector: "Automobile", price: 680, change: 3.2, shariah: "PASS", signal: "STRONG_BUY", score: 82 },
-  ];
+  const { stocks, isLoading, isError } = useStocks();
 
+  if (isLoading) {
+    return <div className="text-center py-20 text-slate-500">Loading market data...</div>;
+  }
+
+  if (isError) {
+    return <div className="text-center py-20 text-red-500">Failed to load market data.</div>;
+  }
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -44,7 +44,7 @@ export default function StocksPage() {
               <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Symbol</th>
               <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Sector</th>
               <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Price</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Change</th>
+              <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Status</th>
               <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase">Shariah</th>
               <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase">Signal</th>
               <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase">Score</th>
@@ -60,9 +60,23 @@ export default function StocksPage() {
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-sm text-slate-400">{stock.sector}</td>
-                <td className="px-4 py-3 text-sm font-medium text-white text-right">₹{stock.price.toLocaleString()}</td>
-                <td className={`px-4 py-3 text-sm font-medium text-right ${stock.change >= 0 ? "text-brand-400" : "text-danger-400"}`}>
-                  {stock.change >= 0 ? "+" : ""}{stock.change}%
+                <td className="px-4 py-3 text-sm font-medium text-white text-right">
+                  {stock.freshness === "UNAVAILABLE" ? "DATA_UNAVAILABLE" : `₹${stock.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}`}
+                  {stock.marketTimestamp && (
+                    <p className="text-[10px] text-slate-500 font-normal mt-0.5 whitespace-nowrap">
+                      {stock.marketStatus === "CLOSED" ? "Last updated:" : "As of"} {new Date(stock.marketTimestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })} IST
+                      <br/>
+                      Market: {stock.marketStatus}
+                    </p>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${
+                    stock.freshness === 'STALE' ? 'bg-warn-400/20 text-warn-400' :
+                    stock.freshness === 'FRESH' ? 'bg-brand-400/20 text-brand-400' : 'bg-slate-700 text-slate-400'
+                  }`}>
+                    {stock.freshness}
+                  </span>
                 </td>
                 <td className="px-4 py-3 text-center">
                   <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${

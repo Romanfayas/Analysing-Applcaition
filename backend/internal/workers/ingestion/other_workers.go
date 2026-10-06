@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"time"
-
-	"github.com/halal-equity/backend/internal/models"
 	"github.com/halal-equity/backend/internal/providers/marketdata"
 )
 

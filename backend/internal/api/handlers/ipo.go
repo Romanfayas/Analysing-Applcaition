@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"halal-equity/internal/database"
-	"halal-equity/internal/services/quant"
+	"github.com/halal-equity/backend/internal/database"
+	"github.com/halal-equity/backend/internal/services/quant"
 )
 
 type IPOHandler struct {

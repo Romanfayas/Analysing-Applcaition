@@ -11,6 +11,7 @@ import (
 	"github.com/halal-equity/backend/pkg/response"
 	"github.com/halal-equity/backend/internal/database"
 	"github.com/halal-equity/backend/internal/services/quant"
+	"github.com/halal-equity/backend/internal/services/market"
 )
 
 // StocksHandler handles stock-related API endpoints.
@@ -44,24 +45,79 @@ func (h *StocksHandler) Routes() chi.Router {
 
 // ListStocks returns a paginated list of stocks.
 func (h *StocksHandler) ListStocks(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement with repository
-	stocks := []map[string]any{
-		{
-			"symbol":   "RELIANCE",
-			"name":     "Reliance Industries Ltd",
-			"exchange": "NSE",
-			"sector":   "Energy",
-			"price":    2450.00,
-		},
-		{
-			"symbol":   "TCS",
-			"name":     "Tata Consultancy Services Ltd",
-			"exchange": "NSE",
-			"sector":   "Technology",
-			"price":    3800.00,
-		},
+	ctx := r.Context()
+	
+	// Get all active symbols
+	symbols, err := h.db.GetAllActiveSymbols(ctx)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to retrieve symbols")
+		return
 	}
-	response.WithMeta(w, stocks, &response.Meta{Page: 1, PerPage: 20, Total: 2})
+
+	var stocks []map[string]any
+	loc, _ := time.LoadLocation("Asia/Kolkata")
+	now := time.Now().In(loc)
+
+	for _, sym := range symbols {
+		stockData := map[string]any{
+			"symbol":   sym.Symbol,
+			"name":     sym.Name,
+			"exchange": sym.Exchange,
+			"sector":   sym.Sector,
+		}
+
+		// 1. Get latest OHLCV
+		ohlcv, err := h.db.GetLatestOHLCV(ctx, sym.ID)
+		if err == nil && ohlcv != nil {
+			stockData["price"] = ohlcv.Close
+			stockData["marketTimestamp"] = ohlcv.Timestamp
+			stockData["receivedAt"] = ohlcv.Timestamp
+			stockData["provider"] = ohlcv.Source
+			
+			if time.Since(ohlcv.Timestamp) > 15*time.Minute {
+				stockData["freshness"] = "STALE"
+			} else {
+				stockData["freshness"] = "FRESH"
+			}
+		} else {
+			stockData["price"] = 0
+			stockData["freshness"] = "UNAVAILABLE"
+		}
+
+		marketStatus := "CLOSED"
+		if now.Weekday() >= time.Monday && now.Weekday() <= time.Friday {
+			start := time.Date(now.Year(), now.Month(), now.Day(), 9, 15, 0, 0, loc)
+			end := time.Date(now.Year(), now.Month(), now.Day(), 15, 30, 0, 0, loc)
+			if now.After(start) && now.Before(end) {
+				marketStatus = "OPEN"
+			}
+		}
+		stockData["marketStatus"] = marketStatus
+
+		// 2. Get Shariah Status
+		shariah, err := h.db.GetLatestShariahScreening(ctx, sym.ID)
+		if err == nil && shariah != nil {
+			stockData["shariah"] = shariah.Status
+		} else {
+			stockData["shariah"] = "UNKNOWN"
+		}
+
+		// 3. Get Signal and Score
+		signal, err := h.db.GetLatestSignal(ctx, sym.ID)
+		if err == nil && signal != nil {
+			stockData["signal"] = signal.Signal
+			stockData["score"] = signal.OverallScore
+		} else {
+			stockData["signal"] = "WATCH"
+			stockData["score"] = 0
+		}
+		
+		stockData["change"] = 0.0 // Placeholder for change
+
+		stocks = append(stocks, stockData)
+	}
+
+	response.WithMeta(w, stocks, &response.Meta{Page: 1, PerPage: len(stocks), Total: int64(len(stocks))})
 }
 
 // SearchStocks searches for stocks by name or symbol.
@@ -87,14 +143,33 @@ func (h *StocksHandler) GetStock(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 2. Fetch Latest OHLCV for current price
-	ohlcvCount, _ := h.db.GetOHLCVCount(ctx, symRec.ID)
+	latestOHLCV, err := h.db.GetLatestOHLCV(ctx, symRec.ID)
 	currentPrice := 0.0
-	var ohlcvData []map[string]any
+	timestamp := "DATA_UNAVAILABLE"
+	freshness := "MISSING"
+	
+	if err == nil && latestOHLCV != nil {
+		currentPrice = latestOHLCV.Close
+		timestamp = latestOHLCV.Timestamp.Format(time.RFC3339)
+		freshness = market.GetFreshnessStatus(latestOHLCV.Timestamp, time.Now())
+	}
 
-	if ohlcvCount > 0 {
-		// Mock fetching last 30 days for now, ideally pass proper times
-		// Since GetOHLCV requires time.Time, let's fetch a small dummy range or avoid if difficult
-		// For Phase 1, we will just return empty OHLCV array and 0 price if we don't query it specifically.
+	// Fetch historical OHLCV data for charting (last 30 days)
+	var ohlcvData []map[string]any
+	to := time.Now()
+	from := to.AddDate(0, 0, -30)
+	historicalRecords, _ := h.db.GetOHLCV(ctx, symRec.ID, from, to)
+	for _, rec := range historicalRecords {
+		ohlcvData = append(ohlcvData, map[string]any{
+			"timestamp": rec.Timestamp.Format(time.RFC3339),
+			"open":      rec.Open,
+			"high":      rec.High,
+			"low":       rec.Low,
+			"close":     rec.Close,
+			"volume":    rec.Volume,
+		})
+	}
+	if ohlcvData == nil {
 		ohlcvData = []map[string]any{}
 	}
 
@@ -125,7 +200,9 @@ func (h *StocksHandler) GetStock(w http.ResponseWriter, r *http.Request) {
 		"name":          symRec.Name,
 		"exchange":      symRec.Exchange,
 		"current_price": currentPrice,
-		"timestamp":     "2023-12-29T00:00:00Z", // placeholder timestamp
+		"timestamp":     timestamp,
+		"freshness":     freshness,
+		"market_session": string(market.GetCurrentSession(time.Now())),
 		"ohlcv":         ohlcvData,
 		"technicals":    map[string]any{},
 		"fundamentals": map[string]any{
@@ -961,4 +1038,45 @@ func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"status":  "healthy",
 		"service": "halal-equity-api",
 	})
+}
+
+// GetMarketHealth returns the health and freshness of the market data.
+func (h *StocksHandler) GetMarketHealth(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	
+	// Fetch a representative symbol to check freshness (e.g. Reliance or NIFTY 50)
+	symRec, err := h.db.GetSymbolByCode(ctx, "RELIANCE", "NSE")
+	if err != nil {
+		symRec, err = h.db.GetSymbolByCode(ctx, "TCS", "NSE") // fallback
+	}
+
+	var latestTs time.Time
+	if symRec != nil {
+		ts, err := h.db.GetLatestOHLCVTimestamp(ctx, symRec.ID)
+		if err == nil && ts != nil {
+			latestTs = *ts
+		}
+	}
+	
+	now := time.Now()
+	session := market.GetCurrentSession(now)
+	
+	var freshness string
+	if latestTs.IsZero() {
+		freshness = "MISSING"
+	} else {
+		freshness = market.GetFreshnessStatus(latestTs, now)
+	}
+
+	resp := map[string]any{
+		"provider":                  "yahoofinance",
+		"latest_market_timestamp":   latestTs.Format(time.RFC3339),
+		"latest_received_timestamp": latestTs.Format(time.RFC3339),
+		"data_age_seconds":          int(now.Sub(latestTs).Seconds()),
+		"freshness_status":          freshness,
+		"market_session":            string(session),
+		"fallback_active":           false,
+	}
+
+	response.JSON(w, http.StatusOK, resp)
 }

@@ -67,7 +67,7 @@ func (db *DB) UpsertOHLCVBatch(ctx context.Context, records []OHLCVRecord) (int,
 	defer tx.Rollback()
 
 	stmt, err := tx.PrepareContext(ctx, `
-		INSERT INTO ohlcv_daily (symbol_id, timestamp, open, high, low, close, volume, adj_close, source, quality_status)
+		INSERT INTO ohlcv_daily (symbol_id, timestamp, open, high, low, close, volume, adjusted_close, source, quality_status)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		ON CONFLICT (symbol_id, timestamp) DO UPDATE SET
 			open = EXCLUDED.open,
@@ -75,10 +75,10 @@ func (db *DB) UpsertOHLCVBatch(ctx context.Context, records []OHLCVRecord) (int,
 			low = EXCLUDED.low,
 			close = EXCLUDED.close,
 			volume = EXCLUDED.volume,
-			adj_close = EXCLUDED.adj_close,
+			adjusted_close = EXCLUDED.adjusted_close,
 			source = EXCLUDED.source,
 			quality_status = EXCLUDED.quality_status,
-			updated_at = NOW()
+			retrieved_at = NOW()
 	`)
 	if err != nil {
 		return 0, fmt.Errorf("prepare statement failed: %w", err)
@@ -142,6 +142,26 @@ func (db *DB) GetLatestOHLCVTimestamp(ctx context.Context, symbolID int) (*time.
 		return nil, err
 	}
 	return ts, nil
+}
+
+// GetLatestOHLCV retrieves the most recent OHLCV candle for a symbol.
+func (db *DB) GetLatestOHLCV(ctx context.Context, symbolID int) (*OHLCVRecord, error) {
+	query := `
+		SELECT symbol_id, timestamp, open, high, low, close, volume,
+		       COALESCE(adj_close, close) as adj_close, source, quality_status
+		FROM ohlcv_daily
+		WHERE symbol_id = $1
+		ORDER BY timestamp DESC
+		LIMIT 1
+	`
+	var r OHLCVRecord
+	err := db.QueryRowContext(ctx, query, symbolID).Scan(
+		&r.SymbolID, &r.Timestamp, &r.Open, &r.High,
+		&r.Low, &r.Close, &r.Volume, &r.AdjClose, &r.Source, &r.QualityStatus)
+	if err != nil {
+		return nil, err
+	}
+	return &r, nil
 }
 
 // GetSymbolByCode retrieves a symbol by its code and exchange.

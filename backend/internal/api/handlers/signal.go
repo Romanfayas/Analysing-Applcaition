@@ -2,14 +2,16 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	
-	"halal-equity/internal/database"
-	"halal-equity/internal/services/quant"
-	"halal-equity/internal/notifications"
+	"github.com/halal-equity/backend/internal/database"
+	"github.com/halal-equity/backend/internal/services/quant"
+	"github.com/halal-equity/backend/internal/notifications"
 )
 
 type SignalHandler struct {

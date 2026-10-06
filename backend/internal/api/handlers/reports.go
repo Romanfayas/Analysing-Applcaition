@@ -6,9 +6,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"halal-equity/internal/database"
-	"halal-equity/internal/services/llm"
-	"halal-equity/internal/services/quant"
+	"github.com/halal-equity/backend/internal/database"
+	"github.com/halal-equity/backend/internal/services/llm"
+	"github.com/halal-equity/backend/internal/services/quant"
 )
 
 type ReportsHandler struct {
@@ -43,17 +43,20 @@ func (h *ReportsHandler) GenerateReport(w http.ResponseWriter, r *http.Request) 
 	// In a real implementation, we'd fetch the latest OHLCV and financials for this symbol.
 	// For MVP integration, we simulate the data to pass to the Quant Engine.
 	
+	// Helper
+	ptr := func(f float64) *float64 { return &f }
+
 	// 1. Mock fetch fundamental data
-	fundReq := quant.FundamentalInput{
-		PriceToEarnings: 22.5,
-		DebtToEquity:    0.1,
-		ReturnOnEquity:  18.5,
-		FreeCashFlow:    1500.5,
-		RevenueGrowth:   12.0,
-		ProfitMargin:    15.0,
+	fundReq := quant.FundamentalRequest{
+		NetProfit:    ptr(500000),
+		Revenue:      ptr(1000000),
+		TotalAssets:  ptr(2000000),
+		TotalEquity:  ptr(1000000),
+		TotalDebt:    ptr(100000),
+		MarketCap:    ptr(10000000),
 	}
 	
-	fundData, err := h.quantClient.AnalyzeFundamentals(ctx, fundReq)
+	fundData, err := h.quantClient.CalculateFundamentals(ctx, fundReq)
 	if err != nil {
 		http.Error(w, "Failed to analyze fundamentals", http.StatusInternalServerError)
 		return
@@ -61,11 +64,17 @@ func (h *ReportsHandler) GenerateReport(w http.ResponseWriter, r *http.Request) 
 
 	// 2. Mock fetch Shariah data
 	shariahReq := quant.ShariahRequest{
-		Symbol:                 symbol,
-		DebtToTotalAssets:      0.20, // 20% (< 33%)
-		IlliquidToTotalAssets:  0.40, // 40% (> 25%)
-		NonCompliantRevenuePct: 0.03, // 3% (< 5%)
-		IsFinancialSector:      false,
+		TotalDebt:               ptr(200000),
+		CashAndEquivalents:      ptr(500000),
+		InterestBearingDeposits: ptr(100000),
+		TotalReceivables:        ptr(300000),
+		MarketCap:               ptr(10000000),
+		TotalAssets:             ptr(2000000),
+		TotalRevenue:            ptr(1000000),
+		InterestIncome:          ptr(10000),
+		NonCompliantRevenue:     ptr(30000),
+		IsFinancialInstitution:  false,
+		IsProhibitedIndustry:    false,
 	}
 	
 	shariahData, err := h.quantClient.ScreenShariah(ctx, shariahReq)

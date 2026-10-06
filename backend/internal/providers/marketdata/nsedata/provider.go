@@ -251,7 +251,7 @@ func (p *Provider) GetCorporateActions(ctx context.Context, symbol string, excha
 			continue
 		}
 
-		var actType models.CorporateActionType
+		var actType string
 		purposeLower := strings.ToLower(purpose)
 		if strings.Contains(purposeLower, "dividend") {
 			actType = "DIVIDEND"
@@ -264,12 +264,10 @@ func (p *Provider) GetCorporateActions(ctx context.Context, symbol string, excha
 		}
 
 		actions = append(actions, models.CorporateAction{
-			Type:          actType,
-			ExDate:        &exDate,
-			Description:   purpose,
-			Source:        p.Name(),
-			RetrievedAt:   time.Now().UTC(),
-			QualityStatus: models.DataQualityValid,
+			ActionType:  actType,
+			ExDate:      exDate,
+			Description: purpose,
+			Source:      p.Name(),
 		})
 	}
 

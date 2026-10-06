@@ -19,6 +19,16 @@ export function useStock(symbol: string) {
   };
 }
 
+export function useStocks() {
+  const { data, error, isLoading } = useSWR<{ data: any[], meta: any }>('/stocks', fetcher);
+  return {
+    stocks: data?.data || [],
+    meta: data?.meta,
+    isLoading,
+    isError: error,
+  };
+}
+
 export function useMarketOverview() {
   const { data, error, isLoading } = useSWR<{ indices: any[] }>('/stocks/market/overview', fetcher);
   return { data, isLoading, isError: error };
