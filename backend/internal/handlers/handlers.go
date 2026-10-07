@@ -67,18 +67,14 @@ func (h *StocksHandler) ListStocks(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// 1. Get latest OHLCV
-		ohlcv, err := h.db.GetLatestOHLCV(ctx, sym.ID)
+		ohlcv, err := h.db.GetLatestIntradayOHLCV(ctx, sym.ID)
 		if err == nil && ohlcv != nil {
 			stockData["price"] = ohlcv.Close
 			stockData["marketTimestamp"] = ohlcv.Timestamp
 			stockData["receivedAt"] = ohlcv.Timestamp
 			stockData["provider"] = ohlcv.Source
 			
-			if time.Since(ohlcv.Timestamp) > 15*time.Minute {
-				stockData["freshness"] = "STALE"
-			} else {
-				stockData["freshness"] = "FRESH"
-			}
+			stockData["freshness"] = market.GetFreshnessStatus(ohlcv.Timestamp, now)
 		} else {
 			stockData["price"] = 0
 			stockData["freshness"] = "UNAVAILABLE"
@@ -1052,7 +1048,7 @@ func (h *StocksHandler) GetMarketHealth(w http.ResponseWriter, r *http.Request) 
 
 	var latestTs time.Time
 	if symRec != nil {
-		ts, err := h.db.GetLatestOHLCVTimestamp(ctx, symRec.ID)
+		ts, err := h.db.GetLatestIntradayOHLCVTimestamp(ctx, symRec.ID)
 		if err == nil && ts != nil {
 			latestTs = *ts
 		}
@@ -1076,6 +1072,8 @@ func (h *StocksHandler) GetMarketHealth(w http.ResponseWriter, r *http.Request) 
 		"freshness_status":          freshness,
 		"market_session":            string(session),
 		"fallback_active":           false,
+		"data_interval":             1,
+		"data_type":                 "INTRADAY",
 	}
 
 	response.JSON(w, http.StatusOK, resp)

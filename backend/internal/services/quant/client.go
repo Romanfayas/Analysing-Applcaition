@@ -89,6 +89,7 @@ type SignalRequest struct {
 	FundamentalFactors []string `json:"fundamental_factors,omitempty"`
 	TechnicalFactors   []string `json:"technical_factors,omitempty"`
 	ConflictingFactors []string `json:"conflicting_factors,omitempty"`
+	MarketDataStatus   string   `json:"market_data_status"`
 }
 
 // SignalResponse matches the Python SignalResponse schema.

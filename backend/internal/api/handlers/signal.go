@@ -11,6 +11,7 @@ import (
 	
 	"github.com/halal-equity/backend/internal/database"
 	"github.com/halal-equity/backend/internal/services/quant"
+	"github.com/halal-equity/backend/internal/services/market"
 	"github.com/halal-equity/backend/internal/notifications"
 )
 
@@ -92,12 +93,22 @@ func (h *SignalHandler) TriggerSignalCalculation(w http.ResponseWriter, r *http.
 	// 4. Pass those scores to QuantEngine Signal/Calculate
 	// 5. Store the resulting SignalRecord in the DB
 
+	// Determine freshness
+	var latestTs time.Time
+	ts, err := h.db.GetLatestIntradayOHLCVTimestamp(ctx, symbolID)
+	var freshness string = "MISSING"
+	if err == nil && ts != nil {
+		latestTs = *ts
+		freshness = market.GetFreshnessStatus(latestTs, time.Now())
+	}
+
 	// Example mock request to test integration
 	req := quant.SignalRequest{
 		FundamentalScore:   ptr(75.0),
 		TechnicalScore:     ptr(85.0),
 		ShariahStatus:      "PASS",
 		FundamentalFactors: []string{"Strong ROE"},
+		MarketDataStatus:   freshness,
 	}
 
 	resp, err := h.quantClient.CalculateSignal(ctx, req)

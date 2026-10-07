@@ -78,13 +78,16 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 
 	// 2. Determine fetch range (incremental)
 	var from time.Time
-	latestTS, err := p.db.GetLatestOHLCVTimestamp(ctx, symbolID)
+	latestTS, err := p.db.GetLatestIntradayOHLCVTimestamp(ctx, symbolID)
 	if err != nil || latestTS == nil {
-		// No existing data — fetch 2 years
-		from = time.Now().AddDate(-2, 0, 0)
+		// No existing data — fetch last 1 day for intraday
+		from = time.Now().AddDate(0, 0, -1)
 	} else {
-		// Fetch from the day after the latest candle
-		from = latestTS.AddDate(0, 0, 1)
+		// Fetch from the day after the latest candle, but at most 7 days ago for 1m
+		from = *latestTS
+		if time.Since(from) > 7*24*time.Hour {
+			from = time.Now().AddDate(0, 0, -7)
+		}
 	}
 	to := time.Now()
 
@@ -97,7 +100,7 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 	var dataPoint *marketdata.DataPoint[[]models.OHLCV]
 	maxRetries := 3
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		dataPoint, err = p.marketProvider.GetDailyCandles(ctx, symbol, "NSE", from, to)
+		dataPoint, err = p.marketProvider.GetIntradayCandles(ctx, symbol, "NSE", "1m", from, to)
 		if err == nil {
 			break
 		}
@@ -119,7 +122,7 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 	// 3b. Try Fallback Provider if Primary failed
 	if err != nil && p.fallbackProvider != nil {
 		log.Printf("[PIPELINE] %s: Primary provider failed (%v), trying fallback provider", symbol, err)
-		dataPoint, err = p.fallbackProvider.GetDailyCandles(ctx, symbol, "NSE", from, to)
+		dataPoint, err = p.fallbackProvider.GetIntradayCandles(ctx, symbol, "NSE", "1m", from, to)
 		if err != nil {
 			log.Printf("[PIPELINE] %s: Fallback provider also failed: %v", symbol, err)
 		} else {
@@ -187,6 +190,7 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 			AdjClose:      adjClose,
 			Source:        "yahoo_finance",
 			QualityStatus: string(qResult.Status),
+			IntervalMins:  1, // Hardcoded to 1 since we request "1m"
 		}
 		records = append(records, record)
 
@@ -198,7 +202,7 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 	}
 
 	// 6. Batch upsert to database
-	stored, err := p.db.UpsertOHLCVBatch(ctx, records)
+	stored, err := p.db.UpsertIntradayOHLCVBatch(ctx, records)
 	if err != nil {
 		report.Error = err.Error()
 		report.Duration = time.Since(start)

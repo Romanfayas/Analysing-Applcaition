@@ -140,8 +140,18 @@ type chartResponse struct {
 	} `json:"chart"`
 }
 
-// toNSESymbol converts a plain symbol to Yahoo Finance NSE format.
+// SymbolMappings explicitly maps application symbols to Yahoo-specific tickers
+var SymbolMappings = map[string]string{
+	"LTIM":       "LTIM.NS",
+	"TATAMOTORS": "TATAMOTORS.NS",
+	// Add further corporate action / ticker changes here
+}
+
+// toNSESymbol converts a plain symbol to Yahoo Finance NSE format with explicit mapping overrides.
 func toNSESymbol(symbol string) string {
+	if mapped, exists := SymbolMappings[symbol]; exists {
+		return mapped
+	}
 	return symbol + ".NS"
 }
 
@@ -170,6 +180,12 @@ func (p *Provider) GetHistoricalData(symbol string, from, to time.Time, interval
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, fmt.Errorf("SYMBOL_MAPPING_ERROR: Yahoo returned 404 for %s", yahooSymbol)
+		}
+		if resp.StatusCode == 422 {
+			return nil, fmt.Errorf("SYMBOL_MAPPING_ERROR: Yahoo returned 422 Unprocessable for %s", yahooSymbol)
+		}
 		return nil, fmt.Errorf("yahoo finance returned %d: %s", resp.StatusCode, string(body))
 	}
 
@@ -179,6 +195,9 @@ func (p *Provider) GetHistoricalData(symbol string, from, to time.Time, interval
 	}
 
 	if chart.Chart.Error != nil {
+		if chart.Chart.Error.Code == "Not Found" {
+			return nil, fmt.Errorf("SYMBOL_MAPPING_ERROR: %s", chart.Chart.Error.Description)
+		}
 		return nil, fmt.Errorf("yahoo finance error: %s - %s",
 			chart.Chart.Error.Code, chart.Chart.Error.Description)
 	}
@@ -261,7 +280,34 @@ func (p *Provider) GetDailyCandles(ctx context.Context, symbol string, exchange 
 
 // GetIntradayCandles implements MarketDataProvider
 func (p *Provider) GetIntradayCandles(ctx context.Context, symbol string, exchange string, interval marketdata.CandleInterval, from time.Time, to time.Time) (*marketdata.DataPoint[[]models.OHLCV], error) {
-	return nil, fmt.Errorf("intraday candles not officially supported without rate limit risks on free API")
+	intervalStr := string(interval)
+	// Yahoo expects '1m', '5m', '15m', '30m', '1h', etc.
+	// Map internal CandleInterval if necessary, otherwise pass it directly assuming it matches.
+	candles, err := p.GetHistoricalData(symbol, from, to, intervalStr)
+	if err != nil {
+		return nil, err
+	}
+	var res []models.OHLCV
+	for _, c := range candles {
+		res = append(res, models.OHLCV{
+			Timestamp:     c.Timestamp,
+			Open:          c.Open,
+			High:          c.High,
+			Low:           c.Low,
+			Close:         c.Close,
+			Volume:        c.Volume,
+			Source:        p.Name(),
+			RetrievedAt:   time.Now().UTC(),
+			QualityStatus: models.DataQualityValid,
+		})
+	}
+	return &marketdata.DataPoint[[]models.OHLCV]{
+		Data:          res,
+		Source:        p.Name(),
+		RetrievedAt:   time.Now().UTC(),
+		Period:        intervalStr,
+		QualityStatus: models.DataQualityValid,
+	}, nil
 }
 
 // GetBenchmarkOHLCV implements BenchmarkProvider

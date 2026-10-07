@@ -19,6 +19,7 @@ type OHLCVRecord struct {
 	AdjClose      float64   `json:"adj_close"`
 	Source        string    `json:"source"`
 	QualityStatus string    `json:"quality_status"`
+	IntervalMins  int       `json:"interval_mins,omitempty"`
 }
 
 // SymbolRecord represents a stock symbol in the database.
@@ -105,6 +106,56 @@ func (db *DB) UpsertOHLCVBatch(ctx context.Context, records []OHLCVRecord) (int,
 	return inserted, nil
 }
 
+// UpsertIntradayOHLCVBatch inserts or updates a batch of intraday OHLCV candles.
+func (db *DB) UpsertIntradayOHLCVBatch(ctx context.Context, records []OHLCVRecord) (int, error) {
+	if len(records) == 0 {
+		return 0, nil
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, fmt.Errorf("begin transaction failed: %w", err)
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.PrepareContext(ctx, `
+		INSERT INTO ohlcv_intraday (symbol_id, timestamp, interval_minutes, open, high, low, close, volume, source, quality_status, retrieved_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+		ON CONFLICT (symbol_id, timestamp, interval_minutes) DO UPDATE SET
+			open = EXCLUDED.open,
+			high = EXCLUDED.high,
+			low = EXCLUDED.low,
+			close = EXCLUDED.close,
+			volume = EXCLUDED.volume,
+			source = EXCLUDED.source,
+			quality_status = EXCLUDED.quality_status,
+			retrieved_at = NOW()
+	`)
+	if err != nil {
+		return 0, fmt.Errorf("prepare statement failed: %w", err)
+	}
+	defer stmt.Close()
+
+	inserted := 0
+	for _, r := range records {
+		_, err := stmt.ExecContext(ctx, r.SymbolID, r.Timestamp, r.IntervalMins,
+			r.Open, r.High, r.Low, r.Close, r.Volume,
+			r.Source, r.QualityStatus)
+		if err != nil {
+			log.Printf("[DB] WARN: failed to upsert intraday candle for symbol %d at %v: %v",
+				r.SymbolID, r.Timestamp, err)
+			continue
+		}
+		inserted++
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, fmt.Errorf("commit failed: %w", err)
+	}
+
+	return inserted, nil
+}
+
 // GetOHLCV retrieves OHLCV candles for a symbol within a date range.
 func (db *DB) GetOHLCV(ctx context.Context, symbolID int, from, to time.Time) ([]OHLCVRecord, error) {
 	query := `
@@ -144,12 +195,43 @@ func (db *DB) GetLatestOHLCVTimestamp(ctx context.Context, symbolID int) (*time.
 	return ts, nil
 }
 
+// GetLatestIntradayOHLCVTimestamp returns the most recent intraday candle timestamp for a symbol.
+func (db *DB) GetLatestIntradayOHLCVTimestamp(ctx context.Context, symbolID int) (*time.Time, error) {
+	query := `SELECT MAX(timestamp) FROM ohlcv_intraday WHERE symbol_id = $1`
+	var ts *time.Time
+	err := db.QueryRowContext(ctx, query, symbolID).Scan(&ts)
+	if err != nil {
+		return nil, err
+	}
+	return ts, nil
+}
+
 // GetLatestOHLCV retrieves the most recent OHLCV candle for a symbol.
 func (db *DB) GetLatestOHLCV(ctx context.Context, symbolID int) (*OHLCVRecord, error) {
 	query := `
 		SELECT symbol_id, timestamp, open, high, low, close, volume,
 		       COALESCE(adj_close, close) as adj_close, source, quality_status
 		FROM ohlcv_daily
+		WHERE symbol_id = $1
+		ORDER BY timestamp DESC
+		LIMIT 1
+	`
+	var r OHLCVRecord
+	err := db.QueryRowContext(ctx, query, symbolID).Scan(
+		&r.SymbolID, &r.Timestamp, &r.Open, &r.High,
+		&r.Low, &r.Close, &r.Volume, &r.AdjClose, &r.Source, &r.QualityStatus)
+	if err != nil {
+		return nil, err
+	}
+	return &r, nil
+}
+
+// GetLatestIntradayOHLCV retrieves the most recent intraday OHLCV candle for a symbol.
+func (db *DB) GetLatestIntradayOHLCV(ctx context.Context, symbolID int) (*OHLCVRecord, error) {
+	query := `
+		SELECT symbol_id, timestamp, open, high, low, close, volume,
+		       close as adj_close, source, quality_status
+		FROM ohlcv_intraday
 		WHERE symbol_id = $1
 		ORDER BY timestamp DESC
 		LIMIT 1

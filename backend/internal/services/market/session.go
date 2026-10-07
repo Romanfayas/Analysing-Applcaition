@@ -72,10 +72,10 @@ func GetFreshnessStatus(dataTime time.Time, now time.Time) string {
 	}
 	
 	// If the market is closed, the most recent data should be from the last market close.
-	// For simplicity, if it's within the last 72 hours (weekend cover), consider it FRESH.
+	// For simplicity, if it's within the last 72 hours (weekend cover), consider it LAST_AVAILABLE.
 	if now.Sub(dataTime) > 72*time.Hour {
 		return "STALE"
 	}
 	
-	return "FRESH"
+	return "LAST_AVAILABLE"
 }

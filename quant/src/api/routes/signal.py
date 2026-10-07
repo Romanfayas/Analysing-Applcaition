@@ -27,6 +27,7 @@ class SignalRequest(BaseModel):
     fundamental_factors: Optional[List[str]] = None
     technical_factors: Optional[List[str]] = None
     conflicting_factors: Optional[List[str]] = None
+    market_data_status: str = "FRESH"
 
 
 @router.post("/calculate")
@@ -49,6 +50,18 @@ async def calculate_signal(request: SignalRequest):
             technical_factors=request.technical_factors,
             conflicting=request.conflicting_factors,
         )
+        
+        # Enforce Signal Safety
+        if request.market_data_status == "STALE":
+            result.signal = __import__('src.engines.signal.engine', fromlist=['SignalType']).SignalType.NO_SIGNAL
+            result.explanation = "Market data is stale. NO SIGNAL enforced for safety."
+        elif request.market_data_status == "MISSING":
+            result.signal = __import__('src.engines.signal.engine', fromlist=['SignalType']).SignalType.NO_SIGNAL
+            result.explanation = "Market data is missing. NO SIGNAL enforced for safety."
+            
+        if request.shariah_status == "FAIL":
+            result.signal = __import__('src.engines.signal.engine', fromlist=['SignalType']).SignalType.NO_SIGNAL
+            result.explanation = "Shariah status failed. NO SIGNAL enforced for safety."
         
         return {
             "signal": result.signal.value,
