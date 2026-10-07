@@ -35,6 +35,9 @@ func (w *Worker) Run(ctx context.Context) {
 	ticker := time.NewTicker(w.interval)
 	defer ticker.Stop()
 
+	log.Println("[INGEST-WORKER] Performing initial startup ingestion...")
+	w.runIngestion(ctx)
+
 	for {
 		select {
 		case <-ctx.Done():
