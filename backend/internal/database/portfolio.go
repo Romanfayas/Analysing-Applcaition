@@ -31,15 +31,16 @@ type PortfolioPosition struct {
 
 // PortfolioTrade represents a single transaction (BUY or SELL).
 type PortfolioTrade struct {
-	ID            int       `json:"id"`
-	PortfolioID   int       `json:"portfolio_id"`
-	SymbolID      int       `json:"symbol_id"`
-	TradeType     string    `json:"trade_type"` // BUY or SELL
-	Shares        int       `json:"shares"`
-	Price         float64   `json:"price"`
-	FeesPaid      float64   `json:"fees_paid"`
-	RealizedPnL   *float64  `json:"realized_pnl"` // Only applicable for SELL
-	TradeDate     time.Time `json:"trade_date"`
+	ID          int       `json:"id"`
+	PortfolioID int       `json:"portfolio_id"`
+	SymbolID    int       `json:"symbol_id"`
+	Symbol      string    `json:"symbol,omitempty"` // Joined from symbols table
+	TradeType   string    `json:"trade_type"` // BUY or SELL
+	Shares      int       `json:"shares"`
+	Price       float64   `json:"price"`
+	FeesPaid    float64   `json:"fees_paid"`
+	RealizedPnL *float64  `json:"realized_pnl"` // Only applicable for SELL
+	TradeDate   time.Time `json:"trade_date"`
 }
 
 // GetOrCreatePortfolio fetches the MVP portfolio (user_id = 1) or creates it with 1,000,000 capital.
@@ -89,6 +90,36 @@ func (db *DB) GetPortfolioPositions(ctx context.Context, portfolioID int) ([]Por
 	return positions, rows.Err()
 }
 
+// GetPortfolioTrades retrieves the trade execution history for a portfolio.
+func (db *DB) GetPortfolioTrades(ctx context.Context, portfolioID int) ([]PortfolioTrade, error) {
+	query := `
+		SELECT t.id, t.portfolio_id, t.symbol_id, s.symbol, t.trade_type, t.shares, t.price, t.fees_paid, t.realized_pnl, t.trade_date
+		FROM portfolio_trades t
+		JOIN symbols s ON t.symbol_id = s.id
+		WHERE t.portfolio_id = $1
+		ORDER BY t.trade_date DESC
+		LIMIT 100
+	`
+	rows, err := db.QueryContext(ctx, query, portfolioID)
+	if err != nil {
+		return nil, fmt.Errorf("query trades failed: %w", err)
+	}
+	defer rows.Close()
+
+	trades := make([]PortfolioTrade, 0)
+	for rows.Next() {
+		var t PortfolioTrade
+		if err := rows.Scan(
+			&t.ID, &t.PortfolioID, &t.SymbolID, &t.Symbol,
+			&t.TradeType, &t.Shares, &t.Price, &t.FeesPaid, &t.RealizedPnL, &t.TradeDate,
+		); err != nil {
+			return nil, err
+		}
+		trades = append(trades, t)
+	}
+	return trades, rows.Err()
+}
+
 // ExecutePaperTrade performs a BUY or SELL transaction safely, updating balances and positions.
 // Enforces Shariah spot rules: No short selling, no margin.
 func (db *DB) ExecutePaperTrade(ctx context.Context, portfolioID, symbolID int, tradeType string, shares int, price float64) (*PortfolioTrade, error) {
@@ -123,10 +154,10 @@ func (db *DB) ExecutePaperTrade(ctx context.Context, portfolioID, symbolID int, 
 	
 	positionExists := err == nil
 
-	// STT + Brokerage ~ 0.1% for realistic paper trading
-	feeRate := 0.001
+	// Statutory & exchange transaction fees (INDIA_EQ_DELIVERY_FEES_2026Q4_V2)
 	grossValue := float64(shares) * price
-	fees := grossValue * feeRate
+	costBreakdown := CalculateDeliveryTransactionCosts(tradeType, grossValue)
+	fees := costBreakdown.TotalFees
 
 	var realizedPnL *float64
 

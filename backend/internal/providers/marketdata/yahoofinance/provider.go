@@ -140,25 +140,117 @@ type chartResponse struct {
 	} `json:"chart"`
 }
 
-// SymbolMappings explicitly maps application symbols to Yahoo-specific tickers
-var SymbolMappings = map[string]string{
-	"LTIM":       "LTIM.NS",
-	"TATAMOTORS": "TATAMOTORS.NS",
-	// Add further corporate action / ticker changes here
+// CorporateActionInfo models authoritative exchange corporate action restructure events.
+type CorporateActionInfo struct {
+	PredecessorSymbol string
+	ActionType        string    // "DEMERGER", "RENAME"
+	EffectiveDate     time.Time
+	Notes             string
+	Successors        []SuccessorInfo
 }
 
-// toNSESymbol converts a plain symbol to Yahoo Finance NSE format with explicit mapping overrides.
-func toNSESymbol(symbol string) string {
-	if mapped, exists := SymbolMappings[symbol]; exists {
-		return mapped
+// SuccessorInfo models a successor entity resulting from a corporate action.
+type SuccessorInfo struct {
+	Symbol       string
+	Name         string
+	ProviderSym  string
+	Ratio        string
+	CostSplitPct float64
+	IsPrimary    bool
+}
+
+// CorporateActionsRegistry contains verified historical corporate action mappings for Indian equities.
+var CorporateActionsRegistry = map[string]CorporateActionInfo{
+	"TATAMOTORS": {
+		PredecessorSymbol: "TATAMOTORS",
+		ActionType:        "DEMERGER",
+		EffectiveDate:     time.Date(2025, 10, 24, 0, 0, 0, 0, time.UTC),
+		Notes:             "Demerger into Passenger Vehicles (TMPV) and Commercial Vehicles (TMCV) via Composite Scheme of Arrangement (NSE circular NSE/CML/70875)",
+		Successors: []SuccessorInfo{
+			{
+				Symbol:       "TMPV",
+				Name:         "Tata Motors Passenger Vehicles Ltd",
+				ProviderSym:  "TMPV.NS",
+				Ratio:        "1:1",
+				CostSplitPct: 68.85,
+				IsPrimary:    true,
+			},
+			{
+				Symbol:       "TMCV",
+				Name:         "Tata Motors Commercial Vehicles Ltd",
+				ProviderSym:  "TMCV.NS",
+				Ratio:        "1:1",
+				CostSplitPct: 31.15,
+				IsPrimary:    false,
+			},
+		},
+	},
+	"LTIM": {
+		PredecessorSymbol: "LTIM",
+		ActionType:        "RENAME",
+		EffectiveDate:     time.Date(2026, 2, 27, 0, 0, 0, 0, time.UTC),
+		Notes:             "NSE symbol rename from LTIM to LTM (1-to-1 ticker rename)",
+		Successors: []SuccessorInfo{
+			{
+				Symbol:       "LTM",
+				Name:         "LTIMindtree Ltd",
+				ProviderSym:  "LTM.NS",
+				Ratio:        "1:1",
+				CostSplitPct: 100.0,
+				IsPrimary:    true,
+			},
+		},
+	},
+}
+
+// ResolveProviderSymbol resolves an application symbol to its authoritative Yahoo Finance provider ticker.
+// For demerged predecessor symbols (like TATAMOTORS), it returns an explicit error rather than silently
+// substituting an arbitrary successor.
+func ResolveProviderSymbol(symbol string) (string, error) {
+	if ca, exists := CorporateActionsRegistry[symbol]; exists {
+		if ca.ActionType == "DEMERGER" {
+			return "", fmt.Errorf("SYMBOL_DEMERGED: %s demerged on %s into %s (%s) and %s (%s); query successor symbols directly",
+				symbol, ca.EffectiveDate.Format("2006-01-02"),
+				ca.Successors[0].Symbol, ca.Successors[0].ProviderSym,
+				ca.Successors[1].Symbol, ca.Successors[1].ProviderSym)
+		}
+		if ca.ActionType == "RENAME" && len(ca.Successors) > 0 {
+			return ca.Successors[0].ProviderSym, nil
+		}
 	}
-	return symbol + ".NS"
+
+	switch symbol {
+	case "TMPV":
+		return "TMPV.NS", nil
+	case "TMCV":
+		return "TMCV.NS", nil
+	case "LTM":
+		return "LTM.NS", nil
+	default:
+		return symbol + ".NS", nil
+	}
+}
+
+// ToNSESymbol converts a plain symbol to Yahoo Finance NSE format.
+func ToNSESymbol(symbol string) string {
+	res, err := ResolveProviderSymbol(symbol)
+	if err != nil {
+		return symbol + ".NS"
+	}
+	return res
+}
+
+func toNSESymbol(symbol string) (string, error) {
+	return ResolveProviderSymbol(symbol)
 }
 
 // GetHistoricalData fetches OHLCV candles for a given symbol and date range.
 // interval: "1d", "1wk", "1mo"
 func (p *Provider) GetHistoricalData(symbol string, from, to time.Time, interval string) ([]OHLCV, error) {
-	yahooSymbol := toNSESymbol(symbol)
+	yahooSymbol, err := toNSESymbol(symbol)
+	if err != nil {
+		return nil, err
+	}
 
 	url := fmt.Sprintf(
 		"%s/chart/%s?period1=%d&period2=%d&interval=%s&includeAdjustedClose=true",
@@ -257,6 +349,11 @@ func (p *Provider) GetDailyCandles(ctx context.Context, symbol string, exchange 
 	}
 	var res []models.OHLCV
 	for _, c := range candles {
+		var adj *float64
+		if c.AdjClose > 0 {
+			v := c.AdjClose
+			adj = &v
+		}
 		res = append(res, models.OHLCV{
 			Timestamp:     c.Timestamp,
 			Open:          c.Open,
@@ -264,6 +361,7 @@ func (p *Provider) GetDailyCandles(ctx context.Context, symbol string, exchange 
 			Low:           c.Low,
 			Close:         c.Close,
 			Volume:        c.Volume,
+			AdjustedClose: adj,
 			Source:        p.Name(),
 			RetrievedAt:   time.Now().UTC(),
 			QualityStatus: models.DataQualityValid,
@@ -347,7 +445,10 @@ func (p *Provider) GetIndexConstituents(ctx context.Context, indexName string) (
 
 // GetQuote fetches the current quote for a symbol.
 func (p *Provider) GetQuote(symbol string) (*Quote, error) {
-	yahooSymbol := toNSESymbol(symbol)
+	yahooSymbol, err := ResolveProviderSymbol(symbol)
+	if err != nil {
+		return nil, err
+	}
 
 	url := fmt.Sprintf(
 		"%s/chart/%s?interval=1d&range=1d",
@@ -483,7 +584,10 @@ func (p *Provider) GetFinancialStatements(ctx context.Context, symbol string, ex
 		return nil, fmt.Errorf("failed to retrieve yahoo crumb: %w", err)
 	}
 
-	yahooSymbol := toNSESymbol(symbol)
+	yahooSymbol, err := ResolveProviderSymbol(symbol)
+	if err != nil {
+		return nil, err
+	}
 	url := fmt.Sprintf("https://query2.finance.yahoo.com/v10/finance/quoteSummary/%s?modules=incomeStatementHistory,balanceSheetHistory,cashflowStatementHistory&crumb=%s", yahooSymbol, crumb)
 	
 	req, _ := http.NewRequest("GET", url, nil)

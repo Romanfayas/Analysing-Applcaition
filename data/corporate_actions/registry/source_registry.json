@@ -1,0 +1,54 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-10-16T18:45:00Z",
+  "sources": [
+    {
+      "source_id": "NSE_EQUITY_CA_API",
+      "issuing_authority": "NSE_INDIA",
+      "name": "National Stock Exchange of India - Official Corporate Actions API",
+      "endpoint_template": "https://www.nseindia.com/api/corporates-corporateActions?index=equities&symbol={symbol}",
+      "access_protocol": "HTTPS_GET_WITH_SESSION_COOKIE",
+      "access_policy": "Permitted for informational use; subject to Akamai WAF rate limiting and anti-bot validation. Headless access triggers HTTP 403 fail-closed.",
+      "supported_actions": [
+        "CASH_DIVIDEND",
+        "STOCK_SPLIT",
+        "BONUS_ISSUE",
+        "RIGHTS_ISSUE",
+        "DEMERGER",
+        "SYMBOL_CHANGE"
+      ],
+      "requires_manual_review_for": [
+        "DEMERGER",
+        "COMPOSITE_SCHEME",
+        "RIGHTS_ISSUE_OUT_OF_THE_MONEY",
+        "UNRECOGNIZED_SUBJECT"
+      ]
+    },
+    {
+      "source_id": "NSE_STATUTORY_CIRCULAR",
+      "issuing_authority": "NSE_INDIA",
+      "name": "NSE Listing & Corporate Action Statutory Circulars (NSE/CML/*)",
+      "endpoint_template": "https://nsearchives.nseindia.com/content/circulars/{circular_id}.pdf",
+      "access_protocol": "AUDITED_DOCUMENT_ARCHIVE",
+      "access_policy": "Authoritative primary record for complex capital reorganizations, demerger record dates, and ticker lineages.",
+      "supported_actions": [
+        "DEMERGER",
+        "SYMBOL_CHANGE",
+        "SCHEME_OF_ARRANGEMENT",
+        "CAPITAL_REDUCTION"
+      ]
+    },
+    {
+      "source_id": "NCLT_SANCTION_ORDER",
+      "issuing_authority": "NCLT_MUMBAI",
+      "name": "National Company Law Tribunal Scheme Sanction Orders",
+      "access_protocol": "STATUTORY_LEGAL_FILING",
+      "access_policy": "Statutory legal basis under Sections 230-232 Companies Act 2013 and Section 49(2C) Income Tax Act 1961 for cost apportionment.",
+      "supported_actions": [
+        "DEMERGER",
+        "AMALGAMATION",
+        "TAX_COST_ALLOCATION"
+      ]
+    }
+  ]
+}

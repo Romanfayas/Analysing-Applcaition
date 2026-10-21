@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -140,7 +141,8 @@ func (c *Client) doReq(ctx context.Context, endpoint string, reqBody interface{}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("quant engine returned error status: %d", resp.StatusCode)
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("quant engine returned error status %d: %s", resp.StatusCode, string(respBody))
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(respObj); err != nil {
@@ -378,7 +380,103 @@ func (c *Client) RunWalkForwardBacktest(ctx context.Context, req WalkForwardRequ
 	return resp, nil
 }
 
-// PositionSizeRequest matches the Python PositionSizeRequest schema.
+// BreakoutAnalyzeRequest represents a single stock breakout request.
+type BreakoutAnalyzeRequest struct {
+	Symbol          string    `json:"symbol"`
+	Open            []float64 `json:"open"`
+	High            []float64 `json:"high"`
+	Low             []float64 `json:"low"`
+	Close           []float64 `json:"close"`
+	Volume          []int64   `json:"volume"`
+	ShariahStatus   string    `json:"shariah_status"`
+	BenchmarkCloses []float64 `json:"benchmark_closes,omitempty"`
+	DataQuality     string    `json:"data_quality"`
+}
+
+// BreakoutResult represents the complete analysis of a stock's breakout setup.
+type BreakoutResult struct {
+	Symbol                  string             `json:"symbol"`
+	Stage                   string             `json:"stage"`
+	CurrentPrice            float64            `json:"current_price"`
+	ResistanceLevel         float64            `json:"resistance_level"`
+	SupportLevel            float64            `json:"support_level"`
+	DistanceToResistancePct float64            `json:"distance_to_resistance_pct"`
+	RVOL                    float64            `json:"rvol"`
+	ATR                     float64            `json:"atr"`
+	BollingerBandWidth      float64            `json:"bollinger_band_width"`
+	ConsolidationBars       int                `json:"consolidation_bars"`
+	VolumeDemandProxy       float64            `json:"volume_demand_proxy"`
+	OrderBookDepthStatus    string             `json:"order_book_depth_status"`
+	EntryZone               []float64          `json:"entry_zone"`
+	InvalidationLevel       float64            `json:"invalidation_level"`
+	Target1                 float64            `json:"target_1"`
+	Target2                 float64            `json:"target_2"`
+	RiskRewardRatio         float64            `json:"risk_reward_ratio"`
+	OverallScore            float64            `json:"overall_score"`
+	ScoreBreakdown          map[string]float64 `json:"score_breakdown"`
+	ShariahStatus           string             `json:"shariah_status"`
+	IsShariahEligible       bool               `json:"is_shariah_eligible"`
+	Reasons                 []string           `json:"reasons"`
+	InvalidationConditions  []string           `json:"invalidation_conditions"`
+	DataQuality             string             `json:"data_quality"`
+	Sector                  string             `json:"sector,omitempty"`
+}
+
+// StockScanItem represents a stock item in a universe scan.
+type StockScanItem struct {
+	Symbol        string    `json:"symbol"`
+	Sector        string    `json:"sector"`
+	Open          []float64 `json:"open"`
+	High          []float64 `json:"high"`
+	Low           []float64 `json:"low"`
+	Close         []float64 `json:"close"`
+	Volume        []int64   `json:"volume"`
+	ShariahStatus string    `json:"shariah_status"`
+	DataQuality   string    `json:"data_quality"`
+}
+
+// BreakoutScanRequest represents a universe breakout scan request.
+type BreakoutScanRequest struct {
+	Stocks          []StockScanItem `json:"stocks"`
+	BenchmarkCloses []float64       `json:"benchmark_closes,omitempty"`
+}
+
+// SectorHeatmapItem represents aggregate sector score.
+type SectorHeatmapItem struct {
+	Sector       string  `json:"sector"`
+	AverageScore float64 `json:"average_score"`
+	Count        int     `json:"count"`
+	Strength     string  `json:"strength"`
+}
+
+// BreakoutScanResponse represents the universe scan result.
+type BreakoutScanResponse struct {
+	TotalScreened         int                 `json:"total_screened"`
+	StageCounts           map[string]int      `json:"stage_counts"`
+	BullishBreadthPercent float64             `json:"bullish_breadth_percent"`
+	SectorHeatmap         []SectorHeatmapItem `json:"sector_heatmap"`
+	Candidates            []BreakoutResult    `json:"candidates"`
+}
+
+// AnalyzeBreakout calls the breakout analysis endpoint.
+func (c *Client) AnalyzeBreakout(ctx context.Context, req BreakoutAnalyzeRequest) (*BreakoutResult, error) {
+	var resp BreakoutResult
+	if err := c.doReq(ctx, "breakout/analyze", req, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// ScanBreakouts calls the universe breakout scan endpoint.
+func (c *Client) ScanBreakouts(ctx context.Context, req BreakoutScanRequest) (*BreakoutScanResponse, error) {
+	var resp BreakoutScanResponse
+	if err := c.doReq(ctx, "breakout/scan", req, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// PositionSizeRequest represents request payload for risk engine position sizing.
 type PositionSizeRequest struct {
 	Capital        float64  `json:"capital"`
 	RiskPercentage float64  `json:"risk_percentage"`
@@ -387,26 +485,22 @@ type PositionSizeRequest struct {
 	TargetPrice    *float64 `json:"target_price,omitempty"`
 }
 
-// CalculatePositionSize calls the position size endpoint.
-func (c *Client) CalculatePositionSize(ctx context.Context, req PositionSizeRequest) (map[string]interface{}, error) {
-	var resp map[string]interface{}
+// PositionSizeResponse represents position sizing output from risk engine.
+type PositionSizeResponse struct {
+	Shares          int     `json:"shares"`
+	MaxRiskAmount   float64 `json:"max_risk_amount"`
+	PositionValue   float64 `json:"position_value"`
+	RiskPerShare    float64 `json:"risk_per_share"`
+	RiskRewardRatio float64 `json:"risk_reward_ratio"`
+}
+
+// CalculatePositionSize calls the risk engine position size endpoint.
+func (c *Client) CalculatePositionSize(ctx context.Context, req PositionSizeRequest) (*PositionSizeResponse, error) {
+	var resp PositionSizeResponse
 	if err := c.doReq(ctx, "risk/position_size", req, &resp); err != nil {
 		return nil, err
 	}
-	return resp, nil
+	return &resp, nil
 }
 
-// RiskMetricsRequest matches the Python RiskMetricsRequest schema.
-type RiskMetricsRequest struct {
-	Returns []float64 `json:"returns"`
-}
-
-// CalculateRiskMetrics calls the portfolio risk metrics endpoint.
-func (c *Client) CalculateRiskMetrics(ctx context.Context, req RiskMetricsRequest) (map[string]interface{}, error) {
-	var resp map[string]interface{}
-	if err := c.doReq(ctx, "risk/metrics", req, &resp); err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
 

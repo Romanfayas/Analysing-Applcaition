@@ -1,0 +1,18 @@
+{
+  "calendar_version": "NSE_EQ_CALENDAR_2024-10_to_2026-12_V1",
+  "timezone": "Asia/Kolkata",
+  "provenance": "Curated by hand from NSE holiday circulars as republished by brokers (upstox/cleartax/sahi, retrieved 2026-10-14). NOT an official NSE download. Cross-checked against ohlcv_daily: every weekday absent from the DB is in this holiday list (see P1.7 report). Jan-15-2026 (Maharashtra civic election) is disputed across sources; treated as a holiday because 47/47 symbols show zero-volume flat bars that day.",
+  "full_day_holidays": [
+    "2024-11-15","2024-11-20","2024-12-25",
+    "2025-02-26","2025-03-14","2025-03-31","2025-04-10","2025-04-14","2025-04-18","2025-05-01","2025-08-15","2025-08-27","2025-10-02","2025-10-22","2025-11-05","2025-12-25",
+    "2026-01-15","2026-01-26","2026-03-03","2026-03-26","2026-03-31","2026-04-03","2026-04-14","2026-05-01","2026-05-28","2026-06-26","2026-09-14","2026-10-02","2026-10-20","2026-11-10","2026-11-24","2026-12-25"
+  ],
+  "special_sessions": {
+    "2024-11-01": "Muhurat trading (evening, ~1h) on a normal-session holiday",
+    "2025-02-01": "Union Budget Saturday full session",
+    "2025-10-21": "Muhurat trading (evening, ~1h) on a normal-session holiday"
+  },
+  "known_provider_gaps": {
+    "2025-03-18": "Yahoo returned zero-volume flat bars for 46/47 symbols on a real trading day: bars are invalid, session is MISSING data (not a holiday)."
+  }
+}

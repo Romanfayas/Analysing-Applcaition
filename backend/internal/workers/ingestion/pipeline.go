@@ -174,11 +174,6 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 			continue
 		}
 
-		var adjClose float64
-		if candle.AdjustedClose != nil {
-			adjClose = *candle.AdjustedClose
-		}
-		
 		record := database.OHLCVRecord{
 			SymbolID:      symbolID,
 			Timestamp:     candle.Timestamp,
@@ -187,10 +182,11 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 			Low:           candle.Low,
 			Close:         candle.Close,
 			Volume:        candle.Volume,
-			AdjClose:      adjClose,
+			AdjClose:      candle.AdjustedClose,
 			Source:        "yahoo_finance",
 			QualityStatus: string(qResult.Status),
 			IntervalMins:  1, // Hardcoded to 1 since we request "1m"
+			RetrievedAt:   time.Now(),
 		}
 		records = append(records, record)
 
@@ -296,7 +292,8 @@ func (p *Pipeline) IngestNIFTY50(ctx context.Context) []IngestReport {
 		"ULTRACEMCO":  "UltraTech Cement Ltd",
 		"SUNPHARMA":   "Sun Pharmaceutical Ind",
 		"BAJFINANCE":  "Bajaj Finance Ltd",
-		"TATAMOTORS":  "Tata Motors Ltd",
+		"TMPV":        "Tata Motors Passenger Vehicles Ltd",
+		"TMCV":        "Tata Motors Commercial Vehicles Ltd",
 		"HCLTECH":     "HCL Technologies Ltd",
 		"NTPC":        "NTPC Ltd",
 		"POWERGRID":   "Power Grid Corp",
@@ -322,7 +319,7 @@ func (p *Pipeline) IngestNIFTY50(ctx context.Context) []IngestReport {
 		"BAJAJFINSV":  "Bajaj Finserv Ltd",
 		"TATACONSUM":  "Tata Consumer Products",
 		"APOLLOHOSP":  "Apollo Hospitals Enterprise",
-		"LTIM":        "LTIMindtree Ltd",
+		"LTM":         "LTIMindtree Ltd",
 		"SBILIFE":     "SBI Life Insurance Co",
 		"HINDALCO":    "Hindalco Industries Ltd",
 		"HDFCLIFE":    "HDFC Life Insurance Co",

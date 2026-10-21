@@ -122,6 +122,7 @@ func setupRouter(cfg *config.Config, jwtManager *auth.JWTManager, db *database.D
 		// Public routes
 		r.Mount("/auth", handlers.NewAuthHandler().Routes())
 		r.Get("/market-data/health", handlers.NewStocksHandler(db, quantClient).GetMarketHealth)
+		r.Mount("/providers", handlers.NewProvidersHandler().Routes())
 
 		// Protected routes
 		r.Group(func(r chi.Router) {
@@ -134,6 +135,7 @@ func setupRouter(cfg *config.Config, jwtManager *auth.JWTManager, db *database.D
 			r.Mount("/portfolio", handlers.NewPortfolioHandler(db, quantClient).Routes())
 			r.Mount("/backtesting", handlers.NewBacktestingHandler(db, quantClient).Routes())
 			r.Mount("/paper-trading", handlers.NewPaperTradingHandler(db, quantClient).Routes())
+			r.Mount("/paper-observations", handlers.NewPaperObservationsHandler(db, quantClient).Routes())
 			r.Mount("/risk", handlers.NewRiskHandler(db, quantClient).Routes())
 			r.Mount("/alerts", handlers.NewAlertsHandler(db, quantClient).Routes())
 			r.Mount("/data-quality", handlers.NewDataQualityHandler(db, quantClient).Routes())

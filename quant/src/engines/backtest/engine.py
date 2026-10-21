@@ -15,7 +15,8 @@ class CostModelConfig(BaseModel):
     model_version: str = "india_equity_delivery_v1"
     brokerage_flat: float = 0.0  # ₹0 for equity delivery (Zerodha/Groww)
     stt_percent: float = 0.1  # 0.1% on buy and sell
-    exchange_txn_percent: float = 0.00345  # NSE charge
+    exchange_txn_percent: float = 0.00297  # NSE charge (P1.7: aligned with research CostEngine FeeSchedule)
+    dp_charge_ex_gst_per_sell: float = 13.5  # Rs per sell, GST added; broker-plan specific (P1.7)
     sebi_turnover_percent: float = 0.0001  # ₹10 per crore
     gst_percent: float = 18.0  # 18% on (brokerage + exchange + sebi)
     stamp_duty_percent: float = 0.015  # 0.015% on buy only
@@ -77,15 +78,21 @@ class BacktestEngine:
         self.config = config
         
     def calculate_fees(self, trade_value: float, is_buy: bool) -> float:
+        """Single source of truth: delegates to the research CostEngine fee lines (fees only; slippage is
+        applied to fill prices in run(), so it is never counted twice). Returns the paisa-rounded leg total."""
+        from decimal import Decimal as D
+        from src.engines.research.cost_model import CostEngine, CostModelConfig as _CM, FeeSchedule, BrokerageModel
         c = self.config.cost_model
-        brokerage = c.brokerage_flat
-        stt = trade_value * (c.stt_percent / 100.0)
-        exch_txn = trade_value * (c.exchange_txn_percent / 100.0)
-        sebi = trade_value * (c.sebi_turnover_percent / 100.0)
-        gst = (brokerage + exch_txn + sebi) * (c.gst_percent / 100.0)
-        stamp_duty = trade_value * (c.stamp_duty_percent / 100.0) if is_buy else 0.0
-        
-        return brokerage + stt + exch_txn + sebi + gst + stamp_duty
+        pct = lambda x: D(str(x)) / D(100)
+        fees = FeeSchedule(
+            stt_buy_rate=pct(c.stt_percent), stt_sell_rate=pct(c.stt_percent),
+            exchange_txn_rate=pct(c.exchange_txn_percent), sebi_rate=pct(c.sebi_turnover_percent),
+            stamp_buy_rate=pct(c.stamp_duty_percent), gst_rate=pct(c.gst_percent),
+            brokerage_model=BrokerageModel.FLAT_PER_ORDER if c.brokerage_flat else BrokerageModel.ZERO_DELIVERY,
+            brokerage_flat=D(str(c.brokerage_flat)), dp_charge_ex_gst_per_sell=D(str(c.dp_charge_ex_gst_per_sell)),
+        )
+        lines = CostEngine(_CM(fees=fees)).leg_lines(D(str(trade_value)), "BUY" if is_buy else "SELL")
+        return float(sum(D(str(l.rounded_inr)) for l in lines))
 
     def run(self, data: dict[str, List[DailyData]], buy_threshold: float, sell_threshold: float) -> BacktestResult:
         if not data:

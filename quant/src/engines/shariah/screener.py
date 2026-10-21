@@ -103,16 +103,36 @@ class ShariahScreener:
         business_activities: Optional[list[str]] = None,
         dividend_per_share: Optional[float] = None,
         interest_income_per_share: Optional[float] = None,
+        statement_date: Optional[str] = None,
+        as_of_date: Optional[str] = None,
+        max_statement_age_days: int = 180,
     ) -> ShariahScreeningResult:
         """
         Screen a stock against all Shariah criteria.
 
-        Returns DATA_INSUFFICIENT if critical data is missing.
+        Returns DATA_INSUFFICIENT if critical data is missing or stale.
         Returns FAIL if any ratio exceeds its threshold.
-        Returns PASS if all ratios are within thresholds.
+        Returns PASS if all ratios are within thresholds and data is fresh.
         """
         ratio_results = []
         has_insufficient = False
+
+        # Staleness validation
+        is_stale = False
+        staleness_note = ""
+        if statement_date and as_of_date:
+            try:
+                from datetime import datetime
+                d_stmt = datetime.strptime(str(statement_date)[:10], "%Y-%m-%d").date()
+                d_asof = datetime.strptime(str(as_of_date)[:10], "%Y-%m-%d").date()
+                age = (d_asof - d_stmt).days
+                if age > max_statement_age_days:
+                    is_stale = True
+                    staleness_note = f"Financial statement is stale ({age} days > {max_statement_age_days} day limit)"
+                    has_insufficient = True
+            except Exception as e:
+                has_insufficient = True
+                staleness_note = f"Invalid statement date format: {e}"
 
         # 1. Debt to Market Cap
         debt_result = self._check_ratio(
@@ -212,6 +232,10 @@ class ShariahScreener:
                     "cash_deposits_to_market_cap_max": self.rules.cash_and_deposits_to_market_cap_max,
                     "receivables_to_market_cap_max": self.rules.receivables_to_market_cap_max,
                 },
+                "statement_date": statement_date,
+                "as_of_date": as_of_date,
+                "is_stale": is_stale,
+                "staleness_note": staleness_note,
             },
         )
 
@@ -232,13 +256,13 @@ class ShariahScreener:
                 note="Insufficient data to calculate ratio",
             )
 
-        if denominator == 0:
+        if denominator <= 0:
             return RatioResult(
                 name=name,
                 value=None,
                 threshold=max_threshold,
                 passed=None,
-                note="Denominator is zero, cannot calculate ratio",
+                note="Denominator is zero or negative, cannot calculate ratio",
             )
 
         ratio = numerator / denominator
@@ -267,7 +291,7 @@ class ShariahScreener:
         """
         if dividend_per_share is None or interest_income is None or revenue is None:
             return None
-        if revenue == 0:
+        if revenue <= 0:
             return None
 
         interest_ratio = interest_income / revenue

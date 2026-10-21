@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "RELIANCE",
+    "comp": "Reliance Industries Limited",
+    "series": "EQ",
+    "faceVal": "10",
+    "isin": "INE002A01018",
+    "subject": "Dividend - Rs 6 Per Share",
+    "exDate": "05-Jun-2026",
+    "recDate": "05-Jun-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "RELIANCE",
+    "comp": "Reliance Industries Limited",
+    "series": "EQ",
+    "faceVal": "10",
+    "isin": "INE002A01018",
+    "subject": "Dividend - Rs 10 Per Share",
+    "exDate": "19-Aug-2025",
+    "recDate": "19-Aug-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

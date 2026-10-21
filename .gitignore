@@ -49,3 +49,4 @@ htmlcov/
 # Temporary
 tmp/
 temp/
+backups/

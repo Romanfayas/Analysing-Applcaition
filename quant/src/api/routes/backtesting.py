@@ -13,6 +13,16 @@ from src.engines.signal.engine import SignalEngine
 router = APIRouter()
 
 
+def _enforce_frozen(buy: float, sell: float, atr: float):
+    from fastapi import HTTPException
+    from src.engines.research.strategy_config import enforce_request, StrategyDrift
+    try:
+        enforce_request(buy, sell, atr)
+    except StrategyDrift as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+
 class BacktestRequest(BaseModel):
     initial_capital: float = 100000.0
     slippage_percent: float = 0.1
@@ -55,6 +65,7 @@ class HistoricalBacktestRequest(BaseModel):
 
 @router.post("/run")
 async def run_backtest(request: BacktestRequest):
+    _enforce_frozen(request.buy_threshold, request.sell_threshold, request.position_size_atr_multiplier)
     """Run a deterministic backtest on historical data."""
     try:
         config = BacktestConfig(
@@ -80,6 +91,7 @@ async def run_backtest(request: BacktestRequest):
 
 @router.post("/run_historical")
 async def run_historical_backtest(request: HistoricalBacktestRequest):
+    _enforce_frozen(request.buy_threshold, request.sell_threshold, request.position_size_atr_multiplier)
     """Run a deterministic backtest generating point-in-time signals."""
     try:
         daily_data = {}
@@ -149,6 +161,7 @@ class WalkForwardRequest(BaseModel):
 
 @router.post("/run_walk_forward")
 async def run_walk_forward_backtest(req: WalkForwardRequest):
+    _enforce_frozen(req.request.buy_threshold, req.request.sell_threshold, req.request.position_size_atr_multiplier)
     """Run a walk-forward optimization/validation."""
     try:
         daily_data = {}

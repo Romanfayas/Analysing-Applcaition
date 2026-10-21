@@ -56,14 +56,26 @@ func main() {
 		notifier = notifications.NewTelegramNotifier(cfg.TelegramBotToken, cfg.TelegramChatID)
 	}
 
+	// Support on-demand operational EOD ingestion via CLI flag
+	if len(os.Args) > 1 && os.Args[1] == "--run-eod" {
+		log.Info().Msg("manual EOD run requested via --run-eod")
+		pipeline := ingestion.NewPipeline(db, notifier)
+		stored, failed := pipeline.IngestDailyEOD(ctx, 10)
+		log.Info().Int("stored", stored).Int("failed", len(failed)).Msg("manual EOD run complete")
+		if len(failed) > 0 {
+			log.Error().Strs("failed_symbols", failed).Msg("EOD ingestion had errors")
+			os.Exit(1)
+		}
+		return
+	}
+
 	// Initialize and run the market data ingestion worker
 	marketWorker := ingestion.NewWorker(db, notifier)
 	go marketWorker.Run(ctx)
 	
 	// Initialize and run IPO ingestion worker
-	// NOTE: quant client is needed for IPO Worker (pass nil or a valid client if available)
-	// ipoWorker := ingestion.NewIPOWorker(db, nil, notifier)
-	// go ipoWorker.Run(ctx)
+	ipoWorker := ingestion.NewIPOWorker(db, nil, notifier)
+	go ipoWorker.Run(ctx)
 
 	log.Info().Msg("worker running, waiting for jobs...")
 

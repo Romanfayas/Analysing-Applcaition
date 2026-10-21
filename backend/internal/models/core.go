@@ -45,8 +45,9 @@ const (
 	DataQualityMissing   DataQualityStatus = "MISSING"
 	DataQualityStale     DataQualityStatus = "STALE"
 	DataQualityDuplicate DataQualityStatus = "DUPLICATE"
-	DataQualitySuspect   DataQualityStatus = "SUSPECT"
-	DataQualityCorrected DataQualityStatus = "CORRECTED"
+	DataQualitySuspect             DataQualityStatus = "SUSPECT"
+	DataQualityCorrected           DataQualityStatus = "CORRECTED"
+	DataQualityAdjustmentSensitive DataQualityStatus = "ADJUSTMENT_SENSITIVE"
 )
 
 type ShariahStatus string

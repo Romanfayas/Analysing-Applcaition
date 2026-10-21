@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "TITAN",
+    "comp": "Titan Company Limited",
+    "series": "EQ",
+    "faceVal": "1",
+    "isin": "INE280A01028",
+    "subject": "Dividend - Rs 11 Per Share",
+    "exDate": "25-Jun-2026",
+    "recDate": "26-Jun-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "TITAN",
+    "comp": "Titan Company Limited",
+    "series": "EQ",
+    "faceVal": "1",
+    "isin": "INE280A01028",
+    "subject": "Dividend - Rs 11 Per Share",
+    "exDate": "26-Jun-2025",
+    "recDate": "27-Jun-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

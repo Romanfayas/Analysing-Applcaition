@@ -63,10 +63,14 @@ type FinancialStatement struct {
 	DividendPerShare  *float64 `json:"dividend_per_share,omitempty" db:"dividend_per_share"`
 	SharesOutstanding *int64   `json:"shares_outstanding,omitempty" db:"shares_outstanding"`
 	// Meta
-	Source        string            `json:"source" db:"source"`
-	RetrievedAt   time.Time         `json:"retrieved_at" db:"retrieved_at"`
-	QualityStatus DataQualityStatus `json:"quality_status" db:"quality_status"`
-	CreatedAt     time.Time         `json:"created_at" db:"created_at"`
+	Source          string            `json:"source" db:"source"`
+	RetrievedAt     time.Time         `json:"retrieved_at" db:"retrieved_at"`
+	QualityStatus   DataQualityStatus `json:"quality_status" db:"quality_status"`
+	Currency        string            `json:"currency" db:"currency"`
+	Unit            string            `json:"unit" db:"unit"`
+	FilingReference *string           `json:"filing_reference,omitempty" db:"filing_reference"`
+	Provenance      *string           `json:"provenance,omitempty" db:"provenance"`
+	CreatedAt       time.Time         `json:"created_at" db:"created_at"`
 }
 
 // FinancialRatio stores calculated financial ratios.
@@ -127,4 +131,25 @@ type FundamentalAnomaly struct {
 	ExpectedRangeLow *float64  `json:"expected_range_low,omitempty" db:"expected_range_low"`
 	ExpectedRangeHigh *float64 `json:"expected_range_high,omitempty" db:"expected_range_high"`
 	DetectedAt       time.Time `json:"detected_at" db:"detected_at"`
+}
+
+// EODIngestionRun tracks durable operational daily ingestion runs.
+type EODIngestionRun struct {
+	ID                 int        `json:"id" db:"id"`
+	RunID              string     `json:"run_id" db:"run_id"`
+	TriggerType        string     `json:"trigger_type" db:"trigger_type"` // 'SCHEDULED', 'MANUAL', 'RETRY'
+	Provider           string     `json:"provider" db:"provider"`
+	StartedAt          time.Time  `json:"started_at" db:"started_at"`
+	CompletedAt        *time.Time `json:"completed_at,omitempty" db:"completed_at"`
+	Status             string     `json:"status" db:"status"` // 'RUNNING', 'SUCCESS', 'PARTIAL_DEGRADED', 'FAILED'
+	ReconciliationStatus string   `json:"reconciliation_status" db:"reconciliation_status"` // 'RECONCILED', 'UNRECONCILED'
+	SymbolsAttempted   int        `json:"symbols_attempted" db:"symbols_attempted"`
+	CandlesFetched     int        `json:"candles_fetched" db:"candles_fetched"`
+	CandlesStored      int        `json:"candles_stored" db:"candles_stored"`
+	CandlesFailed      int        `json:"candles_failed" db:"candles_failed"`
+	RetryCount         int        `json:"retry_count" db:"retry_count"`
+	IsExchangeVerified bool       `json:"is_exchange_verified" db:"is_exchange_verified"`
+	ErrorDetails       string     `json:"error_details,omitempty" db:"error_details"`
+	Details            *string    `json:"details,omitempty" db:"details"`
+	CreatedAt          time.Time  `json:"created_at" db:"created_at"`
 }

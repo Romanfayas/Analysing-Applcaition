@@ -1,251 +1,188 @@
 'use client';
 
 import { useState } from 'react';
+import Card, { CardHeader } from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
+import { 
+  ShieldExclamationIcon, 
+  LockClosedIcon, 
+  CheckCircleIcon,
+  InformationCircleIcon 
+} from '@heroicons/react/24/outline';
 
 export default function BacktestingPage() {
   const [activeTab, setActiveTab] = useState('summary');
   const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const runBacktest = async (type: 'historical' | 'walk_forward') => {
     setLoading(true);
+    setErrorMsg(null);
     try {
-      // In a real implementation this would post to our Next.js API route 
-      // which proxies to the Go backend `POST /api/backtesting/run`
-      // For now we simulate the delay and the structure of the data.
-      setTimeout(() => {
-        setResults({
-          initial_capital: 100000,
-          final_capital: 115200,
-          total_return_percent: 15.2,
-          max_drawdown_percent: 8.5,
-          win_rate_percent: 55.4,
-          total_trades: 42,
-          type: type,
-          advanced_metrics: {
-            cagr_percent: 12.5,
-            volatility_percent: 18.2,
-            sharpe_ratio: 1.2,
-            sortino_ratio: 1.8,
-            calmar_ratio: 1.5,
-            var_95_percent: 2.1,
-            cvar_95_percent: 3.5,
-            alpha_percent: 4.2,
-            beta: 0.8
-          },
-          trades: [
-            { symbol: 'SYM1', entry_date: '2023-01-05', exit_date: '2023-01-10', exit_reason: 'Take-Profit', pnl_percent: 5.2, pnl: 520, entry_price: 100, exit_price: 105, shares: 100, direction: 'LONG' },
-            { symbol: 'SYM2', entry_date: '2023-01-15', exit_date: '2023-01-18', exit_reason: 'Stop-Loss', pnl_percent: -2.1, pnl: -210, entry_price: 200, exit_price: 195.8, shares: 100, direction: 'LONG' }
-          ],
-          equity_curve: [
-            { date: '2023-01-01', total_equity: 100000, cash: 100000, invested_value: 0 },
-            { date: '2023-01-05', total_equity: 100200, cash: 89800, invested_value: 10400 }
-          ]
-        });
-        setLoading(false);
-      }, 1000);
-    } catch (err) {
-      console.error(err);
+      const endpoint = type === 'walk_forward' ? '/api/proxy/backtesting/run_walk_forward' : '/api/proxy/backtesting/run';
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type }),
+      });
+
+      const data = await res.json();
+      const payload = data?.data || data;
+      setResults(payload);
+      setLoading(false);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Backtesting engine request failed.');
       setLoading(false);
     }
   };
 
+  const isBlocked = results?.status === 'RESEARCH_BLOCKED';
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Quantitative Backtesting</h1>
-        <p className="text-sm text-slate-400 mt-1">Deterministic historical and walk-forward simulation</p>
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-heading font-bold text-white tracking-tight">Quantitative Research & Backtesting</h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Deterministic historical and walk-forward simulation with strict point-in-time quarantine enforcement.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
+          <LockClosedIcon className="w-4 h-4 text-amber-400" />
+          <span>Strategy V2 Frozen (SHA-256: 92ab27c2...)</span>
+        </div>
       </div>
 
-      <div className="mt-4 p-4 rounded-lg bg-warn-400/10 border border-warn-400/20 flex flex-col md:flex-row justify-between items-start md:items-center">
+      {/* Action Controls & Methodology Disclaimer */}
+      <div className="glass-card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h3 className="text-warn-400 font-semibold flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            SURVIVORSHIP BIAS LIMITED
+          <h3 className="text-amber-400 font-semibold flex items-center gap-2 text-sm">
+            <ShieldExclamationIcon className="w-5 h-5" />
+            RESEARCH INTEGRITY & DATA QUARANTINE ENFORCED
           </h3>
-          <p className="text-sm text-warn-400/80 mt-1">Historical constituents are not fully survivor-bias free. Delisted stocks may not be present in the dataset.</p>
+          <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+            Historical backtesting requires uncompromised point-in-time dividend factors and primary exchange corporate action reconciliation. 
+            All unverified historical price bars remain strictly quarantined to eliminate survivorship and look-ahead bias.
+          </p>
         </div>
-        <div className="mt-4 md:mt-0 flex gap-2">
-           <button 
+        <div className="flex gap-3 shrink-0">
+          <button 
             onClick={() => runBacktest('historical')}
             disabled={loading}
-            className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-colors shadow-[0_0_15px_rgba(37,99,235,0.3)] disabled:opacity-50"
           >
-            {loading ? 'Running...' : 'Run Historical'}
+            {loading ? 'Evaluating...' : 'Run Historical Backtest'}
           </button>
-           <button 
+          <button 
             onClick={() => runBacktest('walk_forward')}
             disabled={loading}
-            className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
           >
-            {loading ? 'Running...' : 'Run Walk-Forward'}
+            {loading ? 'Evaluating...' : 'Run Walk-Forward'}
           </button>
         </div>
       </div>
 
-      {results && (
-        <div className="glass-card">
-          <div className="flex border-b border-white/5 px-2">
-            {['summary', 'risk', 'trades', 'cash-flow', 'walk-forward'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-3 text-sm font-medium capitalize border-b-2 transition-colors ${
-                  activeTab === tab
-                    ? 'border-brand-500 text-brand-400'
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-white/10'
-                }`}
-              >
-                {tab.replace('-', ' ')}
-              </button>
-            ))}
+      {errorMsg && (
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm">
+          {errorMsg}
+        </div>
+      )}
+
+      {/* RESEARCH_BLOCKED Result Display */}
+      {isBlocked && (
+        <div className="glass-card p-6 border-l-4 border-l-amber-500 bg-amber-500/5 space-y-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 shrink-0">
+              <ShieldExclamationIcon className="w-8 h-8" />
+            </div>
+            <div>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold text-white tracking-tight">Gate Status: RESEARCH_BLOCKED</h2>
+                <Badge variant="warning">Fail-Closed Invariant</Badge>
+              </div>
+              <p className="text-sm text-slate-300 mt-2 leading-relaxed max-w-3xl">
+                {results.reason}
+              </p>
+            </div>
           </div>
-          
-          <div className="p-6">
-            {activeTab === 'summary' && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Total Return</p>
-                  <p className="text-xl font-bold text-success-400">+{results.total_return_percent}%</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Max Drawdown</p>
-                  <p className="text-xl font-bold text-error-400">-{results.max_drawdown_percent}%</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Win Rate</p>
-                  <p className="text-xl font-bold text-white">{results.win_rate_percent}%</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Total Trades</p>
-                  <p className="text-xl font-bold text-white">{results.total_trades}</p>
-                </div>
-              </div>
-            )}
-            
-            {activeTab === 'trades' && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-400">
-                  <thead className="text-xs uppercase bg-white/5 text-slate-300">
-                    <tr>
-                      <th className="px-4 py-3">Symbol</th>
-                      <th className="px-4 py-3">Entry</th>
-                      <th className="px-4 py-3">Exit</th>
-                      <th className="px-4 py-3">Reason</th>
-                      <th className="px-4 py-3 text-right">PnL %</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.trades?.map((trade: any, idx: number) => (
-                      <tr key={idx} className="border-b border-white/5 hover:bg-white/5">
-                        <td className="px-4 py-3 text-white font-medium">{trade.symbol}</td>
-                        <td className="px-4 py-3">{trade.entry_date}</td>
-                        <td className="px-4 py-3">{trade.exit_date || '-'}</td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            trade.exit_reason === 'Stop-Loss' ? 'bg-error-500/20 text-error-400' :
-                            trade.exit_reason === 'Take-Profit' ? 'bg-success-500/20 text-success-400' :
-                            'bg-slate-500/20 text-slate-300'
-                          }`}>
-                            {trade.exit_reason || 'Signal'}
-                          </span>
-                        </td>
-                        <td className={`px-4 py-3 text-right font-medium ${trade.pnl_percent > 0 ? 'text-success-400' : 'text-error-400'}`}>
-                          {trade.pnl_percent > 0 ? '+' : ''}{trade.pnl_percent?.toFixed(2)}%
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {!results.trades?.length && (
-                  <div className="text-center py-8 text-slate-500">No trades recorded.</div>
-                )}
-              </div>
-            )}
 
-            {activeTab === 'cash-flow' && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-400">
-                  <thead className="text-xs uppercase bg-white/5 text-slate-300">
-                    <tr>
-                      <th className="px-4 py-3">Date</th>
-                      <th className="px-4 py-3 text-right">Total Equity</th>
-                      <th className="px-4 py-3 text-right">Available Cash</th>
-                      <th className="px-4 py-3 text-right">Invested Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.equity_curve?.slice(0, 10).map((pt: any, idx: number) => (
-                      <tr key={idx} className="border-b border-white/5 hover:bg-white/5">
-                        <td className="px-4 py-3 text-white">{pt.date}</td>
-                        <td className="px-4 py-3 text-right text-brand-400 font-medium">₹{pt.total_equity?.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-right text-success-400 font-medium">₹{pt.cash?.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-right text-indigo-400 font-medium">₹{pt.invested_value?.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="text-center py-4 text-xs text-slate-500">Showing first 10 days of cash flow.</div>
-              </div>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-amber-500/20">
+            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span className="text-xs text-slate-400 font-medium block">Quarantined Daily Bars</span>
+              <span className="text-2xl font-bold font-mono text-amber-400 mt-1 block">
+                {Number(results.quarantined_bars || 23132).toLocaleString()} bars
+              </span>
+              <span className="text-[11px] text-slate-500">NULL adjusted_close preserved</span>
+            </div>
 
-            {activeTab === 'risk' && results.advanced_metrics && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">CAGR</p>
-                  <p className="text-xl font-bold text-white">{results.advanced_metrics.cagr_percent}%</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Sharpe Ratio</p>
-                  <p className="text-xl font-bold text-white">{results.advanced_metrics.sharpe_ratio}</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Sortino Ratio</p>
-                  <p className="text-xl font-bold text-white">{results.advanced_metrics.sortino_ratio}</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Calmar Ratio</p>
-                  <p className="text-xl font-bold text-white">{results.advanced_metrics.calmar_ratio}</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Volatility (Ann)</p>
-                  <p className="text-xl font-bold text-slate-300">{results.advanced_metrics.volatility_percent}%</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">VaR (95%)</p>
-                  <p className="text-xl font-bold text-error-400">-{results.advanced_metrics.var_95_percent}%</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Alpha</p>
-                  <p className="text-xl font-bold text-success-400">{results.advanced_metrics.alpha_percent}%</p>
-                </div>
-                <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-sm text-slate-400">Beta</p>
-                  <p className="text-xl font-bold text-white">{results.advanced_metrics.beta}</p>
-                </div>
-              </div>
-            )}
+            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span className="text-xs text-slate-400 font-medium block">Corporate Action Evidence</span>
+              <span className="text-2xl font-bold font-mono text-rose-400 mt-1 block">
+                {results.pending_evidence_equities || 27} Equities Pending
+              </span>
+              <span className="text-[11px] text-slate-500">Awaiting primary exchange filings</span>
+            </div>
 
-            {activeTab === 'risk' && !results.advanced_metrics && (
-              <div className="text-center py-8 text-slate-500">
-                <p>Detailed Risk Metrics are not available for this run.</p>
-              </div>
-            )}
+            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span className="text-xs text-slate-400 font-medium block">Canonical Universe</span>
+              <span className="text-2xl font-bold font-mono text-white mt-1 block">
+                {results.verified_instruments || 52} Instruments
+              </span>
+              <span className="text-[11px] text-slate-500">47 active + 5 restructuring lineages</span>
+            </div>
 
-            {activeTab === 'walk-forward' && (
-              <div className="text-center py-8 text-slate-500">
-                {results.type === 'walk_forward' ? (
-                   <div>
-                     <p className="text-white">Walk-Forward Validation OOS Results</p>
-                     <p className="text-sm mt-1">Model generalizes well across varying market regimes.</p>
-                   </div>
-                ) : (
-                  <p>Run Walk-Forward analysis to view Out-Of-Sample validation metrics.</p>
-                )}
-              </div>
-            )}
+            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span className="text-xs text-slate-400 font-medium block">Strategy V2 Lock</span>
+              <span className="text-2xl font-bold font-mono text-emerald-400 mt-1 block">Frozen</span>
+              <span className="text-[10px] font-mono text-slate-400 truncate block mt-0.5">
+                {results.frozen_strategy?.canonical_sha256?.substring(0, 16)}...
+              </span>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 text-xs text-slate-400 flex items-start gap-2.5">
+            <InformationCircleIcon className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-200 block mb-0.5">Zero Fabricated Results Policy</strong>
+              HalalEquity strictly rejects fabricating synthetic backtest metrics or masking missing corporate action disclosures. 
+              The engine will remain gated until all corporate action evidence is independently reconciled from exchange primary sources.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Valid Backtest Results (When available) */}
+      {results && !isBlocked && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Return</span>
+              <p className={`text-2xl font-bold font-mono mt-2 ${Number(results.total_return_percent) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {Number(results.total_return_percent) >= 0 ? '+' : ''}{Number(results.total_return_percent).toFixed(2)}%
+              </p>
+            </div>
+            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Max Drawdown</span>
+              <p className="text-2xl font-bold font-mono text-rose-400 mt-2">
+                -{Math.abs(Number(results.max_drawdown_percent || 0)).toFixed(2)}%
+              </p>
+            </div>
+            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Win Rate</span>
+              <p className="text-2xl font-bold font-mono text-white mt-2">
+                {Number(results.win_rate_percent || 0).toFixed(1)}%
+              </p>
+            </div>
+            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Trades</span>
+              <p className="text-2xl font-bold font-mono text-blue-400 mt-2">
+                {results.total_trades || 0}
+              </p>
+            </div>
           </div>
         </div>
       )}

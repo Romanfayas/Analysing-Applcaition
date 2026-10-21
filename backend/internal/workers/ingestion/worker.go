@@ -12,8 +12,9 @@ import (
 
 // Worker runs the ingestion pipeline periodically.
 type Worker struct {
-	pipeline *Pipeline
-	interval time.Duration
+	pipeline     *Pipeline
+	interval     time.Duration
+	lastEODDate  string // IST date (YYYY-MM-DD) of the last completed daily EOD run
 }
 
 // NewWorker creates a new ingestion worker.
@@ -30,13 +31,11 @@ func (w *Worker) Run(ctx context.Context) {
 
 	// Run initial ingestion on startup
 	w.runIngestion(ctx)
+	w.maybeRunDailyEOD(ctx)
 
 	// Setup periodic ticker
 	ticker := time.NewTicker(w.interval)
 	defer ticker.Stop()
-
-	log.Println("[INGEST-WORKER] Performing initial startup ingestion...")
-	w.runIngestion(ctx)
 
 	for {
 		select {
@@ -49,8 +48,8 @@ func (w *Worker) Run(ctx context.Context) {
 			if session == market.SessionOpen {
 				w.runIngestion(ctx)
 			} else {
-				// We can optionally run a check here to fetch EOD data if missed, but for simplicity:
-				log.Println("[INGEST-WORKER] Market is closed, skipping ingestion")
+				log.Println("[INGEST-WORKER] Market is closed, checking daily EOD ingestion")
+				w.maybeRunDailyEOD(ctx)
 			}
 		}
 	}
@@ -79,4 +78,23 @@ func (w *Worker) runIngestion(ctx context.Context) {
 	
 	log.Printf("[INGEST-WORKER] Run complete: Processed %d symbols, fetched %d, stored %d. %d quality issues detected.", 
 		len(reports), totalFetched, totalStored, len(issues))
+}
+
+// maybeRunDailyEOD runs the daily EOD ingestion once per IST weekday after 16:00 IST (market closes at 15:30 IST).
+func (w *Worker) maybeRunDailyEOD(ctx context.Context) {
+	ist := time.Now().In(istLoc)
+	today := ist.Format("2006-01-02")
+	if ist.Weekday() == time.Saturday || ist.Weekday() == time.Sunday || w.lastEODDate == today {
+		return
+	}
+	if ist.Hour() < 16 {
+		return
+	}
+	stored, failed := w.pipeline.IngestDailyEODWithTrigger(ctx, 10, "SCHEDULED")
+	if len(failed) == 0 {
+		w.lastEODDate = today
+		log.Printf("[INGEST-WORKER] Daily EOD ingestion successful: stored %d candles across all active symbols", stored)
+	} else {
+		log.Printf("[INGEST-WORKER] Daily EOD had %d failures; will retry next tick: %v", len(failed), failed)
+	}
 }

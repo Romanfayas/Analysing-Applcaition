@@ -59,9 +59,9 @@ async def calculate_signal(request: SignalRequest):
             result.signal = __import__('src.engines.signal.engine', fromlist=['SignalType']).SignalType.NO_SIGNAL
             result.explanation = "Market data is missing. NO SIGNAL enforced for safety."
             
-        if request.shariah_status == "FAIL":
+        if request.shariah_status != "PASS":
             result.signal = __import__('src.engines.signal.engine', fromlist=['SignalType']).SignalType.NO_SIGNAL
-            result.explanation = "Shariah status failed. NO SIGNAL enforced for safety."
+            result.explanation = f"Shariah eligibility not verified (status: {request.shariah_status}). Hard gate: NO SIGNAL enforced for safety."
         
         return {
             "signal": result.signal.value,

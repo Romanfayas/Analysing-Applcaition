@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "MARUTI",
+    "comp": "Maruti Suzuki India Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE585B01010",
+    "subject": "Final Dividend - Rs 135 Per Share",
+    "exDate": "31-Jul-2026",
+    "recDate": "01-Aug-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "MARUTI",
+    "comp": "Maruti Suzuki India Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE585B01010",
+    "subject": "Final Dividend - Rs 125 Per Share",
+    "exDate": "01-Aug-2025",
+    "recDate": "02-Aug-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

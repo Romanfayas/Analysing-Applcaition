@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "TECHM",
+    "comp": "Tech Mahindra Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE669C01036",
+    "subject": "Final Dividend - Rs 28 Per Share",
+    "exDate": "20-Jul-2026",
+    "recDate": "21-Jul-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "TECHM",
+    "comp": "Tech Mahindra Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE669C01036",
+    "subject": "Interim Dividend - Rs 12 Per Share",
+    "exDate": "31-Oct-2025",
+    "recDate": "01-Nov-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

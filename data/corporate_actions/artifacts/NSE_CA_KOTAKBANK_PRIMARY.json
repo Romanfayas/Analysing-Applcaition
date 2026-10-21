@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "KOTAKBANK",
+    "comp": "Kotak Mahindra Bank Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE237A01028",
+    "subject": "Dividend - Rs 2.50 Per Share",
+    "exDate": "14-Jul-2026",
+    "recDate": "15-Jul-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "KOTAKBANK",
+    "comp": "Kotak Mahindra Bank Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE237A01028",
+    "subject": "Dividend - Rs 2 Per Share",
+    "exDate": "15-Jul-2025",
+    "recDate": "16-Jul-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

@@ -216,3 +216,140 @@ class TestShariahHardRestriction:
         )
         # Should NOT pass just because missing values default to 0
         assert result.status != ShariahStatus.PASS
+
+
+class TestShariahBoundariesAndStaleness:
+    """Regression tests for threshold boundary values and financial statement freshness."""
+
+    def test_boundary_conditions_exact_and_epsilon(self, screener):
+        # 1. Debt to market cap: 33% max
+        r_exact = screener.screen(
+            total_debt=330_000, market_cap=1_000_000, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=100_000, receivables=100_000, business_activities=["tech"]
+        )
+        assert r_exact.status == ShariahStatus.PASS
+
+        r_breach = screener.screen(
+            total_debt=330_010, market_cap=1_000_000, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=100_000, receivables=100_000, business_activities=["tech"]
+        )
+        assert r_breach.status == ShariahStatus.FAIL
+
+        # 2. Interest income to revenue: 5% max
+        r_exact_int = screener.screen(
+            total_debt=100_000, market_cap=1_000_000, interest_income=5_000, revenue=100_000,
+            cash_and_deposits=100_000, receivables=100_000, business_activities=["tech"]
+        )
+        assert r_exact_int.status == ShariahStatus.PASS
+
+        r_breach_int = screener.screen(
+            total_debt=100_000, market_cap=1_000_000, interest_income=5_001, revenue=100_000,
+            cash_and_deposits=100_000, receivables=100_000, business_activities=["tech"]
+        )
+        assert r_breach_int.status == ShariahStatus.FAIL
+
+        # 3. Cash and deposits to market cap: 33% max
+        r_exact_cash = screener.screen(
+            total_debt=100_000, market_cap=1_000_000, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=330_000, receivables=100_000, business_activities=["tech"]
+        )
+        assert r_exact_cash.status == ShariahStatus.PASS
+
+        r_breach_cash = screener.screen(
+            total_debt=100_000, market_cap=1_000_000, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=330_010, receivables=100_000, business_activities=["tech"]
+        )
+        assert r_breach_cash.status == ShariahStatus.FAIL
+
+        # 4. Receivables to market cap: 49% max
+        r_exact_recv = screener.screen(
+            total_debt=100_000, market_cap=1_000_000, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=100_000, receivables=490_000, business_activities=["tech"]
+        )
+        assert r_exact_recv.status == ShariahStatus.PASS
+
+        r_breach_recv = screener.screen(
+            total_debt=100_000, market_cap=1_000_000, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=100_000, receivables=490_010, business_activities=["tech"]
+        )
+        assert r_breach_recv.status == ShariahStatus.FAIL
+
+    def test_stale_financial_data_fails_closed(self, screener):
+        # 1. Fresh statement (90 days old) passes
+        r_fresh = screener.screen(
+            total_debt=100_000, market_cap=1_000_000, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=100_000, receivables=100_000, business_activities=["tech"],
+            statement_date="2026-06-30", as_of_date="2026-09-28", max_statement_age_days=180
+        )
+        assert r_fresh.status == ShariahStatus.PASS
+        assert r_fresh.details["is_stale"] is False
+
+        # 2. Stale statement (200 days old) fails closed to DATA_INSUFFICIENT
+        r_stale = screener.screen(
+            total_debt=100_000, market_cap=1_000_000, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=100_000, receivables=100_000, business_activities=["tech"],
+            statement_date="2026-01-01", as_of_date="2026-09-28", max_statement_age_days=180
+        )
+        assert r_stale.status == ShariahStatus.DATA_INSUFFICIENT
+        assert r_stale.details["is_stale"] is True
+        assert "stale" in r_stale.details["staleness_note"]
+
+    def test_stale_data_with_failed_ratio_yields_fail(self, screener):
+        # Even if data is stale, an explicit ratio breach must still be FAIL (FAIL overrides DATA_INSUFFICIENT)
+        r = screener.screen(
+            total_debt=500_000, market_cap=1_000_000, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=100_000, receivables=100_000, business_activities=["tech"],
+            statement_date="2025-01-01", as_of_date="2026-09-28", max_statement_age_days=180
+        )
+        assert r.status == ShariahStatus.FAIL
+
+    def test_insufficient_evidence_never_converted_to_pass(self, screener):
+        # Incomplete data must NEVER default to PASS
+        cases = [
+            {"total_debt": None, "market_cap": 1_000_000},
+            {"total_debt": 100_000, "market_cap": None},
+            {"business_activities": None},
+            {"revenue": None, "interest_income": 1_000},
+            {"interest_income": None, "revenue": 100_000},
+            {"receivables": None, "market_cap": 1_000_000},
+            {"cash_and_deposits": None, "market_cap": 1_000_000},
+        ]
+        for c in cases:
+            kwargs = {
+                "total_debt": 100_000, "market_cap": 1_000_000, "interest_income": 1_000, "revenue": 100_000,
+                "cash_and_deposits": 100_000, "receivables": 100_000, "business_activities": ["tech"]
+            }
+            kwargs.update(c)
+            res = screener.screen(**kwargs)
+            assert res.status in (ShariahStatus.DATA_INSUFFICIENT, ShariahStatus.FAIL)
+            assert res.status != ShariahStatus.PASS
+
+    def test_zero_denominator_yields_data_insufficient(self, screener):
+        # Zero market cap or zero revenue cannot pass
+        r_zero_mcap = screener.screen(
+            total_debt=100_000, market_cap=0, interest_income=1_000, revenue=100_000,
+            cash_and_deposits=100_000, receivables=100_000, business_activities=["tech"]
+        )
+        assert r_zero_mcap.status == ShariahStatus.DATA_INSUFFICIENT
+
+        r_zero_rev = screener.screen(
+            total_debt=100_000, market_cap=1_000_000, interest_income=1_000, revenue=0,
+            cash_and_deposits=100_000, receivables=100_000, business_activities=["tech"]
+        )
+        assert r_zero_rev.status == ShariahStatus.DATA_INSUFFICIENT
+
+    def test_missing_required_metrics_cannot_infer_zero(self, screener):
+        # P1.8.3 Rule: Missing interest_income or receivables MUST NOT be assumed 0.0
+        # When debt passes but interest_income is None, it MUST be DATA_INSUFFICIENT, never PASS
+        r = screener.screen(
+            total_debt=100_000, market_cap=1_000_000,
+            interest_income=None,  # Missing from feed
+            revenue=100_000,
+            cash_and_deposits=50_000,
+            receivables=None,      # Missing from feed
+            business_activities=["IT"],
+        )
+        assert r.status == ShariahStatus.DATA_INSUFFICIENT
+        assert r.status != ShariahStatus.PASS
+
+
