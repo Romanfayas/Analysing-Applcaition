@@ -1,7 +1,7 @@
 # HalalEquity — System Delivery Status & Release Decision
 
-**Date:** 2026-10-21T17:15:00+05:30  
-**Phase:** P1.9.2 Quarantine Integrity Audit & Ingestion Source-Trust Hardening  
+**Date:** 2026-10-21T20:30:00+05:30  
+**Phase:** P1.9.3 Database Trust-Boundary Hardening & Quarantine Bypass Verification  
 **Authority:** Multi-Tier Live Runtime Verification (`halal_equity_backend`, `halal_equity_quant`, `halal_equity_frontend`, `halal_equity_postgres`)  
 
 ---
@@ -10,9 +10,9 @@
 
 | Verdict # | Release Criterion | Decision | Operational Status & Engineering Verdict |
 | :---: | :--- | :---: | :--- |
-| **1** | **Local Application Execution** | **RELEASE-READY (PASS)** | All Docker stack containers (`frontend:3000`, `backend:8081`, `quant:8000`, `postgres:5432`, `redis:6379`, `worker`) start cleanly, pass health probes, and maintain zero fatal panics or memory leaks. Next.js 16 compiles cleanly in 1.4s with Turbopack. |
+| **1** | **Local Application Execution** | **RELEASE-READY (PASS)** | All Docker stack containers (`frontend:3000`, `backend:8081`, `quant:8000`, `postgres:5432`, `redis:6379`, `worker`) start cleanly, pass health probes, and maintain zero fatal panics or memory leaks. Next.js 16 compiles cleanly in 1.17s with Turbopack. |
 | **2** | **End-to-End Application Workflows** | **OPERATIONAL WITH GATES (PASS)** | 11 live workflows tested via `scripts/test_workflows_live.py` (exit 0) and `scripts/verify_e2e_delivery.py` (18/18 pass). Stock universe, multi-timeframe charts, IPO monitoring, risk sizing, and paper portfolio ledger execute reliably. |
-| **3** | **Data Freshness & Financial Correctness** | **PASS WITH AUDIT DISCLOSURES** | Verified Indian delivery-equity statutory fee engine `INDIA_EQ_DELIVERY_FEES_2026Q4_V2` (STT 0.1%, Stamp Duty 0.015%, Exchange 0.00297%, SEBI 0.0001%, DP ₹13.50, GST 18%). Concurrency atomicity, quarantine integrity trigger `trg_ohlcv_daily_quarantine_guard`, and ledger invariance verified via unit and integration tests. Stale quotes explicitly flagged with UI warnings; CMP vs EOD chart sources disambiguated. |
+| **3** | **Data Freshness & Financial Correctness** | **PASS WITH AUDIT DISCLOSURES** | Verified Indian delivery-equity statutory fee engine `INDIA_EQ_DELIVERY_FEES_2026Q4_V2` (STT 0.1%, Stamp Duty 0.015%, Exchange 0.00297%, SEBI 0.0001%, DP ₹13.50, GST 18%). P1.9.3 Migration 19 enforces relational verification in `fn_ohlcv_daily_quarantine_guard` and `ca.apply_verified_corporate_action(SECURITY DEFINER)`, completely eliminating source-string trust bypass. 11/11 adversarial tests pass in Go; 265/265 Python tests pass. Quarantined bars invariant (23,132) strictly maintained. |
 | **4** | **Shariah Evidence Readiness** | **FAIL-CLOSED (GATED)** | 51 active equities screened: **0 PASS, 20 FAIL, 31 DATA_INSUFFICIENT**. Third-party secondary aggregate feeds lack statutory notes for interest income and receivables. Under AAOIFI Standard No. 21, zero is never inferred; BUY gate remains strictly fail-closed. |
 | **5** | **Quantitative Research Readiness** | **STRICTLY BLOCKED** | Research gate `RESEARCH_BLOCKED` enforced. **23,132 historical daily bars remain quarantined** (NULL adjusted close); **27 core equities** lack primary exchange filings. Canonical Strategy V2 hash `92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780` locked. |
 | **6** | **Production Security & Broker Readiness** | **STRICTLY BLOCKED** | Non-negotiable safety rules enforced: `PAPER_TRADING_ENABLED=true`, `LIVE_ORDER_EXECUTION=false`, `BROKER_TRADING_ENABLED=false`. No live broker adapters or production credential handlers enabled. |

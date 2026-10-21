@@ -115,6 +115,13 @@ VERIFICATION SUMMARY: 18/18 checks passed.
 **Exit Code:** `0` (Success)  
 
 Key integration test suites passing:
+- `TestAdversarial_1_OrdinaryIngestionSuppliesForgedSourceAndFabricatedAdjClose`: Ordinary ingestion supplying forged trusted source labels ('NSE_CORPORATE_ACTION', 'PRIMARY_EXCHANGE') and fabricated adjustments on quarantined and unadjusted rows is strictly neutralized; quarantined rows remain NULL, unadjusted bars retain adjusted_close == close, source remains vendor.
+- `TestAdversarial_2_DirectSQLAttemptsToPopulateQuarantinedNull`: Direct raw SQL UPDATE and INSERT statements attempting to un-quarantine NULLs or set forged sources are intercepted by `fn_ohlcv_daily_quarantine_guard`; NULLs are strictly preserved.
+- `TestAdversarial_3_VerifiedAdjustmentFakeOrUnverifiedEventID`: `ApplyVerifiedCorporateActionAdjustment` fails closed on fake event IDs, unverified events, negative factors, or mismatched factors.
+- `TestAdversarial_4_AuthorizedVerifiedEventScoping`: Authorized corporate action updates only the target symbol in verified window [startDate, exDate); exactly 7 TCS bars updated, 0 post-ex-date, 0 pre-2026-10-05, 0 other symbols.
+- `TestAdversarial_5_VendorOverwriteVerifiedAdjustmentOrProvenance`: Conflicting vendor batch feeds and direct SQL cannot overwrite verified adjustments or downgrade `NSE_CORPORATE_ACTION` provenance.
+- `TestAdversarial_6_ConcurrentIngestionRacesCorporateActionUpdate`: 8 concurrent vendor ingestion workers racing against corporate action updater produce zero deadlocks and zero invariant corruption.
+- `TestAdversarial_7_DatabasePermissionsBoundary`: Verifies factor immutability (`trg_ca_factor_guard`), unverified factor ingest block (`trg_ca_factor_ingest_guard`), and procedure security (`SECURITY DEFINER` with fixed search_path `public, ca, pg_temp`).
 - `TestDeliveryFeeCalculationBreakdown`: Verified exact rupee-and-paisa match for BUY (₹118.62) and SELL (₹119.55).
 - `TestPaperTradingLedgerAccountingAndFriction`: Asserts cash deductions, `INDIA_EQ_DELIVERY_FEES_2026Q4_V2` statutory friction, average cost basis, realized P&L, and short-selling block.
 - `TestPaperTradingExactThreeStepLifecycle`: Asserts exact 3-step lifecycle reproduction:
