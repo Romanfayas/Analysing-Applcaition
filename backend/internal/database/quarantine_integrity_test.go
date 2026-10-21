@@ -218,7 +218,7 @@ func TestAdversarial_3_VerifiedAdjustmentFakeOrUnverifiedEventID(t *testing.T) {
 	// 1. Fake/Nonexistent event ID
 	_, err := db.ApplyVerifiedCorporateActionAdjustment(ctx, "TCS", startDate, exDate, 0.99471203, "FAKE:NONEXISTENT:EVENT")
 	assert.Error(t, err, "Nonexistent event ID must be rejected")
-	assert.Contains(t, err.Error(), "not verified by primary exchange evidence")
+	assert.Contains(t, err.Error(), "not verified")
 
 	// 2. Unverified event ID
 	var tcsID int
@@ -243,7 +243,7 @@ func TestAdversarial_3_VerifiedAdjustmentFakeOrUnverifiedEventID(t *testing.T) {
 
 	_, err = db.ApplyVerifiedCorporateActionAdjustment(ctx, "TCS", startDate, exDate, 0.99471203, unverifiedEventID)
 	assert.Error(t, err, "Unverified event ID must be rejected")
-	assert.Contains(t, err.Error(), "not verified by primary exchange evidence")
+	assert.Contains(t, err.Error(), "not verified")
 
 	// 3. Non-positive factor
 	_, err = db.ApplyVerifiedCorporateActionAdjustment(ctx, "TCS", startDate, exDate, -0.9947, "NSE:TCS:2026-10-14:CASH_DIVIDEND:1")

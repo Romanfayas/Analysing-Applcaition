@@ -122,6 +122,17 @@ Key integration test suites passing:
 - `TestAdversarial_5_VendorOverwriteVerifiedAdjustmentOrProvenance`: Conflicting vendor batch feeds and direct SQL cannot overwrite verified adjustments or downgrade `NSE_CORPORATE_ACTION` provenance.
 - `TestAdversarial_6_ConcurrentIngestionRacesCorporateActionUpdate`: 8 concurrent vendor ingestion workers racing against corporate action updater produce zero deadlocks and zero invariant corruption.
 - `TestAdversarial_7_DatabasePermissionsBoundary`: Verifies factor immutability (`trg_ca_factor_guard`), unverified factor ingest block (`trg_ca_factor_ingest_guard`), and procedure security (`SECURITY DEFINER` with fixed search_path `public, ca, pg_temp`).
+- **P1.9.4 Adversarial Privilege Test Suite (`privilege_audit_test.go`)**:
+  - `TestPrivilege_1_ForgeSourceLabelsWithFabricatedAdjClose`: Verified as `halal_app_user`. Ordinary ingestion supplying forged labels (`NSE_CORPORATE_ACTION`, `PRIMARY_EXCHANGE`) and fabricated adjusted closes fails to un-quarantine bars or alter unadjusted bars.
+  - `TestPrivilege_2_InsertOrModifyCAEventToClaimVerified`: Verified as `halal_app_user`. Attempting direct INSERT or UPDATE claiming `VERIFIED_EXCHANGE_PRIMARY` fails closed with SQLSTATE `42501` (`trg_ca_event_verification_guard`: requires valid primary exchange disclosure artifact in `corporate_action_source_artifacts`).
+  - `TestPrivilege_3_InsertFabricatedAdjustmentFactors`: Verified as `halal_app_user`. Attempting direct INSERT of adjustment factors claiming `is_verified=true` or `price_factor_applicable=true` fails closed with SQLSTATE `42501` (`ca_factor_ingest_guard`).
+  - `TestPrivilege_4_AttemptToMutateFactorImmutabilityFields`: Verified as `halal_app_user`. Direct UPDATE attempting to mutate revision, dispute status, symbol, ex-date, factor, or `price_factor_applicable` fails closed with SQLSTATE `42501` (`trg_ca_factor_guard`).
+  - `TestPrivilege_5_DirectSQLUpdatesToQuarantinedAndVerifiedBars`: Verified as `halal_app_user`. Direct SQL UPDATE to populate quarantined bars or tamper with verified bars fails closed with SQLSTATE `42501` (`fn_ohlcv_daily_quarantine_guard`).
+  - `TestPrivilege_6_DisableTriggersAlterFunctionsOrShadowObjects`: Verified as `halal_app_user`. DDL operations (`ALTER TABLE ohlcv_daily DISABLE TRIGGER ALL`, `CREATE TABLE public.shadow_table`, `CREATE SCHEMA shadow_ca`) fail closed with SQLSTATE `42501` (permission denied / must be owner).
+  - `TestPrivilege_7_ExecuteProcedureWithArbitraryArguments`: Verified as `halal_app_user`. Calling `ca.apply_verified_corporate_action()` with fake event ID or unverified factor fails closed with SQLSTATE `P0001` (full cryptographic chain validation).
+  - `TestPrivilege_8_SchemaCreateAndProcedurePermissions`: Verified as `halal_app_user`. Public execution revoked, `CREATE` on public and ca revoked, procedure owned by non-login `ca_security_admin`.
+  - `TestPrivilege_9_ConcurrencyBetweenLegitimateVerifiedAdjustmentsAndIngestion`: 8 concurrent goroutines executing vendor ingestion and verified CA updates concurrently produce zero deadlocks and zero invariant corruption.
+  - `TestPrivilege_10_OrdinaryIngestionCannotManufactureRelationalProof`: Ordinary ingestion cannot manufacture relational proof; inserting fake events/factors is intercepted by triggers; bars remain quarantined NULL.
 - `TestDeliveryFeeCalculationBreakdown`: Verified exact rupee-and-paisa match for BUY (₹118.62) and SELL (₹119.55).
 - `TestPaperTradingLedgerAccountingAndFriction`: Asserts cash deductions, `INDIA_EQ_DELIVERY_FEES_2026Q4_V2` statutory friction, average cost basis, realized P&L, and short-selling block.
 - `TestPaperTradingExactThreeStepLifecycle`: Asserts exact 3-step lifecycle reproduction:
@@ -136,6 +147,7 @@ Key integration test suites passing:
 - `TestP1814TCSMultiplicativeFactorAuditAndConsumerIsolation`: Asserts factor 0.99471203 across 7 cum-dividend bars and nominal view isolation (0 rows).
 - `TestP1815UniverseAndCorporateActionReconciliation`: Asserts 64 corporate action events, 23 source artifacts.
 - `TestActivePriceAdjustmentFactorsIsolation`: Asserts only TCS Revision 3 is active; TATAMOTORS demerger tax factor rejected.
+
 
 ---
 
