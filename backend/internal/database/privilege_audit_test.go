@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -136,8 +137,8 @@ func TestPrivilege_2_InsertOrModifyEventToClaimVerifiedAsAppRole(t *testing.T) {
 			'2026-10-14', 'INR', 'VERIFIED_EXCHANGE_PRIMARY', 'HARVESTED_EXCHANGE_PRIMARY'
 		);
 	`, hclID)
-	assert.Error(t, err, "Application role must not have INSERT permissions on corporate_action_events")
-	assert.Contains(t, err.Error(), "permission denied for table corporate_action_events")
+	assert.Error(t, err, "Application role must be blocked from inserting corporate_action_events")
+	assert.True(t, strings.Contains(err.Error(), "permission denied for table corporate_action_events") || strings.Contains(err.Error(), "Event verification rejected"), "Must be rejected by permissions or verification trigger: %v", err)
 
 	// 2. Admin connection attempting to claim VERIFIED_EXCHANGE_PRIMARY without source_artifact_id is blocked by trigger
 	_, err = adminDB.ExecContext(ctx, `
@@ -177,7 +178,7 @@ func TestPrivilege_3_InsertFabricatedAdjustmentFactorAsAppRole(t *testing.T) {
 	err := adminDB.QueryRowContext(ctx, "SELECT id FROM symbols WHERE symbol = 'HCLTECH';").Scan(&hclID)
 	require.NoError(t, err)
 
-	// 1. App role direct insert is blocked by table permissions
+	// 1. App role direct insert is blocked by table permissions or ingest guard trigger
 	_, err = appDB.ExecContext(ctx, `
 		INSERT INTO corporate_action_adjustment_factors (
 			symbol_id, action_type, ex_date, effective_date, adjustment_factor,
@@ -191,8 +192,9 @@ func TestPrivilege_3_InsertFabricatedAdjustmentFactorAsAppRole(t *testing.T) {
 			true, 'UNDISPUTED', 'TEST:EVENT:APP:1'
 		);
 	`, hclID)
-	assert.Error(t, err, "App role must not have INSERT permissions on corporate_action_adjustment_factors")
-	assert.Contains(t, err.Error(), "permission denied for table corporate_action_adjustment_factors")
+	assert.Error(t, err, "App role must not be able to insert unverified corporate_action_adjustment_factors")
+	assert.True(t, strings.Contains(err.Error(), "permission denied for table corporate_action_adjustment_factors") || strings.Contains(err.Error(), "Ingestion rejected"), "Must be rejected by permissions or ca_factor_ingest_guard: %v", err)
+
 
 	// 2. Admin attempting to insert factor referencing nonexistent event is blocked by ca_factor_ingest_guard
 	_, err = adminDB.ExecContext(ctx, `

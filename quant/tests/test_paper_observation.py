@@ -167,7 +167,7 @@ MIG = os.getenv("P17_MIGRATIONS_DIR", "/app/migrations" if os.path.exists("/app/
 
 
 def _admin_url():
-    return os.getenv("DATABASE_URL", "postgres://halal_user:devpassword@postgres:5432/halal_equity?sslmode=disable")
+    return os.getenv("ADMIN_DATABASE_URL") or "postgres://halal_user:devpassword@postgres:5432/halal_equity?sslmode=disable"
 
 
 @pytest.fixture(scope="module")

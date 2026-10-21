@@ -48,7 +48,7 @@ services:
     environment:
       - APP_ENV=${APP_ENV:-development}
       - APP_PORT=8080
-      - DATABASE_URL=postgres://${POSTGRES_USER:-halal_user}:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/${POSTGRES_DB:-halal_equity}?sslmode=disable
+      - DATABASE_URL=postgres://${APP_DB_USER:-halal_app_user}:${APP_DB_PASSWORD:-app_password}@postgres:5432/${POSTGRES_DB:-halal_equity}?sslmode=disable
       - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret-change-me}
       - JWT_EXPIRY_HOURS=${JWT_EXPIRY_HOURS:-24}
@@ -79,7 +79,7 @@ services:
     command: ["/app/bin/worker"]
     environment:
       - APP_ENV=${APP_ENV:-development}
-      - DATABASE_URL=postgres://${POSTGRES_USER:-halal_user}:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/${POSTGRES_DB:-halal_equity}?sslmode=disable
+      - DATABASE_URL=postgres://${APP_DB_USER:-halal_app_user}:${APP_DB_PASSWORD:-app_password}@postgres:5432/${POSTGRES_DB:-halal_equity}?sslmode=disable
       - REDIS_URL=redis://redis:6379/0
       - QUANT_ENGINE_URL=http://quant:8000
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
@@ -105,7 +105,8 @@ services:
       - "${QUANT_ENGINE_PORT:-8000}:8000"
     environment:
       - APP_ENV=${APP_ENV:-development}
-      - DATABASE_URL=postgres://${POSTGRES_USER:-halal_user}:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/${POSTGRES_DB:-halal_equity}?sslmode=disable
+      - DATABASE_URL=postgres://${APP_DB_USER:-halal_app_user}:${APP_DB_PASSWORD:-app_password}@postgres:5432/${POSTGRES_DB:-halal_equity}?sslmode=disable
+      - ADMIN_DATABASE_URL=postgres://${POSTGRES_USER:-halal_user}:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/${POSTGRES_DB:-halal_equity}?sslmode=disable
       - REDIS_URL=redis://redis:6379/0
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - PAPER_TRADING_ENABLED=true
