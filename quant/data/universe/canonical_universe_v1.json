@@ -1,0 +1,660 @@
+{
+  "manifest_version": "1.0.0",
+  "manifest_name": "HalalEquity Canonical NSE Large-Cap Universe Manifest",
+  "generated_at": "2026-10-22T17:00:00Z",
+  "governing_policy": "HALALEQUITY_CANONICAL_UNIVERSE_POLICY_V1",
+  "summary": {
+    "total_database_instruments": 52,
+    "active_instruments_in_db": 51,
+    "archived_instruments_in_db": 1,
+    "active_core_equities": 47,
+    "active_demerged_successors": 2,
+    "active_successor_rename": 1,
+    "historical_predecessor_rename": 1,
+    "archived_parent_demerged": 1,
+    "symbols_with_ohlcv_bars": 47,
+    "total_daily_bars": 23735,
+    "quarantined_daily_bars": 23132,
+    "populated_adjusted_bars": 603
+  },
+  "taxonomy_definitions": {
+    "ACTIVE_CORE": "Liquid NIFTY 50 large-cap equity with continuous trading history and active exchange listing.",
+    "ARCHIVED_PARENT_DEMERGED": "Predecessor parent entity that underwent corporate demerger. Preserved for historical audit; trading suspended/archived.",
+    "ACTIVE_DEMERGED_SUCCESSOR": "Forward operating entity resulting from statutory demerger with independent listing.",
+    "HISTORICAL_PREDECESSOR_RENAME": "Historical ticker symbol of an ongoing corporate entity prior to exchange symbol change.",
+    "ACTIVE_SUCCESSOR_RENAME": "Active current exchange ticker symbol following official symbol rename."
+  },
+  "lineage_rules": [
+    {
+      "parent_symbol": "TATAMOTORS",
+      "successors": [
+        "TMPV",
+        "TMCV"
+      ],
+      "event_type": "DEMERGER",
+      "effective_date": "2025-10-24",
+      "cost_apportionment": {
+        "TMPV": 0.6885,
+        "TMCV": 0.3115
+      },
+      "statutory_reference": "NSE_CIRCULAR_NSE/CML/70875",
+      "concurrency_rule": "FORBID_CONCURRENT_EXPOSURE",
+      "rule_details": "Portfolios and backtest engines must never allocate capital simultaneously to TATAMOTORS and (TMPV or TMCV). Pre-effective date prices belong to TATAMOTORS. Splicing synthetic pre-demerger history into TMPV or TMCV is strictly prohibited."
+    },
+    {
+      "predecessor_symbol": "LTIM",
+      "successor_symbol": "LTM",
+      "event_type": "SYMBOL_RENAME",
+      "effective_date": "2026-02-27",
+      "ratio": "1:1",
+      "statutory_reference": "NSE_CIRCULAR_LTIM_LTM_RENAME_2026",
+      "concurrency_rule": "FORBID_CONCURRENT_EXPOSURE",
+      "rule_details": "LTIM and LTM represent the same underlying legal corporation and ISIN. They must be stitched sequentially across the 2026-02-27 boundary without concurrent double exposure."
+    }
+  ],
+  "price_series_contract": {
+    "NOMINAL_TRADABLE": {
+      "definition": "Nominal unadjusted exchange prices as traded on NSE.",
+      "cash_dividend_effect": "NONE (strictly unadjusted, factor 1.0)",
+      "split_bonus_effect": "Adjusted backward for share dilution",
+      "consumer_audience": "Execution engine, stop-loss triggers, technical price indicators, limit orders"
+    },
+    "TOTAL_RETURN": {
+      "definition": "Total return series reinvesting cash dividends on cum-date.",
+      "cash_dividend_effect": "Backward adjusted by (P_cum - D) / P_cum",
+      "split_bonus_effect": "Adjusted backward for share dilution",
+      "consumer_audience": "Quantitative performance reporting, benchmark alpha calculation, backtesting comparisons"
+    },
+    "TAX_COST_ALLOCATION": {
+      "definition": "Section 49(2C) capital cost basis apportionment percentage.",
+      "cash_dividend_effect": "NONE (cash dividends taxed under Section 56(2)(i))",
+      "price_series_effect": "STRICTLY PROHIBITED FROM ALTERING PRICE OHLCV BARS",
+      "consumer_audience": "Capital gains tax computation ledger"
+    }
+  },
+  "rounding_policy": {
+    "factor_precision": "8 decimal places (NUMERIC(18, 8))",
+    "adjusted_price_precision": "4 decimal places (ROUND(close * factor, 4))",
+    "arithmetic_datatype": "Arbitrary-precision fixed-point decimal (NUMERIC in Postgres, Decimal in Python/Go)",
+    "float_prohibition": "IEEE 754 float32 and float64 are strictly prohibited for factor storage and price adjustment arithmetic"
+  },
+  "instruments": [
+    {
+      "symbol": "ADANIENT",
+      "id": 16,
+      "classification": "ACTIVE_CORE",
+      "name": "Adani Enterprises Ltd",
+      "sector": "Construction",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "ADANIPORTS",
+      "id": 49,
+      "classification": "ACTIVE_CORE",
+      "name": "Adani Ports & SEZ Ltd",
+      "sector": "Construction",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "APOLLOHOSP",
+      "id": 7,
+      "classification": "ACTIVE_CORE",
+      "name": "Apollo Hospitals Enterprise",
+      "sector": "Healthcare",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "id": 22,
+      "classification": "ACTIVE_CORE",
+      "name": "Asian Paints Ltd",
+      "sector": "Consumer Goods",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_ASIANPAINT_PRIMARY.json"
+    },
+    {
+      "symbol": "AXISBANK",
+      "id": 5,
+      "classification": "ACTIVE_CORE",
+      "name": "Axis Bank Ltd",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "BAJAJ-AUTO",
+      "id": 13,
+      "classification": "ACTIVE_CORE",
+      "name": "Bajaj Auto Ltd",
+      "sector": "Automobile",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "id": 45,
+      "classification": "ACTIVE_CORE",
+      "name": "Bajaj Finserv Ltd",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "id": 34,
+      "classification": "ACTIVE_CORE",
+      "name": "Bajaj Finance Ltd",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "id": 31,
+      "classification": "ACTIVE_CORE",
+      "name": "Bharti Airtel Ltd",
+      "sector": "Telecommunication",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_BHARTIARTL_PRIMARY.json"
+    },
+    {
+      "symbol": "BPCL",
+      "id": 19,
+      "classification": "ACTIVE_CORE",
+      "name": "Bharat Petroleum Corp",
+      "sector": "Energy",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "BRITANNIA",
+      "id": 47,
+      "classification": "ACTIVE_CORE",
+      "name": "Britannia Industries",
+      "sector": "Consumer Goods",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "CIPLA",
+      "id": 26,
+      "classification": "ACTIVE_CORE",
+      "name": "Cipla Ltd",
+      "sector": "Healthcare",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "COALINDIA",
+      "id": 33,
+      "classification": "ACTIVE_CORE",
+      "name": "Coal India Ltd",
+      "sector": "Energy",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_COALINDIA_PRIMARY.json"
+    },
+    {
+      "symbol": "DIVISLAB",
+      "id": 29,
+      "classification": "ACTIVE_CORE",
+      "name": "Divis Laboratories Ltd",
+      "sector": "Healthcare",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "DRREDDY",
+      "id": 1,
+      "classification": "ACTIVE_CORE",
+      "name": "Dr Reddys Laboratories",
+      "sector": "Healthcare",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_DRREDDY_PRIMARY.json"
+    },
+    {
+      "symbol": "EICHERMOT",
+      "id": 3,
+      "classification": "ACTIVE_CORE",
+      "name": "Eicher Motors Ltd",
+      "sector": "Automobile",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "GRASIM",
+      "id": 17,
+      "classification": "ACTIVE_CORE",
+      "name": "Grasim Industries Ltd",
+      "sector": "Construction",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "HCLTECH",
+      "id": 10,
+      "classification": "ACTIVE_CORE",
+      "name": "HCL Technologies Ltd",
+      "sector": "Technology",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_HCLTECH_PRIMARY.json"
+    },
+    {
+      "symbol": "HDFCBANK",
+      "id": 40,
+      "classification": "ACTIVE_CORE",
+      "name": "HDFCBANK Ltd",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_HDFCBANK_PRIMARY.json"
+    },
+    {
+      "symbol": "HDFCLIFE",
+      "id": 27,
+      "classification": "ACTIVE_CORE",
+      "name": "HDFC Life Insurance Co",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "HEROMOTOCO",
+      "id": 12,
+      "classification": "ACTIVE_CORE",
+      "name": "Hero MotoCorp Ltd",
+      "sector": "Automobile",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "HINDALCO",
+      "id": 18,
+      "classification": "ACTIVE_CORE",
+      "name": "Hindalco Industries Ltd",
+      "sector": "Metals & Mining",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "HINDUNILVR",
+      "id": 4,
+      "classification": "ACTIVE_CORE",
+      "name": "Hindustan Unilever Ltd",
+      "sector": "Consumer Goods",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_HINDUNILVR_PRIMARY.json"
+    },
+    {
+      "symbol": "ICICIBANK",
+      "id": 42,
+      "classification": "ACTIVE_CORE",
+      "name": "ICICI Bank Ltd",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "id": 38,
+      "classification": "ACTIVE_CORE",
+      "name": "IndusInd Bank Ltd",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "INFY",
+      "id": 20,
+      "classification": "ACTIVE_CORE",
+      "name": "Infosys Ltd",
+      "sector": "Technology",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_INFY_PRIMARY.json"
+    },
+    {
+      "symbol": "ITC",
+      "id": 36,
+      "classification": "ACTIVE_CORE",
+      "name": "ITC Ltd",
+      "sector": "Consumer Goods",
+      "is_active_db": true,
+      "bar_count": 506,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_ITC_PRIMARY.json"
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "id": 15,
+      "classification": "ACTIVE_CORE",
+      "name": "JSW Steel Ltd",
+      "sector": "Metals & Mining",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "KOTAKBANK",
+      "id": 35,
+      "classification": "ACTIVE_CORE",
+      "name": "Kotak Mahindra Bank",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_KOTAKBANK_PRIMARY.json"
+    },
+    {
+      "symbol": "LT",
+      "id": 21,
+      "classification": "ACTIVE_CORE",
+      "name": "Larsen & Toubro Ltd",
+      "sector": "Construction",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "M&M",
+      "id": 44,
+      "classification": "ACTIVE_CORE",
+      "name": "Mahindra & Mahindra Ltd",
+      "sector": "Automobile",
+      "is_active_db": true,
+      "bar_count": 504,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "MARUTI",
+      "id": 8,
+      "classification": "ACTIVE_CORE",
+      "name": "Maruti Suzuki India Ltd",
+      "sector": "Automobile",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_MARUTI_PRIMARY.json"
+    },
+    {
+      "symbol": "NESTLEIND",
+      "id": 2,
+      "classification": "ACTIVE_CORE",
+      "name": "Nestle India Ltd",
+      "sector": "Consumer Goods",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_NESTLEIND_PRIMARY.json"
+    },
+    {
+      "symbol": "NTPC",
+      "id": 28,
+      "classification": "ACTIVE_CORE",
+      "name": "NTPC Ltd",
+      "sector": "Energy",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_NTPC_PRIMARY.json"
+    },
+    {
+      "symbol": "ONGC",
+      "id": 25,
+      "classification": "ACTIVE_CORE",
+      "name": "Oil & Natural Gas Corp",
+      "sector": "Energy",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "POWERGRID",
+      "id": 37,
+      "classification": "ACTIVE_CORE",
+      "name": "Power Grid Corp",
+      "sector": "Energy",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_POWERGRID_PRIMARY.json"
+    },
+    {
+      "symbol": "RELIANCE",
+      "id": 39,
+      "classification": "ACTIVE_CORE",
+      "name": "Reliance Industries Ltd",
+      "sector": "Energy",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_RELIANCE_PRIMARY.json"
+    },
+    {
+      "symbol": "SBILIFE",
+      "id": 46,
+      "classification": "ACTIVE_CORE",
+      "name": "SBI Life Insurance Co",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "SBIN",
+      "id": 32,
+      "classification": "ACTIVE_CORE",
+      "name": "State Bank of India",
+      "sector": "Financial Services",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_SBIN_PRIMARY.json"
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "id": 14,
+      "classification": "ACTIVE_CORE",
+      "name": "Sun Pharmaceutical Ind",
+      "sector": "Healthcare",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "TATACONSUM",
+      "id": 30,
+      "classification": "ACTIVE_CORE",
+      "name": "Tata Consumer Products",
+      "sector": "Consumer Goods",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "TATASTEEL",
+      "id": 11,
+      "classification": "ACTIVE_CORE",
+      "name": "Tata Steel Ltd",
+      "sector": "Metals & Mining",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "TCS",
+      "id": 9,
+      "classification": "ACTIVE_CORE",
+      "name": "Tata Consultancy Services",
+      "sector": "Technology",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "FULL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_TCS_PRIMARY.json"
+    },
+    {
+      "symbol": "TECHM",
+      "id": 48,
+      "classification": "ACTIVE_CORE",
+      "name": "Tech Mahindra Ltd",
+      "sector": "Technology",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_TECHM_PRIMARY.json"
+    },
+    {
+      "symbol": "TITAN",
+      "id": 43,
+      "classification": "ACTIVE_CORE",
+      "name": "Titan Company Ltd",
+      "sector": "Consumer Goods",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_TITAN_PRIMARY.json"
+    },
+    {
+      "symbol": "ULTRACEMCO",
+      "id": 23,
+      "classification": "ACTIVE_CORE",
+      "name": "UltraTech Cement Ltd",
+      "sector": "Construction",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "DATA_INSUFFICIENT",
+      "primary_artifact": null
+    },
+    {
+      "symbol": "WIPRO",
+      "id": 6,
+      "classification": "ACTIVE_CORE",
+      "name": "Wipro Ltd",
+      "sector": "Technology",
+      "is_active_db": true,
+      "bar_count": 505,
+      "ca_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "primary_artifact": "NSE_CA_WIPRO_PRIMARY.json"
+    },
+    {
+      "symbol": "TATAMOTORS",
+      "id": 24,
+      "classification": "ARCHIVED_PARENT_DEMERGED",
+      "name": "Tata Motors Ltd (Pre-Demerger)",
+      "sector": "Automobile",
+      "is_active_db": false,
+      "bar_count": 0,
+      "ca_evidence_status": "SCHEME_SANCTIONED_VERIFIED",
+      "primary_artifact": "NSE_CIRCULAR_TATAMOTORS_DEMERGER.json",
+      "lineage_notes": "Demerged into TMPV (68.85%) and TMCV (31.15%) effective 2025-10-24. Archived, not tradable."
+    },
+    {
+      "symbol": "TMPV",
+      "id": 10126,
+      "classification": "ACTIVE_DEMERGED_SUCCESSOR",
+      "name": "Tata Motors Passenger Vehicles Ltd",
+      "sector": "Automobile",
+      "is_active_db": true,
+      "bar_count": 0,
+      "ca_evidence_status": "SCHEME_SANCTIONED_VERIFIED",
+      "primary_artifact": "NSE_CIRCULAR_TATAMOTORS_DEMERGER.json",
+      "lineage_notes": "Passenger vehicles successor entity. 68.85% cost allocation. Forward trading entity."
+    },
+    {
+      "symbol": "TMCV",
+      "id": 10127,
+      "classification": "ACTIVE_DEMERGED_SUCCESSOR",
+      "name": "Tata Motors Commercial Vehicles Ltd",
+      "sector": "Automobile",
+      "is_active_db": true,
+      "bar_count": 0,
+      "ca_evidence_status": "SCHEME_SANCTIONED_VERIFIED",
+      "primary_artifact": "NSE_CIRCULAR_TATAMOTORS_DEMERGER.json",
+      "lineage_notes": "Commercial vehicles successor entity. 31.15% cost allocation. Forward trading entity."
+    },
+    {
+      "symbol": "LTIM",
+      "id": 41,
+      "classification": "HISTORICAL_PREDECESSOR_RENAME",
+      "name": "LTIMindtree Ltd (Predecessor Ticker)",
+      "sector": "Technology",
+      "is_active_db": true,
+      "bar_count": 0,
+      "ca_evidence_status": "RENAME_CIRCULAR_VERIFIED",
+      "primary_artifact": "NSE_CIRCULAR_LTIM_RENAME.json",
+      "lineage_notes": "Predecessor ticker symbol prior to 2026-02-27 rename. Renamed to LTM. Must not be traded concurrently with LTM."
+    },
+    {
+      "symbol": "LTM",
+      "id": 10128,
+      "classification": "ACTIVE_SUCCESSOR_RENAME",
+      "name": "LTIMindtree Ltd (Current Ticker)",
+      "sector": "Technology",
+      "is_active_db": true,
+      "bar_count": 0,
+      "ca_evidence_status": "RENAME_CIRCULAR_VERIFIED",
+      "primary_artifact": "NSE_CIRCULAR_LTIM_RENAME.json",
+      "lineage_notes": "Current active trading ticker on NSE effective 2026-02-27. 1:1 economic continuity with LTIM."
+    }
+  ]
+}

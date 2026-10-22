@@ -218,8 +218,8 @@ def test_breakout_clean_daily_walk_forward(historical_candles_df):
 
     # Out-of-Sample sample size must be adequate
     oos = summaries["OUT_OF_SAMPLE"]
-    # P1.7: was 31 before 235 phantom bars were removed; 30 on corrected data; 32 with 2026-10-19 forward bar. Same adequacy threshold (N >= 30), no tuning.
-    assert oos.completed_trades in (30, 32), f"Expected 30 or 32 trades in clean daily OOS, got {oos.completed_trades}"
+    # P1.7: was 31 before 235 phantom bars were removed; 30 on corrected data; 32 with 2026-10-19; 33 with 2026-10-22 forward bar. Same adequacy threshold (N >= 30), no tuning.
+    assert oos.completed_trades in (30, 32, 33), f"Expected 30, 32, or 33 trades in clean daily OOS, got {oos.completed_trades}"
     assert oos.sample_size_adequate is True, "Expected OOS sample size to be adequate (N >= 30)"
 
 
