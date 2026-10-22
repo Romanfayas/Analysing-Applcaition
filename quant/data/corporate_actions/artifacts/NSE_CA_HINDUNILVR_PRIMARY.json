@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "HINDUNILVR",
+    "comp": "Hindustan Unilever Limited",
+    "series": "EQ",
+    "faceVal": "1",
+    "isin": "INE030A01027",
+    "subject": "Final Dividend - Rs 24 Per Share",
+    "exDate": "19-Jun-2026",
+    "recDate": "20-Jun-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "HINDUNILVR",
+    "comp": "Hindustan Unilever Limited",
+    "series": "EQ",
+    "faceVal": "1",
+    "isin": "INE030A01027",
+    "subject": "Interim Dividend - Rs 19 Per Share",
+    "exDate": "06-Nov-2025",
+    "recDate": "07-Nov-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

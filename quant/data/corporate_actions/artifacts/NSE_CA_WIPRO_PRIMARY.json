@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "WIPRO",
+    "comp": "Wipro Limited",
+    "series": "EQ",
+    "faceVal": "2",
+    "isin": "INE075A01022",
+    "subject": "Interim Dividend - Re 1 Per Share",
+    "exDate": "23-Jan-2026",
+    "recDate": "24-Jan-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "WIPRO",
+    "comp": "Wipro Limited",
+    "series": "EQ",
+    "faceVal": "2",
+    "isin": "INE075A01022",
+    "subject": "Interim Dividend - Re 1 Per Share",
+    "exDate": "24-Jan-2025",
+    "recDate": "25-Jan-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

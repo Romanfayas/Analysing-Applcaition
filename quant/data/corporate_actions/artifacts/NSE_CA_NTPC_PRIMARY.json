@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "NTPC",
+    "comp": "NTPC Limited",
+    "series": "EQ",
+    "faceVal": "10",
+    "isin": "INE733E01010",
+    "subject": "Interim Dividend - Rs 2.50 Per Share",
+    "exDate": "05-Feb-2026",
+    "recDate": "06-Feb-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "NTPC",
+    "comp": "NTPC Limited",
+    "series": "EQ",
+    "faceVal": "10",
+    "isin": "INE733E01010",
+    "subject": "Interim Dividend - Rs 2.50 Per Share",
+    "exDate": "04-Nov-2025",
+    "recDate": "05-Nov-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

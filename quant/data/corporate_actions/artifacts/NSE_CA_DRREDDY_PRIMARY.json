@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "DRREDDY",
+    "comp": "Dr. Reddy's Laboratories Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE089A01023",
+    "subject": "Final Dividend - Rs 40 Per Share",
+    "exDate": "09-Jul-2026",
+    "recDate": "10-Jul-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "DRREDDY",
+    "comp": "Dr. Reddy's Laboratories Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE089A01023",
+    "subject": "Final Dividend - Rs 40 Per Share",
+    "exDate": "10-Jul-2025",
+    "recDate": "11-Jul-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

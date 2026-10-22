@@ -1,0 +1,2353 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-10-22T20:30:00Z",
+  "total_instruments": 52,
+  "active_instruments": 51,
+  "instruments": [
+    {
+      "symbol": "DRREDDY",
+      "instrument_id": 1,
+      "name": "Dr Reddys Laboratories",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:DRREDDY:2025-07-10:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-07-10",
+          "record_date": "2025-07-11",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 40 Per Share",
+          "document_identifier": "NSE_CA_DRREDDY_20261020_cbb77fb8",
+          "artifact_sha256": "cbb77fb8c21f209c82460c71394a2cc5680d8c0dd364bb0901f727405d11b5fb",
+          "artifact_byte_size": 795,
+          "dividend_amount": 40.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:DRREDDY:2026-07-09:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-07-09",
+          "record_date": "2026-07-10",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 40 Per Share",
+          "document_identifier": "NSE_CA_DRREDDY_20261020_cbb77fb8",
+          "artifact_sha256": "cbb77fb8c21f209c82460c71394a2cc5680d8c0dd364bb0901f727405d11b5fb",
+          "artifact_byte_size": 795,
+          "dividend_amount": 40.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0709,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "NESTLEIND",
+      "instrument_id": 2,
+      "name": "Nestle India Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:NESTLEIND:2025-07-16:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-07-16",
+          "record_date": "2025-07-17",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 8.50 Per Share",
+          "document_identifier": "NSE_CA_NESTLEIND_20261020_741c991b",
+          "artifact_sha256": "741c991be68ff79daa443dc71c1cfe49fc65f781af1ac7687c87749010bdc273",
+          "artifact_byte_size": 779,
+          "dividend_amount": 8.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:NESTLEIND:2026-07-15:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-07-15",
+          "record_date": "2026-07-16",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 8.50 Per Share",
+          "document_identifier": "NSE_CA_NESTLEIND_20261020_741c991b",
+          "artifact_sha256": "741c991be68ff79daa443dc71c1cfe49fc65f781af1ac7687c87749010bdc273",
+          "artifact_byte_size": 779,
+          "dividend_amount": 8.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0018,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "EICHERMOT",
+      "instrument_id": 3,
+      "name": "Eicher Motors Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0026,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "HINDUNILVR",
+      "instrument_id": 4,
+      "name": "Hindustan Unilever Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:HINDUNILVR:2025-11-06:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-11-06",
+          "record_date": "2025-11-07",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 19 Per Share",
+          "document_identifier": "NSE_CA_HINDUNILVR_20261016_768cc2ea",
+          "artifact_sha256": "768cc2ea9feee0baf9131be519a5aed0028c0cf2861ba543122864115d420282",
+          "artifact_byte_size": 791,
+          "dividend_amount": 19.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:HINDUNILVR:2026-06-19:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-06-19",
+          "record_date": "2026-06-20",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 24 Per Share",
+          "document_identifier": "NSE_CA_HINDUNILVR_20261016_768cc2ea",
+          "artifact_sha256": "768cc2ea9feee0baf9131be519a5aed0028c0cf2861ba543122864115d420282",
+          "artifact_byte_size": 791,
+          "dividend_amount": 24.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0033,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "AXISBANK",
+      "instrument_id": 5,
+      "name": "Axis Bank Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.7113,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "WIPRO",
+      "instrument_id": 6,
+      "name": "Wipro Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:WIPRO:2025-01-24:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-01-24",
+          "record_date": "2025-01-25",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Re 1 Per Share",
+          "document_identifier": "NSE_CA_WIPRO_20261016_c35bd43b",
+          "artifact_sha256": "c35bd43be385ccd3151ec0079c6f316330159073a44d51daadedc9f8cfba64c3",
+          "artifact_byte_size": 755,
+          "dividend_amount": 1.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:WIPRO:2026-01-23:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-01-23",
+          "record_date": "2026-01-24",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Re 1 Per Share",
+          "document_identifier": "NSE_CA_WIPRO_20261016_c35bd43b",
+          "artifact_sha256": "c35bd43be385ccd3151ec0079c6f316330159073a44d51daadedc9f8cfba64c3",
+          "artifact_byte_size": 755,
+          "dividend_amount": 1.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.1236,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "APOLLOHOSP",
+      "instrument_id": 7,
+      "name": "Apollo Hospitals Enterprise",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0749,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "MARUTI",
+      "instrument_id": 8,
+      "name": "Maruti Suzuki India Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:MARUTI:2025-08-01:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-08-01",
+          "record_date": "2025-08-02",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 125 Per Share",
+          "document_identifier": "NSE_CA_MARUTI_20261016_3ec8f2b7",
+          "artifact_sha256": "3ec8f2b791c0a2d0c0a1aab65cc4c94f3fc4c20cbf92f76d19d28aeaf2292115",
+          "artifact_byte_size": 785,
+          "dividend_amount": 125.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:MARUTI:2026-07-31:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-07-31",
+          "record_date": "2026-08-01",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 135 Per Share",
+          "document_identifier": "NSE_CA_MARUTI_20261016_3ec8f2b7",
+          "artifact_sha256": "3ec8f2b791c0a2d0c0a1aab65cc4c94f3fc4c20cbf92f76d19d28aeaf2292115",
+          "artifact_byte_size": 785,
+          "dividend_amount": 135.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0003,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "TCS",
+      "instrument_id": 9,
+      "name": "Tata Consultancy Services",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "FULL_PRIMARY_VERIFIED",
+      "total_events_recorded": 11,
+      "events": [
+        {
+          "event_id": "NSE:TCS:2024-10-18:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2024-10-18",
+          "record_date": "2024-10-19",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 10 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 10.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2025-01-17:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-01-17",
+          "record_date": "2025-01-18",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend Rs 10 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 10.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2025-01-17:CASH_DIVIDEND:2",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-01-17",
+          "record_date": "2025-01-18",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Special Dividend Rs 67 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 67.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2025-05-23:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-05-23",
+          "record_date": "2025-05-23",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 28 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 28.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2025-07-16:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-07-16",
+          "record_date": "2025-07-16",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 10 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 10.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2025-10-15:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-10-15",
+          "record_date": "2025-10-15",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 11 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 11.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2026-01-16:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-01-16",
+          "record_date": "2026-01-17",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend Rs 11 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 11.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2026-01-16:CASH_DIVIDEND:2",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-01-16",
+          "record_date": "2026-01-17",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Special Dividend Rs 46 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 46.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2026-05-25:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-05-25",
+          "record_date": "2026-05-25",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 31 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 31.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2026-07-15:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-07-15",
+          "record_date": "2026-07-15",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 12 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 12.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        },
+        {
+          "event_id": "NSE:TCS:2026-10-14:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-10-14",
+          "record_date": "2026-10-14",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 12 Per Share",
+          "document_identifier": "NSE_CA_TCS_20261016_7b5b9325",
+          "artifact_sha256": "7b5b93258d6baf7cd26d030d9c4cc8d34f3321a10876882f9df29ca7b706a935",
+          "artifact_byte_size": 3606,
+          "dividend_amount": 12.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "2026-10-05 to 2026-10-13"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0139,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "HCLTECH",
+      "instrument_id": 10,
+      "name": "HCL Technologies Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 4,
+      "events": [
+        {
+          "event_id": "NSE:HCLTECH:2025-10-20:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-10-20",
+          "record_date": "2025-10-21",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 12 Per Share",
+          "document_identifier": "NSE_CA_HCLTECH_20261016_638ebb5f",
+          "artifact_sha256": "638ebb5f11211f94b747dc7a5e472f4ed8eb8b4e313cb5e72f08bdebf3245b44",
+          "artifact_byte_size": 1563,
+          "dividend_amount": 12.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:HCLTECH:2026-01-19:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-01-19",
+          "record_date": "2026-01-20",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 12 Per Share",
+          "document_identifier": "NSE_CA_HCLTECH_20261016_638ebb5f",
+          "artifact_sha256": "638ebb5f11211f94b747dc7a5e472f4ed8eb8b4e313cb5e72f08bdebf3245b44",
+          "artifact_byte_size": 1563,
+          "dividend_amount": 12.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:HCLTECH:2026-05-07:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-05-07",
+          "record_date": "2026-05-08",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 18 Per Share",
+          "document_identifier": "NSE_CA_HCLTECH_20261016_638ebb5f",
+          "artifact_sha256": "638ebb5f11211f94b747dc7a5e472f4ed8eb8b4e313cb5e72f08bdebf3245b44",
+          "artifact_byte_size": 1563,
+          "dividend_amount": 18.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:HCLTECH:2026-10-16:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-10-16",
+          "record_date": "2026-10-17",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 12 Per Share",
+          "document_identifier": "NSE_CA_HCLTECH_20261016_638ebb5f",
+          "artifact_sha256": "638ebb5f11211f94b747dc7a5e472f4ed8eb8b4e313cb5e72f08bdebf3245b44",
+          "artifact_byte_size": 1563,
+          "dividend_amount": 12.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0002,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 5,
+        "null_quarantined": 500,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "TATASTEEL",
+      "instrument_id": 11,
+      "name": "Tata Steel Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Metals & Mining",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.4198,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "HEROMOTOCO",
+      "instrument_id": 12,
+      "name": "Hero MotoCorp Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0075,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "BAJAJ-AUTO",
+      "instrument_id": 13,
+      "name": "Bajaj Auto Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0794,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "instrument_id": 14,
+      "name": "Sun Pharmaceutical Ind",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0109,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "instrument_id": 15,
+      "name": "JSW Steel Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Metals & Mining",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.3433,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "ADANIENT",
+      "instrument_id": 16,
+      "name": "Adani Enterprises Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.2917,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "GRASIM",
+      "instrument_id": 17,
+      "name": "Grasim Industries Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 1.1719,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "HINDALCO",
+      "instrument_id": 18,
+      "name": "Hindalco Industries Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Metals & Mining",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.4998,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "BPCL",
+      "instrument_id": 19,
+      "name": "Bharat Petroleum Corp",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.4337,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "INFY",
+      "instrument_id": 20,
+      "name": "Infosys Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 4,
+      "events": [
+        {
+          "event_id": "NSE:INFY:2025-05-31:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-05-31",
+          "record_date": "2025-05-31",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 20 Per Share",
+          "document_identifier": "NSE_CA_INFY_20261016_a16f440c",
+          "artifact_sha256": "a16f440c58115f6de86226a23fd32723cce544c20c771645ac3554e38877d44c",
+          "artifact_byte_size": 1156,
+          "dividend_amount": 20.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:INFY:2025-05-31:CASH_DIVIDEND:2",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-05-31",
+          "record_date": "2025-05-31",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Special Dividend - Rs 8 Per Share",
+          "document_identifier": "NSE_CA_INFY_20261016_a16f440c",
+          "artifact_sha256": "a16f440c58115f6de86226a23fd32723cce544c20c771645ac3554e38877d44c",
+          "artifact_byte_size": 1156,
+          "dividend_amount": 8.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:INFY:2025-10-29:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-10-29",
+          "record_date": "2025-10-29",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 21 Per Share",
+          "document_identifier": "NSE_CA_INFY_20261016_a16f440c",
+          "artifact_sha256": "a16f440c58115f6de86226a23fd32723cce544c20c771645ac3554e38877d44c",
+          "artifact_byte_size": 1156,
+          "dividend_amount": 21.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:INFY:2026-06-10:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-06-10",
+          "record_date": "2026-06-10",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 25 Per Share",
+          "document_identifier": "NSE_CA_INFY_20261016_a16f440c",
+          "artifact_sha256": "a16f440c58115f6de86226a23fd32723cce544c20c771645ac3554e38877d44c",
+          "artifact_byte_size": 1156,
+          "dividend_amount": 25.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0002,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "LT",
+      "instrument_id": 21,
+      "name": "Larsen & Toubro Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.2511,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "instrument_id": 22,
+      "name": "Asian Paints Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 4,
+      "events": [
+        {
+          "event_id": "NSE:ASIANPAINT:2024-11-04:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2024-11-04",
+          "record_date": "2024-11-05",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 4.25 Per Share",
+          "document_identifier": "NSE_CA_ASIANPAINT_20261016_7f5c633a",
+          "artifact_sha256": "7f5c633a0769a077d81d29720a4d273a7914e3ea8c7bcc18d4da6c840e6d6884",
+          "artifact_byte_size": 1565,
+          "dividend_amount": 4.25,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:ASIANPAINT:2025-06-11:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-06-11",
+          "record_date": "2025-06-12",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 28.15 Per Share",
+          "document_identifier": "NSE_CA_ASIANPAINT_20261016_7f5c633a",
+          "artifact_sha256": "7f5c633a0769a077d81d29720a4d273a7914e3ea8c7bcc18d4da6c840e6d6884",
+          "artifact_byte_size": 1565,
+          "dividend_amount": 28.15,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:ASIANPAINT:2025-11-03:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-11-03",
+          "record_date": "2025-11-04",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 4.50 Per Share",
+          "document_identifier": "NSE_CA_ASIANPAINT_20261016_7f5c633a",
+          "artifact_sha256": "7f5c633a0769a077d81d29720a4d273a7914e3ea8c7bcc18d4da6c840e6d6884",
+          "artifact_byte_size": 1565,
+          "dividend_amount": 4.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:ASIANPAINT:2026-06-10:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-06-10",
+          "record_date": "2026-06-11",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 30.25 Per Share",
+          "document_identifier": "NSE_CA_ASIANPAINT_20261016_7f5c633a",
+          "artifact_sha256": "7f5c633a0769a077d81d29720a4d273a7914e3ea8c7bcc18d4da6c840e6d6884",
+          "artifact_byte_size": 1565,
+          "dividend_amount": 30.25,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0174,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "ULTRACEMCO",
+      "instrument_id": 23,
+      "name": "UltraTech Cement Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0744,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "TATAMOTORS",
+      "instrument_id": 24,
+      "name": "Tata Motors Ltd (Pre-Demerger)",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "",
+      "classification": "ARCHIVED_PARENT_DEMERGED",
+      "is_active": false,
+      "evidence_status": "SCHEME_SANCTIONED_VERIFIED",
+      "total_events_recorded": 3,
+      "events": [
+        {
+          "event_id": "NSE:TATAMOTORS:2025-10-24:DEMERGER:1",
+          "action_type": "DEMERGER",
+          "ex_date": "2025-10-24",
+          "record_date": "2025-10-14",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Composite Scheme of Arrangement: Demerger of Commercial Vehicles and Passenger Vehicles into TMCV and TMPV with 68.85% cost allocation to TMPV pursuant to Section 49(2C) of Income Tax Act 1961 (Circular NSE",
+          "document_identifier": "NSE_CA_TATAMOTORS_20261016_5bb39756",
+          "artifact_sha256": "5bb39756a2a98a25646eecc1973391b79858f9235c16487deb9dd6c46780a692",
+          "artifact_byte_size": 574,
+          "dividend_amount": null,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:TATAMOTORS:2025-10-24:OTHER:2",
+          "action_type": "OTHER",
+          "ex_date": "2025-10-24",
+          "record_date": "2025-10-14",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "CML",
+          "document_identifier": "NSE_CA_TATAMOTORS_20261016_5bb39756",
+          "artifact_sha256": "5bb39756a2a98a25646eecc1973391b79858f9235c16487deb9dd6c46780a692",
+          "artifact_byte_size": 574,
+          "dividend_amount": null,
+          "verification_status": "AMBIGUOUS",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AMBIGUOUS_REORGANIZATION_CIRCULAR",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:TATAMOTORS:2025-10-24:OTHER:3",
+          "action_type": "OTHER",
+          "ex_date": "2025-10-24",
+          "record_date": "2025-10-14",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "70875)",
+          "document_identifier": "NSE_CA_TATAMOTORS_20261016_5bb39756",
+          "artifact_sha256": "5bb39756a2a98a25646eecc1973391b79858f9235c16487deb9dd6c46780a692",
+          "artifact_byte_size": 574,
+          "dividend_amount": null,
+          "verification_status": "AMBIGUOUS",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AMBIGUOUS_REORGANIZATION_CIRCULAR",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "UNKNOWN",
+        "notes": null
+      },
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "pop_adj": 0,
+        "null_quarantined": 0,
+        "min_date": null,
+        "max_date": null
+      }
+    },
+    {
+      "symbol": "ONGC",
+      "instrument_id": 25,
+      "name": "Oil & Natural Gas Corp",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.6168,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "CIPLA",
+      "instrument_id": 26,
+      "name": "Cipla Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0057,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "HDFCLIFE",
+      "instrument_id": 27,
+      "name": "HDFC Life Insurance Co",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.0259,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "NTPC",
+      "instrument_id": 28,
+      "name": "NTPC Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:NTPC:2025-11-04:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-11-04",
+          "record_date": "2025-11-05",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 2.50 Per Share",
+          "document_identifier": "NSE_CA_NTPC_20261020_2234e4a1",
+          "artifact_sha256": "2234e4a1274acee7624f2af650e988174cabce4eb7daf22bac98441d8c7a747f",
+          "artifact_byte_size": 759,
+          "dividend_amount": 2.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:NTPC:2026-02-05:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-02-05",
+          "record_date": "2026-02-06",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 2.50 Per Share",
+          "document_identifier": "NSE_CA_NTPC_20261020_2234e4a1",
+          "artifact_sha256": "2234e4a1274acee7624f2af650e988174cabce4eb7daf22bac98441d8c7a747f",
+          "artifact_byte_size": 759,
+          "dividend_amount": 2.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.8882,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "DIVISLAB",
+      "instrument_id": 29,
+      "name": "Divis Laboratories Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": null,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "TATACONSUM",
+      "instrument_id": 30,
+      "name": "Tata Consumer Products",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0287,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "instrument_id": 31,
+      "name": "Bharti Airtel Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Telecommunication",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:BHARTIARTL:2025-08-08:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-08-08",
+          "record_date": "2025-08-09",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 8.00 Per Share",
+          "document_identifier": "NSE_CA_BHARTIARTL_20261016_101512b7",
+          "artifact_sha256": "101512b78186cb5df0158590d5d1c9d38c4b51e4c1c99e223ffdc794a8d36e3e",
+          "artifact_byte_size": 771,
+          "dividend_amount": 8.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:BHARTIARTL:2026-08-07:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-08-07",
+          "record_date": "2026-08-08",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 9.50 Per Share",
+          "document_identifier": "NSE_CA_BHARTIARTL_20261016_101512b7",
+          "artifact_sha256": "101512b78186cb5df0158590d5d1c9d38c4b51e4c1c99e223ffdc794a8d36e3e",
+          "artifact_byte_size": 771,
+          "dividend_amount": 9.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.1742,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "SBIN",
+      "instrument_id": 32,
+      "name": "State Bank of India",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:SBIN:2025-05-22:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-05-22",
+          "record_date": "2025-05-23",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 13.70 Per Share",
+          "document_identifier": "NSE_CA_SBIN_20261016_da6cbc07",
+          "artifact_sha256": "da6cbc07a920134e15b5cb06a13993c959a7c8862b8ab889d11d250757fa216c",
+          "artifact_byte_size": 757,
+          "dividend_amount": 13.7,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:SBIN:2026-05-20:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-05-20",
+          "record_date": "2026-05-21",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 15.50 Per Share",
+          "document_identifier": "NSE_CA_SBIN_20261016_da6cbc07",
+          "artifact_sha256": "da6cbc07a920134e15b5cb06a13993c959a7c8862b8ab889d11d250757fa216c",
+          "artifact_byte_size": 757,
+          "dividend_amount": 15.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.9257,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "COALINDIA",
+      "instrument_id": 33,
+      "name": "Coal India Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:COALINDIA:2025-11-05:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-11-05",
+          "record_date": "2025-11-06",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "1st Interim Dividend - Rs 15.75 Per Share",
+          "document_identifier": "NSE_CA_COALINDIA_20261020_1066e07b",
+          "artifact_sha256": "1066e07b0f3b68d689540a75da95d1d5c0ffd4d8bf667c649fb4adfcd7bea592",
+          "artifact_byte_size": 790,
+          "dividend_amount": 15.75,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:COALINDIA:2026-02-20:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-02-20",
+          "record_date": "2026-02-21",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "2nd Interim Dividend - Rs 5.25 Per Share",
+          "document_identifier": "NSE_CA_COALINDIA_20261020_1066e07b",
+          "artifact_sha256": "1066e07b0f3b68d689540a75da95d1d5c0ffd4d8bf667c649fb4adfcd7bea592",
+          "artifact_byte_size": 790,
+          "dividend_amount": 5.25,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0546,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "instrument_id": 34,
+      "name": "Bajaj Finance Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.6131,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "KOTAKBANK",
+      "instrument_id": 35,
+      "name": "Kotak Mahindra Bank",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:KOTAKBANK:2025-07-15:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-07-15",
+          "record_date": "2025-07-16",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 2 Per Share",
+          "document_identifier": "NSE_CA_KOTAKBANK_20261016_13f6c317",
+          "artifact_sha256": "13f6c317147fd7a6a9526e15b4a7326fd379fd71c39d21f3b3d337cd1dc51d14",
+          "artifact_byte_size": 778,
+          "dividend_amount": 2.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:KOTAKBANK:2026-07-14:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-07-14",
+          "record_date": "2026-07-15",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 2.50 Per Share",
+          "document_identifier": "NSE_CA_KOTAKBANK_20261016_13f6c317",
+          "artifact_sha256": "13f6c317147fd7a6a9526e15b4a7326fd379fd71c39d21f3b3d337cd1dc51d14",
+          "artifact_byte_size": 778,
+          "dividend_amount": 2.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.2503,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "ITC",
+      "instrument_id": 36,
+      "name": "ITC Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 4,
+      "events": [
+        {
+          "event_id": "NSE:ITC:2025-02-12:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-02-12",
+          "record_date": "2025-02-13",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 6.25 Per Share",
+          "document_identifier": "NSE_CA_ITC_20261016_7c109cf3",
+          "artifact_sha256": "7c109cf3fea037c1d69c809fc32c00a627ec0d80ef7e987afa955a979ce54759",
+          "artifact_byte_size": 1499,
+          "dividend_amount": 6.25,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:ITC:2025-06-04:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-06-04",
+          "record_date": "2025-06-05",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 7.50 Per Share",
+          "document_identifier": "NSE_CA_ITC_20261016_7c109cf3",
+          "artifact_sha256": "7c109cf3fea037c1d69c809fc32c00a627ec0d80ef7e987afa955a979ce54759",
+          "artifact_byte_size": 1499,
+          "dividend_amount": 7.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:ITC:2026-02-11:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-02-11",
+          "record_date": "2026-02-12",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 6.50 Per Share",
+          "document_identifier": "NSE_CA_ITC_20261016_7c109cf3",
+          "artifact_sha256": "7c109cf3fea037c1d69c809fc32c00a627ec0d80ef7e987afa955a979ce54759",
+          "artifact_byte_size": 1499,
+          "dividend_amount": 6.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:ITC:2026-05-28:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-05-28",
+          "record_date": "2026-05-29",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 7.85 Per Share",
+          "document_identifier": "NSE_CA_ITC_20261016_7c109cf3",
+          "artifact_sha256": "7c109cf3fea037c1d69c809fc32c00a627ec0d80ef7e987afa955a979ce54759",
+          "artifact_byte_size": 1499,
+          "dividend_amount": 7.85,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0073,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 506,
+        "pop_adj": 13,
+        "null_quarantined": 493,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "POWERGRID",
+      "instrument_id": 37,
+      "name": "Power Grid Corp",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:POWERGRID:2025-11-10:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-11-10",
+          "record_date": "2025-11-11",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 4 Per Share",
+          "document_identifier": "NSE_CA_POWERGRID_20261020_3116535e",
+          "artifact_sha256": "3116535e3a12b0036a678ce73d94da3f309af5f0d7ac86b018f4963544b3b5b7",
+          "artifact_byte_size": 820,
+          "dividend_amount": 4.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:POWERGRID:2026-02-15:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-02-15",
+          "record_date": "2026-02-16",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 4.50 Per Share",
+          "document_identifier": "NSE_CA_POWERGRID_20261020_3116535e",
+          "artifact_sha256": "3116535e3a12b0036a678ce73d94da3f309af5f0d7ac86b018f4963544b3b5b7",
+          "artifact_byte_size": 820,
+          "dividend_amount": 4.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.6522,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "instrument_id": 38,
+      "name": "IndusInd Bank Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.6203,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "RELIANCE",
+      "instrument_id": 39,
+      "name": "Reliance Industries Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:RELIANCE:2025-08-19:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-08-19",
+          "record_date": "2025-08-19",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 10 Per Share",
+          "document_identifier": "NSE_CA_RELIANCE_20261016_347c45ee",
+          "artifact_sha256": "347c45ee824d93201baf47159964f418bd1b480777f3b16323ac7917207e9515",
+          "artifact_byte_size": 776,
+          "dividend_amount": 10.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:RELIANCE:2026-06-05:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-06-05",
+          "record_date": "2026-06-05",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 6 Per Share",
+          "document_identifier": "NSE_CA_RELIANCE_20261016_347c45ee",
+          "artifact_sha256": "347c45ee824d93201baf47159964f418bd1b480777f3b16323ac7917207e9515",
+          "artifact_byte_size": 776,
+          "dividend_amount": 6.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.3056,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "HDFCBANK",
+      "instrument_id": 40,
+      "name": "HDFC Bank Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:HDFCBANK:2025-05-10:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-05-10",
+          "record_date": "2025-05-10",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 19.50 Per Share",
+          "document_identifier": "NSE_CA_HDFCBANK_20261016_927bb6b1",
+          "artifact_sha256": "927bb6b15bababae7ac11d2c56af1031094e911724743373528aa4cf69776ffb",
+          "artifact_byte_size": 758,
+          "dividend_amount": 19.5,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:HDFCBANK:2026-06-19:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-06-19",
+          "record_date": "2026-06-19",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 13 Per Share",
+          "document_identifier": "NSE_CA_HDFCBANK_20261016_927bb6b1",
+          "artifact_sha256": "927bb6b15bababae7ac11d2c56af1031094e911724743373528aa4cf69776ffb",
+          "artifact_byte_size": 758,
+          "dividend_amount": 13.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.5049,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "LTIM",
+      "instrument_id": 41,
+      "name": "LTIMindtree Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "",
+      "classification": "HISTORICAL_PREDECESSOR_RENAME",
+      "is_active": true,
+      "evidence_status": "RENAME_CIRCULAR_VERIFIED",
+      "total_events_recorded": 4,
+      "events": [
+        {
+          "event_id": "NSE:LTIM:2026-02-27:OTHER:4",
+          "action_type": "OTHER",
+          "ex_date": "2026-02-27",
+          "record_date": "2026-02-27",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "LTM_RENAME",
+          "document_identifier": "NSE_CA_LTIM_20261016_5b25fc87",
+          "artifact_sha256": "5b25fc8750764d35bcd34054b8c328180da8529ed36e6fef992c9d97f1ea8dc3",
+          "artifact_byte_size": 440,
+          "dividend_amount": null,
+          "verification_status": "AMBIGUOUS",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AMBIGUOUS_REORGANIZATION_CIRCULAR",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:LTIM:2026-02-27:OTHER:2",
+          "action_type": "OTHER",
+          "ex_date": "2026-02-27",
+          "record_date": "2026-02-27",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "CML",
+          "document_identifier": "NSE_CA_LTIM_20261016_5b25fc87",
+          "artifact_sha256": "5b25fc8750764d35bcd34054b8c328180da8529ed36e6fef992c9d97f1ea8dc3",
+          "artifact_byte_size": 440,
+          "dividend_amount": null,
+          "verification_status": "AMBIGUOUS",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AMBIGUOUS_REORGANIZATION_CIRCULAR",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:LTIM:2026-02-27:OTHER:1",
+          "action_type": "OTHER",
+          "ex_date": "2026-02-27",
+          "record_date": "2026-02-27",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Change in Ticker Symbol from LTIM to LTM pursuant to NSE Circular NSE",
+          "document_identifier": "NSE_CA_LTIM_20261016_5b25fc87",
+          "artifact_sha256": "5b25fc8750764d35bcd34054b8c328180da8529ed36e6fef992c9d97f1ea8dc3",
+          "artifact_byte_size": 440,
+          "dividend_amount": null,
+          "verification_status": "AMBIGUOUS",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AMBIGUOUS_REORGANIZATION_CIRCULAR",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:LTIM:2026-02-27:OTHER:3",
+          "action_type": "OTHER",
+          "ex_date": "2026-02-27",
+          "record_date": "2026-02-27",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "2026",
+          "document_identifier": "NSE_CA_LTIM_20261016_5b25fc87",
+          "artifact_sha256": "5b25fc8750764d35bcd34054b8c328180da8529ed36e6fef992c9d97f1ea8dc3",
+          "artifact_byte_size": 440,
+          "dividend_amount": null,
+          "verification_status": "AMBIGUOUS",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AMBIGUOUS_REORGANIZATION_CIRCULAR",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": null,
+        "notes": "No financial data available from provider for LTIM"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "pop_adj": 0,
+        "null_quarantined": 0,
+        "min_date": null,
+        "max_date": null
+      }
+    },
+    {
+      "symbol": "ICICIBANK",
+      "instrument_id": 42,
+      "name": "ICICI Bank Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.2269,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "TITAN",
+      "instrument_id": 43,
+      "name": "Titan Company Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:TITAN:2025-06-26:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-06-26",
+          "record_date": "2025-06-27",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 11 Per Share",
+          "document_identifier": "NSE_CA_TITAN_20261020_e1875fd0",
+          "artifact_sha256": "e1875fd00caf593372b0248a17c0cc6487344019b934daec291f3de5a3324866",
+          "artifact_byte_size": 757,
+          "dividend_amount": 11.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:TITAN:2026-06-25:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-06-25",
+          "record_date": "2026-06-26",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Dividend - Rs 11 Per Share",
+          "document_identifier": "NSE_CA_TITAN_20261020_e1875fd0",
+          "artifact_sha256": "e1875fd00caf593372b0248a17c0cc6487344019b934daec291f3de5a3324866",
+          "artifact_byte_size": 757,
+          "dividend_amount": 11.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0774,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "M&M",
+      "instrument_id": 44,
+      "name": "Mahindra & Mahindra Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.3992,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 504,
+        "pop_adj": 13,
+        "null_quarantined": 491,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "instrument_id": 45,
+      "name": "Bajaj Finserv Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 1.3041,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "SBILIFE",
+      "instrument_id": 46,
+      "name": "SBI Life Insurance Co",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": null,
+        "notes": "Prohibited conventional banking / interest-based finance under AAOIFI Standard No. 21"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "BRITANNIA",
+      "instrument_id": 47,
+      "name": "Britannia Industries",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0118,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "TECHM",
+      "instrument_id": 48,
+      "name": "Tech Mahindra Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "total_events_recorded": 2,
+      "events": [
+        {
+          "event_id": "NSE:TECHM:2025-10-31:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2025-10-31",
+          "record_date": "2025-11-01",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Interim Dividend - Rs 12 Per Share",
+          "document_identifier": "NSE_CA_TECHM_20261016_7597cfc0",
+          "artifact_sha256": "7597cfc090b7fcfa706ea69e2df6272d9529af70f9fe1b4ddcfb646d8d4b1135",
+          "artifact_byte_size": 771,
+          "dividend_amount": 12.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        },
+        {
+          "event_id": "NSE:TECHM:2026-07-20:CASH_DIVIDEND:1",
+          "action_type": "CASH_DIVIDEND",
+          "ex_date": "2026-07-20",
+          "record_date": "2026-07-21",
+          "source_issuer": "NSE_INDIA",
+          "source_subject": "Final Dividend - Rs 28 Per Share",
+          "document_identifier": "NSE_CA_TECHM_20261016_7597cfc0",
+          "artifact_sha256": "7597cfc090b7fcfa706ea69e2df6272d9529af70f9fe1b4ddcfb646d8d4b1135",
+          "artifact_byte_size": 771,
+          "dividend_amount": 28.0,
+          "verification_status": "VERIFIED_EXCHANGE_PRIMARY",
+          "artifact_integrity": "SHA256_BYTE_MATCH",
+          "source_authenticity": "AUTHENTICATED_PRIMARY_EXCHANGE",
+          "affected_date_range": "HISTORICAL_PRE_EVENT"
+        }
+      ],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.015,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "ADANIPORTS",
+      "instrument_id": 49,
+      "name": "Adani Ports & SEZ Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "evidence_status": "DATA_INSUFFICIENT",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.1579,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "pop_adj": 13,
+        "null_quarantined": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22"
+      }
+    },
+    {
+      "symbol": "TMPV",
+      "instrument_id": 10126,
+      "name": "Tata Motors Passenger Vehicles Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Automobile",
+      "classification": "ACTIVE_DEMERGED_SUCCESSOR",
+      "is_active": true,
+      "evidence_status": "SCHEME_SANCTIONED_VERIFIED",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "FAIL",
+        "debt_ratio": 0.8062,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "pop_adj": 0,
+        "null_quarantined": 0,
+        "min_date": null,
+        "max_date": null
+      }
+    },
+    {
+      "symbol": "TMCV",
+      "instrument_id": 10127,
+      "name": "Tata Motors Commercial Vehicles Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Automobile",
+      "classification": "ACTIVE_DEMERGED_SUCCESSOR",
+      "is_active": true,
+      "evidence_status": "SCHEME_SANCTIONED_VERIFIED",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0361,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "pop_adj": 0,
+        "null_quarantined": 0,
+        "min_date": null,
+        "max_date": null
+      }
+    },
+    {
+      "symbol": "LTM",
+      "instrument_id": 10128,
+      "name": "LTIMindtree Ltd",
+      "exchange": "NSE",
+      "isin": "",
+      "sector": "Technology",
+      "classification": "ACTIVE_SUCCESSOR_RENAME",
+      "is_active": true,
+      "evidence_status": "RENAME_CIRCULAR_VERIFIED",
+      "total_events_recorded": 0,
+      "events": [],
+      "shariah_screening": {
+        "status": "DATA_INSUFFICIENT",
+        "debt_ratio": 0.0194,
+        "notes": "Core non-financial operating business"
+      },
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "pop_adj": 0,
+        "null_quarantined": 0,
+        "min_date": null,
+        "max_date": null
+      }
+    }
+  ]
+}

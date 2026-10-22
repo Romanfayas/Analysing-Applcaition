@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "COALINDIA",
+    "comp": "Coal India Limited",
+    "series": "EQ",
+    "faceVal": "10",
+    "isin": "INE522F01014",
+    "subject": "2nd Interim Dividend - Rs 5.25 Per Share",
+    "exDate": "20-Feb-2026",
+    "recDate": "21-Feb-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "COALINDIA",
+    "comp": "Coal India Limited",
+    "series": "EQ",
+    "faceVal": "10",
+    "isin": "INE522F01014",
+    "subject": "1st Interim Dividend - Rs 15.75 Per Share",
+    "exDate": "05-Nov-2025",
+    "recDate": "06-Nov-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

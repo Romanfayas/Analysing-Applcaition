@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "NESTLEIND",
+    "comp": "Nestle India Limited",
+    "series": "EQ",
+    "faceVal": "1",
+    "isin": "INE239A01024",
+    "subject": "Final Dividend - Rs 8.50 Per Share",
+    "exDate": "15-Jul-2026",
+    "recDate": "16-Jul-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "NESTLEIND",
+    "comp": "Nestle India Limited",
+    "series": "EQ",
+    "faceVal": "1",
+    "isin": "INE239A01024",
+    "subject": "Final Dividend - Rs 8.50 Per Share",
+    "exDate": "16-Jul-2025",
+    "recDate": "17-Jul-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

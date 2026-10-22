@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "HDFCBANK",
+    "comp": "HDFC Bank Limited",
+    "series": "EQ",
+    "faceVal": "1",
+    "isin": "INE040A01034",
+    "subject": "Dividend - Rs 13 Per Share",
+    "exDate": "19-Jun-2026",
+    "recDate": "19-Jun-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "HDFCBANK",
+    "comp": "HDFC Bank Limited",
+    "series": "EQ",
+    "faceVal": "1",
+    "isin": "INE040A01034",
+    "subject": "Dividend - Rs 19.50 Per Share",
+    "exDate": "10-May-2025",
+    "recDate": "10-May-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

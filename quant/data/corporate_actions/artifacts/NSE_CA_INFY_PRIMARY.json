@@ -1,0 +1,50 @@
+[
+  {
+    "symbol": "INFY",
+    "comp": "Infosys Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE009A01021",
+    "subject": "Dividend - Rs 25 Per Share",
+    "exDate": "10-Jun-2026",
+    "recDate": "10-Jun-2026",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "INFY",
+    "comp": "Infosys Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE009A01021",
+    "subject": "Interim Dividend - Rs 21 Per Share",
+    "exDate": "29-Oct-2025",
+    "recDate": "29-Oct-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  },
+  {
+    "symbol": "INFY",
+    "comp": "Infosys Limited",
+    "series": "EQ",
+    "faceVal": "5",
+    "isin": "INE009A01021",
+    "subject": "Dividend - Rs 20 Per Share/ Special Dividend - Rs 8 Per Share",
+    "exDate": "31-May-2025",
+    "recDate": "31-May-2025",
+    "bcStartDate": "-",
+    "bcEndDate": "-",
+    "ndStartDate": "-",
+    "ndEndDate": "-",
+    "caBroadcastDate": null,
+    "ind": "-"
+  }
+]

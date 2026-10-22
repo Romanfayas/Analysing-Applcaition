@@ -1,0 +1,946 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-10-22T20:30:00Z",
+  "policy": "HALALEQUITY_PERIOD_READINESS_GATE_POLICY_V1",
+  "overall_research_gate": "RESEARCH_BLOCKED",
+  "quarantined_bars_count": 23132,
+  "total_instruments": 52,
+  "matrix": [
+    {
+      "symbol": "DRREDDY",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "NESTLEIND",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "EICHERMOT",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "HINDUNILVR",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "AXISBANK",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "WIPRO",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "APOLLOHOSP",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "MARUTI",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "TCS",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "DIVIDEND_ADJUSTED_SERIES_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "HCLTECH",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "BLOCKED",
+        "blocker": "INTERIM_DIVIDEND_LOOKBACK_QUARANTINED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "TATASTEEL",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "HEROMOTOCO",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "BAJAJ-AUTO",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "ADANIENT",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "GRASIM",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "HINDALCO",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "BPCL",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "INFY",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "LT",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "ULTRACEMCO",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "TATAMOTORS",
+      "classification": "ARCHIVED_PARENT_DEMERGED",
+      "shariah_status": "UNKNOWN",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "NO_HISTORICAL_BARS_REGISTERED"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "BLOCKED",
+        "blocker": "NO_OHLCV_BARS_AVAILABLE"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "BLOCKED",
+        "blocker": "NO_FORWARD_BARS"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "ONGC",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "CIPLA",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "HDFCLIFE",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "NTPC",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "DIVISLAB",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "TATACONSUM",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "SBIN",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "COALINDIA",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "KOTAKBANK",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "ITC",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "POWERGRID",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "RELIANCE",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "HDFCBANK",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "LTIM",
+      "classification": "HISTORICAL_PREDECESSOR_RENAME",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "NO_HISTORICAL_BARS_REGISTERED"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "BLOCKED",
+        "blocker": "NO_OHLCV_BARS_AVAILABLE"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "BLOCKED",
+        "blocker": "NO_FORWARD_BARS"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "ICICIBANK",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "TITAN",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "M&M",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "SBILIFE",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "BRITANNIA",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "TECHM",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "ADANIPORTS",
+      "classification": "ACTIVE_CORE",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "HISTORICAL_BARS_QUARANTINED_NULL_ADJUSTED_CLOSE"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "RESEARCH_BLOCKED_PENDING_RELEASE",
+        "blocker": "OVERALL_RESEARCH_GATE_LOCKED"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "FORWARD_MONITORING_ONLY",
+        "blocker": "SHARIAH_OR_RESEARCH_GATE_LOCKED"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "TMPV",
+      "classification": "ACTIVE_DEMERGED_SUCCESSOR",
+      "shariah_status": "FAIL",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "NO_HISTORICAL_BARS_REGISTERED"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "BLOCKED",
+        "blocker": "NO_OHLCV_BARS_AVAILABLE"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "BLOCKED",
+        "blocker": "NO_FORWARD_BARS"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "TMCV",
+      "classification": "ACTIVE_DEMERGED_SUCCESSOR",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "NO_HISTORICAL_BARS_REGISTERED"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "BLOCKED",
+        "blocker": "NO_OHLCV_BARS_AVAILABLE"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "BLOCKED",
+        "blocker": "NO_FORWARD_BARS"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    },
+    {
+      "symbol": "LTM",
+      "classification": "ACTIVE_SUCCESSOR_RENAME",
+      "shariah_status": "DATA_INSUFFICIENT",
+      "period_historical_2024_2026": {
+        "status": "BLOCKED",
+        "blocker": "NO_HISTORICAL_BARS_REGISTERED"
+      },
+      "period_lookback_oct05_oct13": {
+        "status": "BLOCKED",
+        "blocker": "NO_OHLCV_BARS_AVAILABLE"
+      },
+      "period_forward_oct14_oct22": {
+        "status": "BLOCKED",
+        "blocker": "NO_FORWARD_BARS"
+      },
+      "overall_research_verdict": "RESEARCH_BLOCKED"
+    }
+  ]
+}
