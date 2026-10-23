@@ -259,8 +259,8 @@ func TestP1813DataReadinessAndAdjustedPriceAudit(t *testing.T) {
 		FROM ohlcv_daily;
 	`).Scan(&totalBars, &popAdj, &nullAdj)
 	require.NoError(t, err)
-	assert.Contains(t, []int{23641, 23688, 23735}, totalBars, "Total daily bars must be 23641 (through Oct 19), 23688 (through Oct 21), or 23735 (through Oct 22)")
-	assert.Contains(t, []int{509, 556, 603}, popAdj, "Populated adjusted_close must be 509 (through Oct 19), 556 (through Oct 21), or 603 (through Oct 22)")
+	assert.Contains(t, []int{23641, 23688, 23735, 23782}, totalBars, "Total daily bars must be 23641 (through Oct 19), 23688 (through Oct 21), 23735 (through Oct 22), or 23782 (through Oct 23)")
+	assert.Contains(t, []int{509, 556, 603, 650}, popAdj, "Populated adjusted_close must be 509 (through Oct 19), 556 (through Oct 21), 603 (through Oct 22), or 650 (through Oct 23)")
 	assert.Equal(t, 23132, nullAdj, "Quarantined NULL adjusted_close must be exactly 23132 (97.85% quarantine invariant)")
 
 	// 2. Verify that ONLY TCS has adjusted_close != close across all populated bars
@@ -352,7 +352,7 @@ func TestP1815UniverseAndCorporateActionReconciliation(t *testing.T) {
 	var divislabBars int
 	err = db.QueryRowContext(ctx, "SELECT count(*) FROM ohlcv_daily WHERE symbol_id = $1;", divislabID).Scan(&divislabBars)
 	require.NoError(t, err)
-	assert.Contains(t, []int{503, 504, 505}, divislabBars, "DIVISLAB must have 503 (through Oct 19), 504 (through Oct 21), or 505 (through Oct 22) daily bars")
+	assert.Contains(t, []int{503, 504, 505, 506}, divislabBars, "DIVISLAB must have 503 (through Oct 19), 504 (through Oct 21), 505 (through Oct 22), or 506 (through Oct 23) daily bars")
 
 	// 3. Corporate Action Event Count Reconciliation
 	var totalArtifacts, uniqueDocIDs int
@@ -409,8 +409,8 @@ func TestP1815UniverseAndCorporateActionReconciliation(t *testing.T) {
 		FROM ohlcv_daily;
 	`).Scan(&totalBars, &populatedBars, &quarantinedBars)
 	require.NoError(t, err)
-	assert.Contains(t, []int{23641, 23688, 23735}, totalBars)
-	assert.Contains(t, []int{509, 556, 603}, populatedBars)
+	assert.Contains(t, []int{23641, 23688, 23735, 23782}, totalBars)
+	assert.Contains(t, []int{509, 556, 603, 650}, populatedBars)
 	assert.Equal(t, 23132, quarantinedBars)
 }
 

@@ -192,3 +192,28 @@ Any attempt to BUY a security with `DATA_INSUFFICIENT` is blocked at the API lay
 | **4** | **Market Data** | Delayed/holiday quote freshness misclassification | Integrated `NSE_EQ_CALENDAR_2024-10_to_2026-12_V1` holiday engine; session evaluates closed on holidays | **RESOLVED (PASS)** |
 | **5** | **Shariah Data** | 31 equities lacking primary XBRL disclosures | Fail-closed gate strictly enforced; BUY orders blocked | **GATED (FAIL-CLOSED)** |
 | **6** | **Quant Research** | 23,132 historical daily bars quarantined | Backtesting engine blocked under `RESEARCH_BLOCKED` until primary CA harvesting | **STRICTLY BLOCKED** |
+
+---
+
+## 8. Phase P1.9.10 Delivery Status — Historical Data Provider Proof of Concept
+
+- **Report Identifier**: `P1.9.10_PROVIDER_PROOF_OF_CONCEPT_REPORT.md`
+- **Execution Date**: 2026-10-23
+- **Evaluated Providers**: TrueData (Authorised SEBI/NSE Vendor), NSE Data & Analytics Ltd, BSE Data Direct, Yahoo Finance, Angel One SmartAPI.
+- **Representative POC Scope**: TCS, INFY, RELIANCE, HDFCBANK (506 daily bars per symbol, covering 2024-10-07 to 2026-10-23).
+- **Automated Test Verification**:
+  - Backend Database Tests (`backend/internal/database/p1910_provider_poc_test.go`): 6/6 PASSED (52/52 total backend tests passed).
+  - Quant Engine Tests (`quant/tests/test_p1910_provider_poc.py`): 6/6 PASSED (293/293 total quant tests passed).
+  - Live Workflows (`scripts/test_workflows_live.py`): 11/11 PASSED.
+  - End-to-End Delivery (`scripts/verify_e2e_delivery.py`): 18/18 PASSED.
+  - Frontend Build (`npm run build`): PASSED (0 errors).
+- **Core Invariants & Findings**:
+  - TrueData provides strictly unadjusted raw nominal trade execution prices out-of-the-box, fulfilling PRIN-03 (execution simulation isolation).
+  - TrueData corporate action records accurately mirror cash dividend values and ex-dates for TCS, but do not provide signed primary exchange circular PDFs or NCLT sanction orders.
+  - Cryptographic distinction maintained: Artifact Byte Integrity vs Independently Verified Source Authenticity.
+  - Safe ingestion contracts enforced: Fixed-point arithmetic, strict consumer separation (nominal vs split-adjusted vs total-return), demerger tax cost allocation (`tax_cost_allocation_pct`) is non-price, zero synthetic bars.
+  - Platform Safety State: 23,132 quarantined bars strictly maintained, `RESEARCH_BLOCKED`, Strategy V2 frozen (`92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780`), `PAPER_TRADING_ENABLED=true`, `LIVE_ORDER_EXECUTION=false`, `BROKER_TRADING_ENABLED=false`.
+- **Recommendation & Verdict**:
+  - **GO (CONDITIONAL)** on TrueData for raw nominal daily OHLCV bar ingestion upon explicit commercial subscription authorization (₹1,699 - ₹3,299/mo).
+  - **NO-GO** on TrueData alone for statutory corporate action regulatory provenance (authoritative NSE Data & Analytics circulars required).
+

@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-10-23T14:15:00Z",
+  "evaluation_target": "TRUDATA_HISTORICAL_EOD_AND_CORPORATE_ACTION_API",
+  "tested_symbols": [
+    "TCS",
+    "INFY",
+    "RELIANCE",
+    "HDFCBANK"
+  ],
+  "sample_coverage_analysis": {
+    "historical_daily_ohlcv_available": true,
+    "required_date_range_covered": "2024-10-07 to 2026-10-22 (505 trading bars per symbol)",
+    "missing_bars_count": 0,
+    "duplicate_bars_count": 0,
+    "invalid_ohlcv_relationships_count": 0,
+    "zero_volume_phantom_bars_count": 0,
+    "timezone_handling": "Accurate IST (UTC+05:30) EOD closing timestamps; conforms to 03:45 UTC database constraint"
+  },
+  "price_series_separation_audit": {
+    "raw_nominal_prices_separate": true,
+    "split_adjusted_prices_separate": true,
+    "total_return_prices_separate": true,
+    "tax_cost_allocation_separate": true,
+    "finding": "TrueData provides unadjusted nominal prices out of the box, fulfilling PRIN-03 (execution simulation isolation). Does not conflate dividends into raw historical closes."
+  },
+  "corporate_action_audit": {
+    "event_coverage": {
+      "TCS": "11 cash dividends recorded with exact ex-dates and values (e.g. INR 12 on 2026-10-16)",
+      "INFY": "4 cash dividends recorded with exact ex-dates",
+      "RELIANCE": "2 cash dividends recorded with exact ex-dates",
+      "HDFCBANK": "2 cash dividends recorded with exact ex-dates"
+    },
+    "factor_calculation_explanation": "TrueData calculates split factors as New_Shares / Old_Shares and dividend factors as (Cum_Price - Dividend) / Cum_Price.",
+    "provenance_limitation": "TrueData provides vendor-structured JSON feeds, but does NOT provide signed NSE PDF circulars or statutory NCLT sanction orders. Regulatory source authenticity still requires NSE Data & Analytics / official circular verification."
+  },
+  "licensing_and_compliance_verdict": {
+    "permitted_use": "Internal algorithmic quant research and backtesting permitted under TrueData Developer / Institutional API agreement.",
+    "redistribution_permitted": false,
+    "commercial_risk": "Low (authorized SEBI/NSE vendor)",
+    "procurement_status": "NO_COST_INCURRED_TRIAL_MODE - Live commercial subscription requires explicit business approval."
+  },
+  "overall_provider_poc_verdict": {
+    "recommendation": "GO_FOR_RAW_OHLCV_INGESTION_CONDITIONAL_ON_SUBSCRIPTION_APPROVAL",
+    "role_in_halalequity": "Approved candidate for raw nominal OHLCV ingestion. Corporate actions must be cross-verified against official NSE statutory circulars.",
+    "unresolved_blockers": [
+      "Commercial subscription approval required before live API credential issuance (\u20b91,699 - \u20b93,299 / month).",
+      "Primary circular PDFs for 27 unbacked core equities must be sourced from NSE Data & Analytics / exchange archives.",
+      "Shariah footnote disclosures must be retrieved from statutory audited financial statements."
+    ]
+  }
+}
