@@ -1,0 +1,1682 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-10-22T21:45:00Z",
+  "policy": "HALALEQUITY_EVIDENCE_RECOVERY_PLAN_V1",
+  "summary": {
+    "total_catalog_instruments": 52,
+    "active_core_equities": 47,
+    "core_equities_with_full_primary_evidence": 1,
+    "core_equities_with_partial_primary_evidence": 19,
+    "core_equities_missing_primary_evidence": 27,
+    "lineage_and_restructuring_instruments": 5,
+    "total_quarantined_daily_bars": 23132,
+    "quarantine_release_policy": "NO_UNILATERAL_RELEASE_WITHOUT_AUTHENTICATED_PRIMARY_EXCHANGE_EVIDENCE",
+    "total_estimated_remediation_hours": 122.5
+  },
+  "instruments": [
+    {
+      "symbol_id": 1,
+      "symbol": "DRREDDY",
+      "name": "Dr Reddys Laboratories",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 2,
+      "symbol": "NESTLEIND",
+      "name": "Nestle India Ltd",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 3,
+      "symbol": "EICHERMOT",
+      "name": "Eicher Motors Ltd",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 4,
+      "symbol": "HINDUNILVR",
+      "name": "Hindustan Unilever Ltd",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 5,
+      "symbol": "AXISBANK",
+      "name": "Axis Bank Ltd",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 6,
+      "symbol": "WIPRO",
+      "name": "Wipro Ltd",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 7,
+      "symbol": "APOLLOHOSP",
+      "name": "Apollo Hospitals Enterprise",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 8,
+      "symbol": "MARUTI",
+      "name": "Maruti Suzuki India Ltd",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 9,
+      "symbol": "TCS",
+      "name": "Tata Consultancy Services",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "FULL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_VERIFIED_BENCHMARK",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 11,
+        "verified_events": 11,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "All 11 cash dividend events verified from primary exchange disclosures. Maintain fixed-point NUMERIC(18,8) adjustment factor 0.99471203 and exact rounding policy.",
+        "estimated_effort_hours": 1.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 10,
+      "symbol": "HCLTECH",
+      "name": "HCL Technologies Ltd",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 5,
+        "quarantined_bars": 500,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 4,
+        "verified_events": 4,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 11,
+      "symbol": "TATASTEEL",
+      "name": "Tata Steel Ltd",
+      "sector": "Metals & Mining",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 12,
+      "symbol": "HEROMOTOCO",
+      "name": "Hero MotoCorp Ltd",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 13,
+      "symbol": "BAJAJ-AUTO",
+      "name": "Bajaj Auto Ltd",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 14,
+      "symbol": "SUNPHARMA",
+      "name": "Sun Pharmaceutical Ind",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 15,
+      "symbol": "JSWSTEEL",
+      "name": "JSW Steel Ltd",
+      "sector": "Metals & Mining",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 16,
+      "symbol": "ADANIENT",
+      "name": "Adani Enterprises Ltd",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 17,
+      "symbol": "GRASIM",
+      "name": "Grasim Industries Ltd",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 18,
+      "symbol": "HINDALCO",
+      "name": "Hindalco Industries Ltd",
+      "sector": "Metals & Mining",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 19,
+      "symbol": "BPCL",
+      "name": "Bharat Petroleum Corp",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 20,
+      "symbol": "INFY",
+      "name": "Infosys Ltd",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 4,
+        "verified_events": 4,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 21,
+      "symbol": "LT",
+      "name": "Larsen & Toubro Ltd",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 22,
+      "symbol": "ASIANPAINT",
+      "name": "Asian Paints Ltd",
+      "sector": null,
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 4,
+        "verified_events": 4,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 23,
+      "symbol": "ULTRACEMCO",
+      "name": "UltraTech Cement Ltd",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 24,
+      "symbol": "TATAMOTORS",
+      "name": "Tata Motors Ltd (Pre-Demerger)",
+      "sector": null,
+      "classification": "DEMERGER_PREDECESSOR",
+      "is_active": false,
+      "current_evidence_status": "SCHEME_SANCTIONED_VERIFIED",
+      "priority_tier": "P3_RESTRUCTURING_PARENT",
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "populated_bars": 0,
+        "quarantined_bars": 0,
+        "min_date": null,
+        "max_date": null,
+        "quarantined_period": "NONE"
+      },
+      "corporate_actions": {
+        "recorded_events": 3,
+        "verified_events": 1,
+        "action_types": "DEMERGER,OTHER",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NCLT_MUMBAI_SANCTION_ORDER",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Maintain historical quarantine and isolation. Zero synthetic bars permitted. Tax cost allocation 68.85% CV / 31.15% PV verified under NCLT Mumbai order; strictly marked price_factor_applicable=false.",
+        "estimated_effort_hours": 0.5,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 25,
+      "symbol": "ONGC",
+      "name": "Oil & Natural Gas Corp",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 26,
+      "symbol": "CIPLA",
+      "name": "Cipla Ltd",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 27,
+      "symbol": "HDFCLIFE",
+      "name": "HDFC Life Insurance Co",
+      "sector": null,
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 28,
+      "symbol": "NTPC",
+      "name": "NTPC Ltd",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 29,
+      "symbol": "DIVISLAB",
+      "name": "Divis Laboratories Ltd",
+      "sector": "Healthcare",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 30,
+      "symbol": "TATACONSUM",
+      "name": "Tata Consumer Products",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 31,
+      "symbol": "BHARTIARTL",
+      "name": "Bharti Airtel Ltd",
+      "sector": "Telecommunication",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 32,
+      "symbol": "SBIN",
+      "name": "State Bank of India",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 33,
+      "symbol": "COALINDIA",
+      "name": "Coal India Ltd",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 34,
+      "symbol": "BAJFINANCE",
+      "name": "Bajaj Finance Ltd",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 35,
+      "symbol": "KOTAKBANK",
+      "name": "Kotak Mahindra Bank",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 36,
+      "symbol": "ITC",
+      "name": "ITC Ltd",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 506,
+        "populated_bars": 13,
+        "quarantined_bars": 493,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 4,
+        "verified_events": 4,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 37,
+      "symbol": "POWERGRID",
+      "name": "Power Grid Corp",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 38,
+      "symbol": "INDUSINDBK",
+      "name": "IndusInd Bank Ltd",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 39,
+      "symbol": "RELIANCE",
+      "name": "Reliance Industries Ltd",
+      "sector": "Energy",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 40,
+      "symbol": "HDFCBANK",
+      "name": "HDFC Bank Ltd",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 41,
+      "symbol": "LTIM",
+      "name": "LTIMindtree Ltd",
+      "sector": null,
+      "classification": "RENAME_SUCCESSOR",
+      "is_active": true,
+      "current_evidence_status": "RENAME_CIRCULAR_VERIFIED",
+      "priority_tier": "P3_RENAME_ENTITY",
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "populated_bars": 0,
+        "quarantined_bars": 0,
+        "min_date": null,
+        "max_date": null,
+        "quarantined_period": "NONE"
+      },
+      "corporate_actions": {
+        "recorded_events": 4,
+        "verified_events": 0,
+        "action_types": "OTHER",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_STATUTORY_CIRCULAR",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Maintain 1:1 nominal continuity mapping to predecessor LTM under NSE Circular NSE/CML/2022/55. Zero historical price distortion.",
+        "estimated_effort_hours": 0.5,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 42,
+      "symbol": "ICICIBANK",
+      "name": "ICICI Bank Ltd",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 43,
+      "symbol": "TITAN",
+      "name": "Titan Company Ltd",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 44,
+      "symbol": "M&M",
+      "name": "Mahindra & Mahindra Ltd",
+      "sector": "Automobile",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 504,
+        "populated_bars": 13,
+        "quarantined_bars": 491,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 45,
+      "symbol": "BAJAJFINSV",
+      "name": "Bajaj Finserv Ltd",
+      "sector": "Financial Services",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 46,
+      "symbol": "SBILIFE",
+      "name": "SBI Life Insurance Co",
+      "sector": null,
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 47,
+      "symbol": "BRITANNIA",
+      "name": "Britannia Industries",
+      "sector": "Consumer Goods",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 48,
+      "symbol": "TECHM",
+      "name": "Tech Mahindra Ltd",
+      "sector": "Technology",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "PARTIAL_PRIMARY_VERIFIED",
+      "priority_tier": "P1_HIGH_PRIORITY_EXPANSION",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 2,
+        "verified_events": 2,
+        "action_types": "CASH_DIVIDEND",
+        "primary_artifact_present": true
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Primary exchange artifacts exist for recent 2-4 dividend events. Ingest full 2024-2026 EOD Bhavcopy and circulars to back remaining historical dividend schedule.",
+        "estimated_effort_hours": 2.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 49,
+      "symbol": "ADANIPORTS",
+      "name": "Adani Ports & SEZ Ltd",
+      "sector": "Construction",
+      "classification": "ACTIVE_CORE",
+      "is_active": true,
+      "current_evidence_status": "DATA_INSUFFICIENT",
+      "priority_tier": "P1_URGENT_EVIDENCE_RECOVERY",
+      "ohlcv_coverage": {
+        "total_bars": 505,
+        "populated_bars": 13,
+        "quarantined_bars": 492,
+        "min_date": "2024-10-07",
+        "max_date": "2026-10-22",
+        "quarantined_period": "2024-10-07 to 2026-10-04"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_DATA_ANALYTICS_HISTORICAL_ARCHIVES",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Zero primary corporate-action artifacts in repository. Retrieve official NSE corporate actions master and statutory circulars for 2024-2026 to resolve quarantined bars.",
+        "estimated_effort_hours": 3.0,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 10126,
+      "symbol": "TMPV",
+      "name": "Tata Motors Passenger Vehicles Ltd",
+      "sector": "Automobile",
+      "classification": "DEMERGER_SUCCESSOR",
+      "is_active": true,
+      "current_evidence_status": "SCHEME_SANCTIONED_VERIFIED",
+      "priority_tier": "P3_RESTRUCTURING_SUCCESSOR",
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "populated_bars": 0,
+        "quarantined_bars": 0,
+        "min_date": null,
+        "max_date": null,
+        "quarantined_period": "NONE"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_LISTING_NOTIFICATION",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Await official post-demerger exchange listing date. Zero synthetic pre-listing bars. Ingest only genuine exchange trades once officially listed.",
+        "estimated_effort_hours": 0.5,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 10127,
+      "symbol": "TMCV",
+      "name": "Tata Motors Commercial Vehicles Ltd",
+      "sector": "Automobile",
+      "classification": "DEMERGER_SUCCESSOR",
+      "is_active": true,
+      "current_evidence_status": "SCHEME_SANCTIONED_VERIFIED",
+      "priority_tier": "P3_RESTRUCTURING_SUCCESSOR",
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "populated_bars": 0,
+        "quarantined_bars": 0,
+        "min_date": null,
+        "max_date": null,
+        "quarantined_period": "NONE"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_LISTING_NOTIFICATION",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Await official post-demerger exchange listing date. Zero synthetic pre-listing bars. Ingest only genuine exchange trades once officially listed.",
+        "estimated_effort_hours": 0.5,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    },
+    {
+      "symbol_id": 10128,
+      "symbol": "LTM",
+      "name": "LTIMindtree Ltd",
+      "sector": "Technology",
+      "classification": "RENAME_PREDECESSOR",
+      "is_active": true,
+      "current_evidence_status": "RENAME_CIRCULAR_VERIFIED",
+      "priority_tier": "P3_RENAME_ENTITY",
+      "ohlcv_coverage": {
+        "total_bars": 0,
+        "populated_bars": 0,
+        "quarantined_bars": 0,
+        "min_date": null,
+        "max_date": null,
+        "quarantined_period": "NONE"
+      },
+      "corporate_actions": {
+        "recorded_events": 0,
+        "verified_events": 0,
+        "action_types": "NONE",
+        "primary_artifact_present": false
+      },
+      "remediation_plan": {
+        "recommended_primary_source": "NSE_STATUTORY_CIRCULAR",
+        "acquisition_channel": "OFFICIAL_CIRCULAR_PDF_OR_BULK_BHAVCOPY",
+        "required_evidence_type": "AUDITED_EXCHANGE_DIVIDEND_SPLIT_BONUS_MASTER",
+        "action_steps": "Preserve historical archive for pre-rename period. Maintain 1:1 conversion factor.",
+        "estimated_effort_hours": 0.5,
+        "blocking_dependencies": "COMMERCIAL_EXCHANGE_DATA_LICENSE_OR_OFFICIAL_ARCHIVE_ACCESS"
+      }
+    }
+  ]
+}

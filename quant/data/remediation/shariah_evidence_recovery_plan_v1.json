@@ -1,0 +1,661 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-10-22T21:45:00Z",
+  "policy": "HALALEQUITY_SHARIAH_EVIDENCE_RECOVERY_PLAN_V1",
+  "total_data_insufficient_instruments": 31,
+  "screening_standard": "AAOIFI_STANDARD_NO_21",
+  "mandate": "FAIL_CLOSED_NO_ZERO_INFERENCE",
+  "instruments": [
+    {
+      "symbol_id": 16,
+      "symbol": "ADANIENT",
+      "name": "Adani Enterprises Ltd",
+      "sector": "Construction",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.2917,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 49,
+      "symbol": "ADANIPORTS",
+      "name": "Adani Ports & SEZ Ltd",
+      "sector": "Construction",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.1579,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 7,
+      "symbol": "APOLLOHOSP",
+      "name": "Apollo Hospitals Enterprise",
+      "sector": "Healthcare",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0749,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 22,
+      "symbol": "ASIANPAINT",
+      "name": "Asian Paints Ltd",
+      "sector": null,
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0174,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 13,
+      "symbol": "BAJAJ-AUTO",
+      "name": "Bajaj Auto Ltd",
+      "sector": "Automobile",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0794,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 31,
+      "symbol": "BHARTIARTL",
+      "name": "Bharti Airtel Ltd",
+      "sector": "Telecommunication",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.1742,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 47,
+      "symbol": "BRITANNIA",
+      "name": "Britannia Industries",
+      "sector": "Consumer Goods",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0118,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 26,
+      "symbol": "CIPLA",
+      "name": "Cipla Ltd",
+      "sector": "Healthcare",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0057,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 33,
+      "symbol": "COALINDIA",
+      "name": "Coal India Ltd",
+      "sector": "Energy",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0546,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 29,
+      "symbol": "DIVISLAB",
+      "name": "Divis Laboratories Ltd",
+      "sector": "Healthcare",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 1,
+      "symbol": "DRREDDY",
+      "name": "Dr Reddys Laboratories",
+      "sector": "Healthcare",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0709,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 3,
+      "symbol": "EICHERMOT",
+      "name": "Eicher Motors Ltd",
+      "sector": "Automobile",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0026,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 10,
+      "symbol": "HCLTECH",
+      "name": "HCL Technologies Ltd",
+      "sector": "Technology",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0002,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 12,
+      "symbol": "HEROMOTOCO",
+      "name": "Hero MotoCorp Ltd",
+      "sector": "Automobile",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0075,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 4,
+      "symbol": "HINDUNILVR",
+      "name": "Hindustan Unilever Ltd",
+      "sector": "Consumer Goods",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0033,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 20,
+      "symbol": "INFY",
+      "name": "Infosys Ltd",
+      "sector": "Technology",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0002,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 36,
+      "symbol": "ITC",
+      "name": "ITC Ltd",
+      "sector": "Consumer Goods",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0073,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 21,
+      "symbol": "LT",
+      "name": "Larsen & Toubro Ltd",
+      "sector": "Construction",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.2511,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 41,
+      "symbol": "LTIM",
+      "name": "LTIMindtree Ltd",
+      "sector": null,
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": null,
+      "business_activity_notes": "No financial data available from provider for LTIM",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 10128,
+      "symbol": "LTM",
+      "name": "LTIMindtree Ltd",
+      "sector": "Technology",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0194,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 8,
+      "symbol": "MARUTI",
+      "name": "Maruti Suzuki India Ltd",
+      "sector": "Automobile",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0003,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 2,
+      "symbol": "NESTLEIND",
+      "name": "Nestle India Ltd",
+      "sector": "Consumer Goods",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0018,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 39,
+      "symbol": "RELIANCE",
+      "name": "Reliance Industries Ltd",
+      "sector": "Energy",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.3056,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 14,
+      "symbol": "SUNPHARMA",
+      "name": "Sun Pharmaceutical Ind",
+      "sector": "Healthcare",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0109,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 30,
+      "symbol": "TATACONSUM",
+      "name": "Tata Consumer Products",
+      "sector": "Consumer Goods",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0287,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 9,
+      "symbol": "TCS",
+      "name": "Tata Consultancy Services",
+      "sector": "Technology",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0139,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 48,
+      "symbol": "TECHM",
+      "name": "Tech Mahindra Ltd",
+      "sector": "Technology",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.015,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 43,
+      "symbol": "TITAN",
+      "name": "Titan Company Ltd",
+      "sector": "Consumer Goods",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0774,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 10127,
+      "symbol": "TMCV",
+      "name": "Tata Motors Commercial Vehicles Ltd",
+      "sector": "Automobile",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0361,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 23,
+      "symbol": "ULTRACEMCO",
+      "name": "UltraTech Cement Ltd",
+      "sector": "Construction",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.0744,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    },
+    {
+      "symbol_id": 6,
+      "symbol": "WIPRO",
+      "name": "Wipro Ltd",
+      "sector": "Technology",
+      "latest_screening_date": "2026-10-15",
+      "current_status": "DATA_INSUFFICIENT",
+      "debt_ratio": 0.1236,
+      "business_activity_notes": "Core non-financial operating business",
+      "missing_evidence": {
+        "field": "interest_income_ratio",
+        "required_document": "Statutory Note to Audited Financial Statements: Other Income / Finance Income (Interest on Fixed Deposits / Investments)",
+        "financial_periods_needed": [
+          "FY26 Audited Annual Accounts",
+          "Q1 FY27 Limited Review Financials"
+        ]
+      },
+      "evidence_acquisition_source": "NSE_CORPORATE_FILINGS_XBRL_OR_ANNUAL_REPORT_PDF",
+      "compliance_threshold": "Interest Income / Total Revenue < 5.0%",
+      "fail_closed_rule": "Under AAOIFI Standard No. 21, interest income cannot be inferred as zero. Trade orders remain blocked until audited disclosure is verified."
+    }
+  ]
+}

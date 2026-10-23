@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-10-22T21:45:00Z",
+  "specification_title": "HALALEQUITY_PRIMARY_SOURCE_AUTHENTICATION_AND_INGESTION_SPEC",
+  "principles": [
+    {
+      "principle_id": "PRIN-01",
+      "name": "Cryptographic Byte Integrity vs Regulatory Authenticity",
+      "description": "Every ingested artifact must preserve original bytes and a SHA-256 hash. A matching hash confirms artifact integrity, but external authenticity requires official exchange origin (verified domain, digital signature, or licensed feed contract)."
+    },
+    {
+      "principle_id": "PRIN-02",
+      "name": "Decimal Arithmetic and Rounding Standard",
+      "description": "All factor calculations must use exact fixed-point decimal arithmetic (NUMERIC(18, 8) for factors, NUMERIC(18, 4) for prices). Single-precision or double-precision IEEE-754 floats are strictly prohibited to prevent +0.0002 drift."
+    },
+    {
+      "principle_id": "PRIN-03",
+      "name": "Consumer Isolation and Semantic Separation",
+      "description": "Nominal tradable execution prices (v_nominal_execution_prices) must be strictly isolated from split-adjusted (ca.v_active_split_factors) and total-return series (ca.v_active_total_return_factors). Total-return prices must never be used for order fills."
+    },
+    {
+      "principle_id": "PRIN-04",
+      "name": "Tax-Cost Allocation Non-Price Invariant",
+      "description": "Demerger tax cost allocations (Section 49(2C) Income Tax Act) are tax-basis allocations, not price adjustment factors. Must be marked price_factor_applicable=false."
+    },
+    {
+      "principle_id": "PRIN-05",
+      "name": "No Synthetic Pre-Listing Bars",
+      "description": "Successor or renamed entities begin trading only on their official listing dates. Historical bars must never be backfilled or synthesized from predecessor trading history."
+    },
+    {
+      "principle_id": "PRIN-06",
+      "name": "Quarantine Fail-Closed Protection",
+      "description": "Historical bars remain quarantined (NULL adjusted_close) until all historical corporate actions for that instrument are authenticated against primary exchange evidence."
+    }
+  ],
+  "ingestion_workflow": [
+    "Step 1: Retrieve original publication artifact from authorized exchange source.",
+    "Step 2: Store raw byte payload in corporate_action_source_artifacts with SHA-256 checksum.",
+    "Step 3: Parse and normalize corporate actions into corporate_action_events.",
+    "Step 4: Compute adjustment factors using fixed-point arithmetic in corporate_action_adjustment_factors.",
+    "Step 5: Execute security trigger verification checks (trg_ca_event_verification_guard, trg_ca_factor_guard).",
+    "Step 6: Update affected OHLCV daily bars only through authorized migration / security definer procedures."
+  ]
+}

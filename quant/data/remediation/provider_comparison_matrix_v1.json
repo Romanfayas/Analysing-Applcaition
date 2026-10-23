@@ -1,0 +1,345 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-10-22T21:40:00Z",
+  "policy": "HALALEQUITY_DATA_SOURCE_EVALUATION_POLICY_V1",
+  "providers": [
+    {
+      "provider_id": "NSE_DATA_ANALYTICS",
+      "name": "NSE Data & Analytics Limited (NSE Historical Data Services)",
+      "entity_type": "PRIMARY_EXCHANGE_SUBSIDIARY",
+      "regulatory_status": "OFFICIAL_EXCHANGE_DATA_AUTHORITY",
+      "historical_ohlcv_coverage": {
+        "available_range": "2000-01-01 to Present (Daily, 1-min, Tick)",
+        "target_period_coverage_2024_2026": "100% complete for all 47 core equities and historical predecessor TATAMOTORS",
+        "missing_symbols": [],
+        "granularity": "Tick, 1-Minute, Daily Bhavcopy"
+      },
+      "corporate_action_coverage": {
+        "dividends": "Complete historical cash, interim, and special dividends with exact ex-date, record-date, and book closure",
+        "splits_and_bonuses": "Authoritative circulars and ratio schedules",
+        "mergers_and_demergers": "Authoritative statutory circulars (NSE/CML/*) with ex-date and record dates",
+        "lineage_and_ticker_changes": "Authoritative rename and ISIN transition circulars",
+        "adjustment_methodology": "Provides unadjusted raw prices and separate corporate actions master; does not distort raw trade execution prices"
+      },
+      "price_series_availability": {
+        "raw_nominal_prices": true,
+        "split_adjusted_prices": true,
+        "total_return_adjusted": false,
+        "commentary": "Exchange provides raw execution prices; total return calculation is left to the subscriber"
+      },
+      "licensing_and_permitted_use": {
+        "commercial_use_permitted": true,
+        "redistribution_permitted": false,
+        "internal_research_permitted": true,
+        "licensing_model": "Commercial Market Data Agreement with NSE Data & Analytics Ltd",
+        "compliance_risk": "ZERO - Authorized official primary exchange source"
+      },
+      "provenance_and_artifact_retrieval": {
+        "artifact_types": [
+          "Statutory Circular PDFs",
+          "EOD Bhavcopy CSV/ZIP",
+          "Corporate Action Feed XML/JSON"
+        ],
+        "cryptographic_signatures": true,
+        "retrieval_options": [
+          "Secure sFTP Delivery",
+          "Enterprise Web API (Token Authenticated)",
+          "Official Bhavcopy Archives"
+        ]
+      },
+      "operational_metrics": {
+        "api_rate_limits": "High throughput, dedicated sFTP batch windows or 100 req/min enterprise API",
+        "cost_estimate": "\u20b950,000 - \u20b92,50,000 / year depending on historical depth and frequency",
+        "procurement_requirement": "Requires explicit business approval and commercial agreement",
+        "reliability_sla": "99.95% official exchange SLA",
+        "integration_effort": "Medium (standard CSV/JSON parser, automated sFTP sync)"
+      },
+      "evaluation_verdict": {
+        "suitability": "RECOMMENDED_PRIMARY_FOR_REGULATORY_AUTHENTICATION",
+        "role": "Primary source of truth for corporate action circulars and authoritative EOD unadjusted Bhavcopy"
+      }
+    },
+    {
+      "provider_id": "BSE_DATA_DIRECT",
+      "name": "BSE Data Direct (BSE Limited Market Data)",
+      "entity_type": "PRIMARY_EXCHANGE",
+      "regulatory_status": "OFFICIAL_EXCHANGE_DATA_AUTHORITY",
+      "historical_ohlcv_coverage": {
+        "available_range": "1995-01-01 to Present",
+        "target_period_coverage_2024_2026": "100% complete for dual-listed Nifty 50 constituents",
+        "missing_symbols": [],
+        "granularity": "Daily Bhavcopy, 1-min, Tick"
+      },
+      "corporate_action_coverage": {
+        "dividends": "Complete official notices and corporate action master",
+        "splits_and_bonuses": "Authoritative circulars and ratios",
+        "mergers_and_demergers": "BSE listing notices and scheme records",
+        "lineage_and_ticker_changes": "Authoritative scrip code and symbol change notices",
+        "adjustment_methodology": "Provides raw OHLCV and corporate action master separately"
+      },
+      "price_series_availability": {
+        "raw_nominal_prices": true,
+        "split_adjusted_prices": true,
+        "total_return_adjusted": false,
+        "commentary": "Raw execution prices provided directly by exchange"
+      },
+      "licensing_and_permitted_use": {
+        "commercial_use_permitted": true,
+        "redistribution_permitted": false,
+        "internal_research_permitted": true,
+        "licensing_model": "Commercial Market Data Agreement with BSE Ltd",
+        "compliance_risk": "ZERO - Authorized official primary exchange source"
+      },
+      "provenance_and_artifact_retrieval": {
+        "artifact_types": [
+          "BSE Corporate Notices",
+          "BSE Bhavcopy CSV",
+          "Corporate Actions Feed"
+        ],
+        "cryptographic_signatures": true,
+        "retrieval_options": [
+          "Direct Portal API",
+          "sFTP EOD Delivery"
+        ]
+      },
+      "operational_metrics": {
+        "api_rate_limits": "Batch EOD or 60 req/min API",
+        "cost_estimate": "\u20b940,000 - \u20b91,80,000 / year",
+        "procurement_requirement": "Requires explicit business approval and agreement",
+        "reliability_sla": "99.9% exchange SLA",
+        "integration_effort": "Medium (scrip-code to NSE symbol mapping required)"
+      },
+      "evaluation_verdict": {
+        "suitability": "RECOMMENDED_SECONDARY_FOR_CROSS_EXCHANGE_VERIFICATION",
+        "role": "Cross-verification for dual-listed equities and corporate action dates"
+      }
+    },
+    {
+      "provider_id": "TRUDATA_AUTHORISED_VENDOR",
+      "name": "TruData (Authorized NSE/BSE Real-Time & Historical Data Vendor)",
+      "entity_type": "LICENSED_MARKET_DATA_VENDOR",
+      "regulatory_status": "SEBI_REGISTERED_EXCHANGE_AUTHORIZED_DATA_FEED",
+      "historical_ohlcv_coverage": {
+        "available_range": "2010 to Present (Tick, 1-min, Daily)",
+        "target_period_coverage_2024_2026": "100% complete for all 47 core equities and lineage entities",
+        "missing_symbols": [],
+        "granularity": "Tick, 1-Sec, 1-Min, Daily"
+      },
+      "corporate_action_coverage": {
+        "dividends": "Structured corporate actions feed with ex-dates and cash values",
+        "splits_and_bonuses": "Structured split and bonus adjustment factors",
+        "mergers_and_demergers": "Tracked via exchange corporate action updates",
+        "lineage_and_ticker_changes": "Supported via symbol mapping",
+        "adjustment_methodology": "Offers distinct endpoints: raw unadjusted bars vs split-adjusted bars"
+      },
+      "price_series_availability": {
+        "raw_nominal_prices": true,
+        "split_adjusted_prices": true,
+        "total_return_adjusted": false,
+        "commentary": "Allows clean programmatic separation of nominal execution prices and split-adjusted series"
+      },
+      "licensing_and_permitted_use": {
+        "commercial_use_permitted": true,
+        "redistribution_permitted": false,
+        "internal_research_permitted": true,
+        "licensing_model": "Developer / Institutional Data License",
+        "compliance_risk": "LOW - Contractual exchange redistribution license"
+      },
+      "provenance_and_artifact_retrieval": {
+        "artifact_types": [
+          "REST API JSON Responses",
+          "WebSocket Tick Streams"
+        ],
+        "cryptographic_signatures": false,
+        "retrieval_options": [
+          "REST API v2",
+          "Python SDK",
+          "WebSocket"
+        ]
+      },
+      "operational_metrics": {
+        "api_rate_limits": "100-300 req/sec (institutional tier)",
+        "cost_estimate": "\u20b92,500 - \u20b96,000 / month (Developer / Pro tier)",
+        "procurement_requirement": "Requires explicit business authorization before incurring fees",
+        "reliability_sla": "99.9% uptime SLA with active customer support",
+        "integration_effort": "Low (Modern Python/Go REST API & WebSocket)"
+      },
+      "evaluation_verdict": {
+        "suitability": "RECOMMENDED_PRIMARY_FOR_INGESTION_AND_BACKTESTING",
+        "role": "Best operational balance of cost, developer ergonomics, and authorized exchange licensing"
+      }
+    },
+    {
+      "provider_id": "GLOBAL_DATAFEEDS_NIMBLE",
+      "name": "Global Datafeeds (Nimble DataPro / Authorized NSE DotEx Vendor)",
+      "entity_type": "LICENSED_MARKET_DATA_VENDOR",
+      "regulatory_status": "SEBI_REGISTERED_NSE_AUTHORIZED_DATA_VENDOR",
+      "historical_ohlcv_coverage": {
+        "available_range": "2012 to Present",
+        "target_period_coverage_2024_2026": "100% complete for NSE cash equities",
+        "missing_symbols": [],
+        "granularity": "Tick, 1-Min, EOD"
+      },
+      "corporate_action_coverage": {
+        "dividends": "Basic corporate action master",
+        "splits_and_bonuses": "Split/bonus adjustment factors provided",
+        "mergers_and_demergers": "Tracked on exchange notification",
+        "lineage_and_ticker_changes": "Supported",
+        "adjustment_methodology": "Raw and split-adjusted feeds available"
+      },
+      "price_series_availability": {
+        "raw_nominal_prices": true,
+        "split_adjusted_prices": true,
+        "total_return_adjusted": false,
+        "commentary": "Raw execution data available"
+      },
+      "licensing_and_permitted_use": {
+        "commercial_use_permitted": true,
+        "redistribution_permitted": false,
+        "internal_research_permitted": true,
+        "licensing_model": "Commercial Data Feed Subscription",
+        "compliance_risk": "LOW - Authorized exchange reseller"
+      },
+      "provenance_and_artifact_retrieval": {
+        "artifact_types": [
+          "Binary Socket Feed",
+          "REST API"
+        ],
+        "cryptographic_signatures": false,
+        "retrieval_options": [
+          "Socket API",
+          "COM/C++ SDK",
+          "Python Bridge"
+        ]
+      },
+      "operational_metrics": {
+        "api_rate_limits": "Socket stream based, high throughput",
+        "cost_estimate": "\u20b93,000 - \u20b97,000 / month",
+        "procurement_requirement": "Requires explicit business authorization",
+        "reliability_sla": "99.8% uptime",
+        "integration_effort": "High (primarily Windows/C++ DLL oriented, socket protocol)"
+      },
+      "evaluation_verdict": {
+        "suitability": "ALTERNATIVE_SECONDARY_VENDOR",
+        "role": "Viable alternative to TruData, but higher integration complexity"
+      }
+    },
+    {
+      "provider_id": "YAHOO_FINANCE_AGGREGATOR",
+      "name": "Yahoo Finance (v8 / quoteSummary API)",
+      "entity_type": "SECONDARY_COMMERCIAL_AGGREGATOR",
+      "regulatory_status": "UNOFFICIAL_THIRD_PARTY_AGGREGATOR",
+      "historical_ohlcv_coverage": {
+        "available_range": "Variable (typically 10-20 years)",
+        "target_period_coverage_2024_2026": "Present in HalalEquity DB, but 23,132 bars quarantined",
+        "missing_symbols": [
+          "TMPV",
+          "TMCV"
+        ],
+        "granularity": "Daily EOD only (no reliable intraday volume profile)"
+      },
+      "corporate_action_coverage": {
+        "dividends": "Incomplete dividend lists without document IDs or issuing circulars",
+        "splits_and_bonuses": "Undocumented split factors applied retroactively",
+        "mergers_and_demergers": "Incapable of handling demerger tax-basis allocation vs price adjustment",
+        "lineage_and_ticker_changes": "Historical ticker breaks (e.g. LTIM vs LTM mismatch)",
+        "adjustment_methodology": "Total-return backward adjustment blended into adjclose column without separating splits from cash dividends"
+      },
+      "price_series_availability": {
+        "raw_nominal_prices": true,
+        "split_adjusted_prices": false,
+        "total_return_adjusted": true,
+        "commentary": "Applies backward compounding that distorts historical prices and violates HalalEquity price-series contracts"
+      },
+      "licensing_and_permitted_use": {
+        "commercial_use_permitted": false,
+        "redistribution_permitted": false,
+        "internal_research_permitted": false,
+        "licensing_model": "Terms of Service prohibit automated extraction, commercial trading, and redistribution",
+        "compliance_risk": "CRITICAL - Legal terms violation and lack of regulatory audit trail"
+      },
+      "provenance_and_artifact_retrieval": {
+        "artifact_types": [
+          "JSON responses without cryptographic signatures or exchange circulars"
+        ],
+        "cryptographic_signatures": false,
+        "retrieval_options": [
+          "Unofficial Python wrapper (yfinance)"
+        ]
+      },
+      "operational_metrics": {
+        "api_rate_limits": "Aggressive IP rate-limiting, unannounced schema breaks, 429 errors",
+        "cost_estimate": "$0 (Direct), but high operational risk",
+        "procurement_requirement": "None (free web API)",
+        "reliability_sla": "Zero SLA (unsupported)",
+        "integration_effort": "Low, but generates permanent quarantine defects"
+      },
+      "evaluation_verdict": {
+        "suitability": "PROHIBITED_FOR_RESEARCH_AND_TRADING",
+        "role": "Unsuitable for quant research and paper trading. Responsible for 23,132 quarantined bars and 31 Shariah DATA_INSUFFICIENT classifications."
+      }
+    },
+    {
+      "provider_id": "ANGEL_ONE_SMARTAPI",
+      "name": "Angel One SmartAPI (Broker Execution & Market Data Feed)",
+      "entity_type": "SEBI_REGISTERED_BROKER",
+      "regulatory_status": "SEBI_REGISTERED_BROKERAGE_API",
+      "historical_ohlcv_coverage": {
+        "available_range": "Rolling 1-5 years depending on timeframe",
+        "target_period_coverage_2024_2026": "Daily and intraday candles for active NSE symbols",
+        "missing_symbols": [
+          "TATAMOTORS (archived)",
+          "TMPV (unlisted)",
+          "TMCV (unlisted)"
+        ],
+        "granularity": "Tick, 1-Min, 5-Min, 15-Min, Daily"
+      },
+      "corporate_action_coverage": {
+        "dividends": "Not supported as a primary corporate action master",
+        "splits_and_bonuses": "Does not publish primary exchange adjustment circulars",
+        "mergers_and_demergers": "Not supported",
+        "lineage_and_ticker_changes": "Maintains current active token master; no historical lineage mapping",
+        "adjustment_methodology": "Candles are raw nominal exchange prices; no corporate action factor engine"
+      },
+      "price_series_availability": {
+        "raw_nominal_prices": true,
+        "split_adjusted_prices": false,
+        "total_return_adjusted": false,
+        "commentary": "Provides raw trade prints appropriate for execution matching, but lacks historical corporate action history"
+      },
+      "licensing_and_permitted_use": {
+        "commercial_use_permitted": true,
+        "redistribution_permitted": false,
+        "internal_research_permitted": true,
+        "licensing_model": "Retail / API Trading Agreement with Angel One Ltd",
+        "compliance_risk": "LOW for execution; INSUFFICIENT for historical corporate action provenance"
+      },
+      "provenance_and_artifact_retrieval": {
+        "artifact_types": [
+          "JSON Candle Arrays"
+        ],
+        "cryptographic_signatures": false,
+        "retrieval_options": [
+          "SmartAPI HTTP REST endpoints"
+        ]
+      },
+      "operational_metrics": {
+        "api_rate_limits": "3 req/sec for historical candle endpoints; 10 req/sec for quotes",
+        "cost_estimate": "Free with Angel One brokerage account",
+        "procurement_requirement": "Broker account credentials required",
+        "reliability_sla": "Broker trading hours availability",
+        "integration_effort": "Low (existing SmartAPI client implemented in Go backend)"
+      },
+      "evaluation_verdict": {
+        "suitability": "APPROVED_FOR_EXECUTION_SIMULATION_ONLY",
+        "role": "Appropriate for paper/live trade order routing and live quotes; unsuitable for historical corporate action discovery"
+      }
+    }
+  ],
+  "summary_comparison": {
+    "best_for_corporate_action_provenance": "NSE_DATA_ANALYTICS",
+    "best_for_cost_effective_quant_ingestion": "TRUDATA_AUTHORISED_VENDOR",
+    "prohibited_for_research": "YAHOO_FINANCE_AGGREGATOR",
+    "approved_for_execution_quotes": "ANGEL_ONE_SMARTAPI"
+  }
+}
