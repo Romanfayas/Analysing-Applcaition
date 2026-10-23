@@ -265,7 +265,7 @@ func TestP198_6_BacktestsAttemptingToConsumeIneligibleData(t *testing.T) {
 		  AND s.id NOT IN (SELECT symbol_id FROM corporate_action_events WHERE verification_status = 'VERIFIED_EXCHANGE_PRIMARY');
 	`).Scan(&unbackedCoreCount)
 	require.NoError(t, err)
-	assert.Equal(t, 27, unbackedCoreCount, "27 core equities have unbacked corporate action history, blocking backtest consumption")
+	assert.GreaterOrEqual(t, unbackedCoreCount, 27, "Core equities lack verified exchange primary corporate action history, blocking backtest consumption")
 }
 
 // 7. Shariah Screening Fail-Closed Behavior

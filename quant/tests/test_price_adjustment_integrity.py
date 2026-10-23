@@ -1745,7 +1745,9 @@ class TestP1813PrimaryEvidenceCoverageAndDataReadiness:
         state_map = dict(cur.fetchall())
         assert state_map["ELIGIBLE_FOR_SPECIFIC_USE"] == 1, f"TCS is the sole ELIGIBLE_FOR_SPECIFIC_USE symbol"
         assert state_map["FACTOR_VALIDATED"] == 2, f"LTIM and TATAMOTORS are FACTOR_VALIDATED"
-        assert state_map["PRIMARY_SOURCE_VERIFIED"] >= 13, f"At least 13 symbols are PRIMARY_SOURCE_VERIFIED, got {state_map.get('PRIMARY_SOURCE_VERIFIED')}"
+        # In P1.9.12, unauthenticated controlled archives are demoted from PRIMARY_SOURCE_VERIFIED to PARSE_VALIDATED
+        assert state_map.get("PRIMARY_SOURCE_VERIFIED", 0) == 0, f"No symbols may claim PRIMARY_SOURCE_VERIFIED from controlled archives"
+        assert state_map.get("PARSE_VALIDATED", 0) >= 13, f"At least 13 symbols are PARSE_VALIDATED, got {state_map.get('PARSE_VALIDATED')}"
         assert state_map["SOURCE_MISSING"] <= 36, f"At most 36 symbols are SOURCE_MISSING, got {state_map.get('SOURCE_MISSING')}"
 
     def test_no_fabricated_pre_listing_price_history_for_demerger(self, db_conn):

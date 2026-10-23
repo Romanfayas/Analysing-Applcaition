@@ -245,12 +245,61 @@ func TestAdversarial_3_VerifiedAdjustmentFakeOrUnverifiedEventID(t *testing.T) {
 	assert.Error(t, err, "Unverified event ID must be rejected")
 	assert.Contains(t, err.Error(), "not verified")
 
-	// 3. Non-positive factor
-	_, err = db.ApplyVerifiedCorporateActionAdjustment(ctx, "TCS", startDate, exDate, -0.9947, "NSE:TCS:2026-10-14:CASH_DIVIDEND:1")
+	// 2B. P1.9.12 Demoted Archive Event: NSE:TCS:2026-10-14:CASH_DIVIDEND:1 is ARCHIVE_UNAUTHENTICATED and rejected
+	_, err = db.ApplyVerifiedCorporateActionAdjustment(ctx, "TCS", startDate, exDate, 0.99471203, "NSE:TCS:2026-10-14:CASH_DIVIDEND:1")
+	assert.Error(t, err, "Demoted archive event without primary circular must be rejected")
+	assert.Contains(t, err.Error(), "not verified")
+
+	// 3. Non-positive factor (rejected regardless of event)
+	_, err = db.ApplyVerifiedCorporateActionAdjustment(ctx, "TCS", startDate, exDate, -0.9947, "TEST:ANY:EVENT")
 	assert.Error(t, err, "Negative factor must be rejected")
 
-	// 4. Mismatched factor (factor doesn't match total_return_factor in corporate_action_adjustment_factors)
-	_, err = db.ApplyVerifiedCorporateActionAdjustment(ctx, "TCS", startDate, exDate, 0.85000000, "NSE:TCS:2026-10-14:CASH_DIVIDEND:1")
+	// 4. Mismatched factor tested against an authenticated primary circular event inside an isolated rollback transaction
+	tx, err := db.BeginTx(ctx, nil)
+	require.NoError(t, err)
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO corporate_action_source_artifacts (
+			artifact_id, issuing_authority, source_url, document_identifier, document_type,
+			raw_payload, sha256_checksum, validation_status
+		) VALUES (
+			'NSE_CIRCULAR_TEST_P1912_ADJ', 'NSE_INDIA', 'https://nsearchives.nseindia.com/content/circulars/NSE_CML_2026_TEST.pdf',
+			'NSE_CML_2026_TEST', 'CIRCULAR_PDF', 'Test Payload',
+			'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'PRIMARY_VERIFIED'
+		);
+	`)
+	require.NoError(t, err)
+
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO corporate_action_events (
+			event_id, symbol_id, symbol, source_artifact_id, action_type, source_subject,
+			ex_date, currency, verification_status, coverage_status
+		) VALUES (
+			'NSE:TCS:2026-10-14:CASH_DIVIDEND:AUTH_TEST', $1, 'TCS', (SELECT id FROM corporate_action_source_artifacts WHERE artifact_id = 'NSE_CIRCULAR_TEST_P1912_ADJ'),
+			'CASH_DIVIDEND', 'Authorized Test Circular Dividend', '2026-10-14', 'INR',
+			'VERIFIED_EXCHANGE_PRIMARY', 'HARVESTED_EXCHANGE_PRIMARY'
+		);
+	`, tcsID)
+	require.NoError(t, err)
+
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO corporate_action_adjustment_factors (
+			symbol_id, action_type, ex_date, effective_date, adjustment_factor,
+			source_reference, revision_number, is_verified, verification_status,
+			factor_category, price_factor_applicable, nominal_price_factor,
+			total_return_factor, volume_adjustment_factor, event_id
+		) VALUES (
+			$1, 'CASH_DIVIDEND', '2026-10-14', '2026-10-14',
+			0.99471203, 'NSE_CIRCULAR_TEST_P1912_ADJ', 1, true, 'VERIFIED_EXCHANGE_PRIMARY',
+			'CASH_DISTRIBUTION', true, 1.0, 0.99471203, 1.0, 'NSE:TCS:2026-10-14:CASH_DIVIDEND:AUTH_TEST'
+		);
+	`, tcsID)
+	require.NoError(t, err)
+
+	// Mismatched factor: supplied 0.85000000 does not match verified factor 0.99471203
+	var updatedRows int64
+	err = tx.QueryRowContext(ctx, "SELECT ca.apply_verified_corporate_action('TCS', $1::date, $2::date, 0.85000000::numeric, 'NSE:TCS:2026-10-14:CASH_DIVIDEND:AUTH_TEST');", startDate, exDate).Scan(&updatedRows)
 	assert.Error(t, err, "Mismatched factor must be rejected")
 	assert.Contains(t, err.Error(), "does not match verified factor")
 }
@@ -262,21 +311,65 @@ func TestAdversarial_4_AuthorizedVerifiedEventScoping(t *testing.T) {
 	db := getTestDB(t)
 	ctx := context.Background()
 
-	t.Cleanup(func() {
-		restoreTCSBenchmarks(t, db, ctx)
-	})
-
 	startDate := time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC)
 	exDate := time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC)
 
-	// Apply authorized adjustment
-	rowsUpdated, err := db.ApplyVerifiedCorporateActionAdjustment(ctx, "TCS", startDate, exDate, 0.99471203, "NSE:TCS:2026-10-14:CASH_DIVIDEND:1")
+	var tcsID int
+	err := db.QueryRowContext(ctx, "SELECT id FROM symbols WHERE symbol = 'TCS';").Scan(&tcsID)
+	require.NoError(t, err)
+
+	// Execute inside an isolated transaction that rolls back after test completion
+	tx, err := db.BeginTx(ctx, nil)
+	require.NoError(t, err)
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO corporate_action_source_artifacts (
+			artifact_id, issuing_authority, source_url, document_identifier, document_type,
+			raw_payload, sha256_checksum, validation_status
+		) VALUES (
+			'NSE_CIRCULAR_TEST_P1912_SCOPING', 'NSE_INDIA', 'https://nsearchives.nseindia.com/content/circulars/NSE_CML_2026_SCOPING.pdf',
+			'NSE_CML_2026_SCOPING', 'CIRCULAR_PDF', 'Test Scoping Payload',
+			'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'PRIMARY_VERIFIED'
+		);
+	`)
+	require.NoError(t, err)
+
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO corporate_action_events (
+			event_id, symbol_id, symbol, source_artifact_id, action_type, source_subject,
+			ex_date, currency, verification_status, coverage_status
+		) VALUES (
+			'NSE:TCS:2026-10-14:CASH_DIVIDEND:AUTH_SCOPING', $1, 'TCS', (SELECT id FROM corporate_action_source_artifacts WHERE artifact_id = 'NSE_CIRCULAR_TEST_P1912_SCOPING'),
+			'CASH_DIVIDEND', 'Authorized Scoping Circular Dividend', '2026-10-14', 'INR',
+			'VERIFIED_EXCHANGE_PRIMARY', 'HARVESTED_EXCHANGE_PRIMARY'
+		);
+	`, tcsID)
+	require.NoError(t, err)
+
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO corporate_action_adjustment_factors (
+			symbol_id, action_type, ex_date, effective_date, adjustment_factor,
+			source_reference, revision_number, is_verified, verification_status,
+			factor_category, price_factor_applicable, nominal_price_factor,
+			total_return_factor, volume_adjustment_factor, event_id
+		) VALUES (
+			$1, 'CASH_DIVIDEND', '2026-10-14', '2026-10-14',
+			0.99471203, 'NSE_CIRCULAR_TEST_P1912_SCOPING', 1, true, 'VERIFIED_EXCHANGE_PRIMARY',
+			'CASH_DISTRIBUTION', true, 1.0, 0.99471203, 1.0, 'NSE:TCS:2026-10-14:CASH_DIVIDEND:AUTH_SCOPING'
+		);
+	`, tcsID)
+	require.NoError(t, err)
+
+	// Apply authorized adjustment using authenticated primary circular event inside tx
+	var rowsUpdated int64
+	err = tx.QueryRowContext(ctx, "SELECT ca.apply_verified_corporate_action('TCS', $1::date, $2::date, 0.99471203::numeric, 'NSE:TCS:2026-10-14:CASH_DIVIDEND:AUTH_SCOPING');", startDate, exDate).Scan(&rowsUpdated)
 	require.NoError(t, err)
 	assert.Equal(t, int64(7), rowsUpdated, "Exactly 7 pre-ex-date trading days must be updated")
 
 	// Invariant A: Exactly 7 TCS bars have source = 'NSE_CORPORATE_ACTION'
 	var tcsVerifiedCount int
-	err = db.QueryRowContext(ctx, `
+	err = tx.QueryRowContext(ctx, `
 		SELECT count(*) 
 		FROM ohlcv_daily o 
 		JOIN symbols s ON s.id = o.symbol_id 
@@ -287,7 +380,7 @@ func TestAdversarial_4_AuthorizedVerifiedEventScoping(t *testing.T) {
 
 	// Invariant B: TCS bars on or after exDate (2026-10-14) are NOT updated
 	var postExDateCount int
-	err = db.QueryRowContext(ctx, `
+	err = tx.QueryRowContext(ctx, `
 		SELECT count(*) 
 		FROM ohlcv_daily o 
 		JOIN symbols s ON s.id = o.symbol_id 
@@ -300,7 +393,7 @@ func TestAdversarial_4_AuthorizedVerifiedEventScoping(t *testing.T) {
 
 	// Invariant C: Historical TCS bars before 2026-10-05 remain 100% quarantined NULL
 	var preCohortNullCount int
-	err = db.QueryRowContext(ctx, `
+	err = tx.QueryRowContext(ctx, `
 		SELECT count(*) 
 		FROM ohlcv_daily o 
 		JOIN symbols s ON s.id = o.symbol_id 
@@ -313,7 +406,7 @@ func TestAdversarial_4_AuthorizedVerifiedEventScoping(t *testing.T) {
 
 	// Invariant D: Other symbols (INFY, HCLTECH, RELIANCE) have 0 rows updated
 	var otherSymbolsVerifiedCount int
-	err = db.QueryRowContext(ctx, `
+	err = tx.QueryRowContext(ctx, `
 		SELECT count(*) 
 		FROM ohlcv_daily o 
 		JOIN symbols s ON s.id = o.symbol_id 

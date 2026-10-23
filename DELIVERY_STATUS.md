@@ -260,4 +260,53 @@ Any attempt to BUY a security with `DATA_INSUFFICIENT` is blocked at the API lay
 - **Explicit Release-Gate Verdict**:
   - **RESEARCH GATE MUST SAFELY REMAIN BLOCKED (`RESEARCH_BLOCKED`)**. Platform is not research-ready until live provider data is authorized, primary corporate action circulars for 27 unbacked equities are sourced, and audited interest income footnotes are acquired.
 
+---
+
+## 10. Phase P1.9.12 Delivery Status — Authorized Data Acquisition and Provenance Remediation
+
+- **Report Identifier**: `P1.9.12_AUTHORIZED_DATA_AND_PROVENANCE_REMEDIATION_REPORT.md`
+- **Execution Date**: 2026-10-23
+- **Corporate Action Trust Status Remediation (Migration 22)**:
+  - Created append-only audit log table `corporate_action_verification_audit_log` protected by `ca_audit_log_guard()` trigger.
+  - Demoted all 58 unauthenticated events backed by `CONTROLLED_ARCHIVE:%` to `ARCHIVE_UNAUTHENTICATED` with full audit trace.
+  - Upgraded trigger `fn_ca_event_verification_guard()` to reject `CONTROLLED_ARCHIVE:%`, `FIXTURE:%`, `LOCAL:%`, non-circular document types, and non-`PRIMARY_VERIFIED` statuses.
+  - Exactly **0** events currently claim `VERIFIED_EXCHANGE_PRIMARY`.
+- **Timestamp Convention Forensic Audit**:
+  - Resolved apparent discrepancy: Indian market session open is 09:15 IST = **03:45 UTC**; session close is 15:30 IST = **10:00 UTC**.
+  - Platform standard is **Session Open Stamping** (`03:45:00 UTC`), enforced by database constraint `ck_ohlcv_daily_session_stamp`.
+  - All 23,782 daily rows in `ohlcv_daily` strictly conform to `03:45:00 UTC` (100.0%, 0 offset defects).
+- **Populated-Bar Forensic Classification (650 Bars)**:
+  - 643 bars: `source = 'yahoo_finance'`, nominal execution series (`adjusted_close == close`), eligible solely for forward paper trading execution simulation, strictly quarantined from backtesting.
+  - 7 bars: `source = 'NSE_CORPORATE_ACTION'`, TCS dividend-adjusted total-return series ($Factor \approx 0.99471203$, ₹12 dividend), strictly quarantined from backtesting.
+  - 23,132 historical bars: strictly quarantined (`adjusted_close IS NULL`) across all 47 core equities.
+  - Consumer eligibility matrix formalized separating nominal trade execution from ratio-adjusted indicators and total-return backtesting.
+- **Market Data Provider Evaluation (TrueData)**:
+  - `data/poc/` samples explicitly classified as `TRANSFORMED_SCHEMA_FIXTURE`.
+  - Live provider status maintained as `DATA_INSUFFICIENT_PENDING_SUBSCRIPTION_AUTHORIZATION`.
+  - Commercial spend strictly ₹0.00; zero subscriptions or trial activations incurred.
+- **Primary Corporate Action Evidence & Quarantine**:
+  - Direct exchange automated requests return HTTP 403 under Akamai Bot Manager; zero WAF evasion or proxy rotation deployed.
+  - 47 core equities lack primary exchange circular verification. 23,132 historical bars strictly quarantined.
+- **Shariah Evidence Status**:
+  - 0 PASS, 20 FAIL, 31 DATA_INSUFFICIENT.
+  - 31 operating equities remain `DATA_INSUFFICIENT` due to missing non-operating interest income footnote schedules from audited annual reports.
+  - Prohibition of zero inference under AAOIFI Standard No. 21 strictly preserved.
+  - Fail-closed BUY gate verified (HTTP 400 rejection).
+- **Automated Test Verification**:
+  - Backend Database Tests (`backend/internal/database/p1912_provenance_remediation_test.go`): 6/6 PASSED (full database suite passed).
+  - Quant Engine Tests (`quant/tests/test_p1912_provenance_remediation.py`): 7/7 PASSED (312/312 total quant tests passed).
+  - Live Workflows (`scripts/test_workflows_live.py`): 11/11 PASSED.
+  - End-to-End Delivery (`scripts/verify_e2e_delivery.py`): 18/18 PASSED.
+  - Frontend Build (`npm run build`): PASSED (0 errors).
+- **Platform Safety Invariants**:
+  - `PAPER_TRADING_ENABLED=true`
+  - `LIVE_ORDER_EXECUTION=false`
+  - `BROKER_TRADING_ENABLED=false`
+  - Platform Research Gate: **RESEARCH_BLOCKED** (Strictly Preserved)
+  - Strategy V2 State: **FROZEN** (`92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780`)
+  - Commercial Expenses: **₹0.00**
+- **Explicit Release-Gate Verdict**:
+  - **RESEARCH GATE MUST SAFELY REMAIN BLOCKED (`RESEARCH_BLOCKED`)**. Invariants, migrations, and provenance remediations fully verified.
+
+
 

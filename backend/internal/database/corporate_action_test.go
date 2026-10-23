@@ -311,9 +311,10 @@ func TestP1813DataReadinessAndAdjustedPriceAudit(t *testing.T) {
 
 	assert.Equal(t, 1, stateCounts["ELIGIBLE_FOR_SPECIFIC_USE"], "Exactly 1 symbol (TCS) is ELIGIBLE_FOR_SPECIFIC_USE")
 	assert.Equal(t, 2, stateCounts["FACTOR_VALIDATED"], "Exactly 2 symbols (LTIM, TATAMOTORS) are FACTOR_VALIDATED")
-	assert.Equal(t, 19, stateCounts["PRIMARY_SOURCE_VERIFIED"], "Exactly 19 symbols are PRIMARY_SOURCE_VERIFIED in P1.8.15")
-	assert.Equal(t, 30, stateCounts["SOURCE_MISSING"], "Exactly 30 symbols are SOURCE_MISSING in P1.8.15 (27 core + 3 lineage)")
-	assert.Equal(t, 52, stateCounts["ELIGIBLE_FOR_SPECIFIC_USE"]+stateCounts["FACTOR_VALIDATED"]+stateCounts["PRIMARY_SOURCE_VERIFIED"]+stateCounts["SOURCE_MISSING"])
+	assert.Equal(t, 0, stateCounts["PRIMARY_SOURCE_VERIFIED"], "Zero symbols are PRIMARY_SOURCE_VERIFIED after P1.9.12 remediation")
+	assert.Equal(t, 19, stateCounts["PARSE_VALIDATED"], "Exactly 19 symbols are PARSE_VALIDATED (demoted from unauthenticated archives)")
+	assert.Equal(t, 30, stateCounts["SOURCE_MISSING"], "Exactly 30 symbols are SOURCE_MISSING (27 core + 3 lineage)")
+	assert.Equal(t, 52, stateCounts["ELIGIBLE_FOR_SPECIFIC_USE"]+stateCounts["FACTOR_VALIDATED"]+stateCounts["PRIMARY_SOURCE_VERIFIED"]+stateCounts["PARSE_VALIDATED"]+stateCounts["SOURCE_MISSING"])
 }
 
 func TestP1815UniverseAndCorporateActionReconciliation(t *testing.T) {
