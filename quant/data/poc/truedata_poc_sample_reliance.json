@@ -2,6 +2,9 @@
   "provider": "TRUDATA_AUTHORISED_VENDOR",
   "endpoint": "https://history.truedata.in/get_historic_data?symbol=RELIANCE&duration=505D&bar_size=eod",
   "symbol": "RELIANCE",
+  "data_provenance_type": "TRANSFORMED_SCHEMA_FIXTURE",
+  "is_live_download": false,
+  "acquisition_path": "Local PostgreSQL database query (ohlcv_daily + corporate_action_events) formatted to TrueData published historical EOD schema specification",
   "sample_date_range": {
     "start": "2024-10-07 03:45:00",
     "end": "2026-10-23 03:45:00",

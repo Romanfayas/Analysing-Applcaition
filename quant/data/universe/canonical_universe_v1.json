@@ -13,9 +13,9 @@
     "historical_predecessor_rename": 1,
     "archived_parent_demerged": 1,
     "symbols_with_ohlcv_bars": 47,
-    "total_daily_bars": 23735,
+    "total_daily_bars": 23782,
     "quarantined_daily_bars": 23132,
-    "populated_adjusted_bars": 603
+    "populated_adjusted_bars": 650
   },
   "taxonomy_definitions": {
     "ACTIVE_CORE": "Liquid NIFTY 50 large-cap equity with continuous trading history and active exchange listing.",

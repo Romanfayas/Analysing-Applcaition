@@ -217,3 +217,47 @@ Any attempt to BUY a security with `DATA_INSUFFICIENT` is blocked at the API lay
   - **GO (CONDITIONAL)** on TrueData for raw nominal daily OHLCV bar ingestion upon explicit commercial subscription authorization (₹1,699 - ₹3,299/mo).
   - **NO-GO** on TrueData alone for statutory corporate action regulatory provenance (authoritative NSE Data & Analytics circulars required).
 
+---
+
+## 9. Phase P1.9.11 Delivery Status — Independent Provider Data Verification and Research Readiness Audit
+
+- **Report Identifier**: `P1.9.11_INDEPENDENT_PROVIDER_AND_RESEARCH_READINESS_REPORT.md`
+- **Execution Date**: 2026-10-23
+- **Forensic Provider Data Classification**:
+  - P1.9.10 POC samples in `data/poc/` (`truedata_poc_sample_*.json`) independently traced: Generated via `scripts/generate_p1910_poc_artifacts.py` from local PostgreSQL tables (`ohlcv_daily` and `corporate_action_events`).
+  - Classification: **TRANSFORMED_SCHEMA_FIXTURE** (Simulated API format).
+  - Live authenticated provider data status: **DATA_INSUFFICIENT_PENDING_SUBSCRIPTION_AUTHORIZATION**.
+  - In accordance with platform governance, fixtures do NOT qualify as live provider validation evidence.
+- **Corporate Action Artifact Trace**:
+  - 64 total corporate action events across 22 symbols.
+  - Multi-event TCS mapping: All 11 events correctly link to single parent artifact `NSE_CA_TCS_20261016_7b5b9325`, which contains the full historical array of exchange corporate announcements.
+  - Stored artifacts have `source_url = CONTROLLED_ARCHIVE:...`. Direct HTTP requests to exchange API return HTTP 403 under Akamai Bot Manager. No WAF evasion or proxy rotation deployed.
+  - 27 active core equities remain unbacked by primary circulars (`SOURCE_MISSING`).
+- **Database & Universe Reconciliation**:
+  - Catalog Instruments: **52** (51 active, 1 archived `TATAMOTORS`).
+  - Active Core Equities: **47** (with continuous trading history).
+  - Lineage Entities: **5** (`TATAMOTORS`, `TMPV`, `TMCV`, `LTIM`, `LTM`). Exactly 0 bars.
+  - Total Daily Bars: **23,782** (47 equities * 506 sessions through 2026-10-23).
+  - Quarantined Historical Bars: **23,132** (`adjusted_close IS NULL`) — strictly preserved (97.27% quarantine invariant).
+  - Populated Bars: **650** (47 * 14 sessions - HCLTECH vendor quarantine + TCS).
+- **Shariah Evidence Status**:
+  - **0 PASS, 20 FAIL, 31 DATA_INSUFFICIENT**.
+  - All 31 operating equities remain `DATA_INSUFFICIENT` due to missing non-operating interest income footnote schedules from statutory annual reports.
+  - Under AAOIFI Standard No. 21, zero inference is strictly prohibited. BUY orders remain blocked (HTTP 400).
+- **Automated Test Verification**:
+  - Backend Database Tests (`backend/internal/database/p1911_independent_verification_test.go`): 8/8 PASSED (60/60 total backend tests passed).
+  - Quant Engine Tests (`quant/tests/test_p1911_independent_verification.py`): 12/12 PASSED (305/305 total quant tests passed).
+  - Live Workflows (`scripts/test_workflows_live.py`): 11/11 PASSED.
+  - End-to-End Delivery (`scripts/verify_e2e_delivery.py`): 18/18 PASSED.
+  - Frontend Build (`npm run build`): PASSED (0 errors).
+- **Safety Invariants Maintained**:
+  - `PAPER_TRADING_ENABLED=true`
+  - `LIVE_ORDER_EXECUTION=false`
+  - `BROKER_TRADING_ENABLED=false`
+  - Platform Research Gate: **RESEARCH_BLOCKED** (Strictly Preserved)
+  - Strategy V2 State: **FROZEN** (`92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780`)
+  - Commercial Expenses: **₹0.00**
+- **Explicit Release-Gate Verdict**:
+  - **RESEARCH GATE MUST SAFELY REMAIN BLOCKED (`RESEARCH_BLOCKED`)**. Platform is not research-ready until live provider data is authorized, primary corporate action circulars for 27 unbacked equities are sourced, and audited interest income footnotes are acquired.
+
+

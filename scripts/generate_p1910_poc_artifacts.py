@@ -97,6 +97,9 @@ def main():
             "provider": "TRUDATA_AUTHORISED_VENDOR",
             "endpoint": f"https://history.truedata.in/get_historic_data?symbol={sym}&duration=505D&bar_size=eod",
             "symbol": sym,
+            "data_provenance_type": "TRANSFORMED_SCHEMA_FIXTURE",
+            "is_live_download": False,
+            "acquisition_path": "Local PostgreSQL database query (ohlcv_daily + corporate_action_events) formatted to TrueData published historical EOD schema specification",
             "sample_date_range": {
                 "start": td_records[0]["timestamp"] if td_records else None,
                 "end": td_records[-1]["timestamp"] if td_records else None,
@@ -125,6 +128,12 @@ def main():
         "generated_at": "2026-10-23T14:15:00Z",
         "evaluation_target": "TRUDATA_HISTORICAL_EOD_AND_CORPORATE_ACTION_API",
         "tested_symbols": symbols,
+        "data_provenance_verdict": {
+            "sample_origin": "TRANSFORMED_SCHEMA_FIXTURE_FROM_LOCAL_POSTGRESQL",
+            "live_api_stream_authenticated": False,
+            "live_provider_status": "DATA_INSUFFICIENT_PENDING_SUBSCRIPTION_AUTHORIZATION",
+            "synthetic_or_fixture_data_disclaimer": "POC samples represent TrueData API schema simulations transformed from verified database records. In accordance with platform governance, fixtures do NOT qualify as live provider validation evidence. Live authenticated provider access remains DATA_INSUFFICIENT pending explicit user authorization to acquire commercial credentials."
+        },
         "sample_coverage_analysis": {
             "historical_daily_ohlcv_available": True,
             "required_date_range_covered": "2024-10-07 to 2026-10-22 (505 trading bars per symbol)",
