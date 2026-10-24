@@ -1,7 +1,7 @@
 {
   "audit_metadata": {
-    "timestamp_utc": "2026-10-24T11:44:52.450263+00:00",
-    "git_revision": "6b24042a7c8d3aea6a354d959da90ef8c9b60e07",
+    "timestamp_utc": "2026-10-24T11:50:21.246660+00:00",
+    "git_revision": "a6e1fb12fe9a420de8e20818d93db949cb5502ac",
     "environment": "halal-equity-local-audit-env",
     "audit_tool_version": "v1.9.14-forensic-release-gate-audit",
     "total_criteria_evaluated": 13,
