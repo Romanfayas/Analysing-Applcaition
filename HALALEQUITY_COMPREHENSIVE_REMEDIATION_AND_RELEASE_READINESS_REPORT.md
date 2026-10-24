@@ -185,7 +185,8 @@ The paper trading order engine enforces a fail-closed gate: any attempt to place
 ### 8.1 Strategy V2 Configuration Lock
 The production Strategy V2 configuration is strictly frozen and cryptographically locked:
 - **Canonical SHA-256 Hash**: `92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780`
-- **Parameters**: `min_volume = 500,000`, `rvol = 1.30`, `adx = 20.0`, `atr_multiple = 1.50`, `risk_reward = 3.0`, `initial_capital = ₹1,000,000`, `max_portfolio_heat = 10%`, `max_trade_risk = 2%`.
+- **Canonical Rule Parameters**: `BUY_THRESHOLD = 80.0`, `SELL_THRESHOLD = 45.0`, `ATR_MULTIPLIER = 2.0` (canonical serialized JSON: `{"ATR_MULTIPLIER": 2.0, "BUY_THRESHOLD": 80.0, "SELL_THRESHOLD": 45.0}`).
+- **Breakout Discovery & Portfolio Risk Filters**: `min_volume = 500,000`, `rvol >= 1.30`, `adx >= 20.0`, `risk_reward = 3.0`, `initial_capital = ₹1,000,000`, `max_portfolio_heat = 10%`, `max_trade_risk = 2%`.
 
 ### 8.2 Institutional Friction Model (`COST_MODEL_2026_Q4_V2`)
 The backtesting engine incorporates real-world Indian equity delivery costs:

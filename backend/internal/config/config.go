@@ -39,6 +39,10 @@ type Config struct {
 	YahooFinanceEnabled bool
 	AngelOneAPIKey      string
 	AngelOneClientID    string
+	TrueDataBaseURL     string
+	TrueDataUsername    string
+	TrueDataPassword    string
+	TrueDataAPIKey      string
 
 	// LLM
 	LLMProvider  string
@@ -95,6 +99,10 @@ func Load() (*Config, error) {
 		YahooFinanceEnabled: getEnvBool("YAHOO_FINANCE_ENABLED", true),
 		AngelOneAPIKey:      getEnv("ANGEL_ONE_API_KEY", ""),
 		AngelOneClientID:    getEnv("ANGEL_ONE_CLIENT_ID", ""),
+		TrueDataBaseURL:     getEnv("TRUEDATA_BASE_URL", "https://history.truedata.in"),
+		TrueDataUsername:    getEnv("TRUEDATA_USERNAME", ""),
+		TrueDataPassword:    getEnv("TRUEDATA_PASSWORD", ""),
+		TrueDataAPIKey:      getEnv("TRUEDATA_API_KEY", ""),
 		LLMProvider:         getEnv("LLM_PROVIDER", "gemini"),
 		GeminiAPIKey:        getEnv("GEMINI_API_KEY", ""),
 		OllamaURL:           getEnv("OLLAMA_URL", ""),

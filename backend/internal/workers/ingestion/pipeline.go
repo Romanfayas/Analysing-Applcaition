@@ -12,6 +12,7 @@ import (
 	"github.com/halal-equity/backend/internal/models"
 	"github.com/halal-equity/backend/internal/providers/marketdata"
 	"github.com/halal-equity/backend/internal/providers/marketdata/nsedata"
+	"github.com/halal-equity/backend/internal/providers/marketdata/truedata"
 	"github.com/halal-equity/backend/internal/providers/marketdata/yahoofinance"
 	"github.com/halal-equity/backend/internal/quality"
 	"github.com/halal-equity/backend/internal/notifications"
@@ -23,6 +24,7 @@ import (
 type Pipeline struct {
 	db               *database.DB
 	marketProvider   marketdata.MarketDataProvider
+	truedataProvider marketdata.MarketDataProvider
 	fallbackProvider marketdata.MarketDataProvider
 	fundProvider     marketdata.FundamentalDataProvider
 	corpActProvider  marketdata.CorporateActionsProvider
@@ -36,9 +38,11 @@ type Pipeline struct {
 func NewPipeline(db *database.DB, notifier *notifications.TelegramNotifier) *Pipeline {
 	yf := yahoofinance.NewProvider()
 	nse := nsedata.NewProvider()
+	td := truedata.NewProvider(truedata.DefaultConfig())
 	return &Pipeline{
 		db:               db,
 		marketProvider:   yf,
+		truedataProvider: td,
 		fallbackProvider: nil, // nse doesn't implement GetDailyCandles yet, but we will add it or stub it. Actually let's just make nse implement it or use a mock if we have to. Wait, we can't use nse as MarketDataProvider if it doesn't implement it. Let's cast it if we can. Or we can just set it to nil for now and see. Wait, I must add GetDailyCandles to nsedata.
 		fundProvider:     yf,
 		corpActProvider:  nse,
@@ -47,6 +51,11 @@ func NewPipeline(db *database.DB, notifier *notifications.TelegramNotifier) *Pip
 		validator:        quality.NewValidator(),
 		notifier:         notifier,
 	}
+}
+
+// TrueDataProvider exposes the configured TrueData market data provider.
+func (p *Pipeline) TrueDataProvider() marketdata.MarketDataProvider {
+	return p.truedataProvider
 }
 
 // IngestReport summarizes an ingestion run.

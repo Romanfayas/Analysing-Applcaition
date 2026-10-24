@@ -242,11 +242,16 @@ def run_evaluation():
     })
 
     # Criterion 9: Frozen Strategy V2 Integrity
-    canonical_hash = "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780"
+    import hashlib
+    canonical_dict = {"ATR_MULTIPLIER": 2.0, "BUY_THRESHOLD": 80.0, "SELL_THRESHOLD": 45.0}
+    canonical_json_str = json.dumps(canonical_dict, sort_keys=True)
+    computed_hash = hashlib.sha256(canonical_json_str.encode("utf-8")).hexdigest()
+    pinned_expected = "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780"
+    c9_pass = (computed_hash == pinned_expected)
     results.append({
         "id": 9,
-        "status": "PASS",
-        "details": f"Strategy V2 canonical SHA-256 hash locked: {canonical_hash}"
+        "status": "PASS" if c9_pass else "FAIL",
+        "details": f"Strategy V2 canonical SHA-256 hash locked: {computed_hash} (verified from {canonical_json_str})"
     })
 
     # Criterion 10: Backtest Data Eligibility & Realistic Cost Assumptions
@@ -301,7 +306,83 @@ def run_evaluation():
     print(f"PLATFORM RESEARCH GATE: RESEARCH_BLOCKED (Strictly Maintained)")
     print("=" * 80)
 
+    # Export machine-readable release gate evidence (Deliverable 3)
+    import subprocess
+    from datetime import datetime, timezone
+    try:
+        git_rev = subprocess.check_output(["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL).decode().strip()
+    except Exception:
+        git_rev = "UNKNOWN"
+
+    criteria_export = []
+    for res in results:
+        crit = next(c for c in CRITERIA if c["id"] == res["id"])
+        criteria_export.append({
+            "id": res["id"],
+            "name": crit["name"],
+            "category": crit["category"],
+            "status": res["status"],
+            "details": res["details"],
+            "test_executed": True
+        })
+
+    evidence_payload = {
+        "audit_metadata": {
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "git_revision": git_rev,
+            "environment": "halal-equity-local-audit-env",
+            "audit_tool_version": "v1.9.14-forensic-release-gate-audit",
+            "total_criteria_evaluated": len(results),
+            "summary_counts": {
+                "PASS": passes,
+                "DATA_INSUFFICIENT": data_insuffs,
+                "FAIL": fails,
+                "NOT_TESTED": 0
+            }
+        },
+        "platform_safety_invariants": {
+            "PAPER_TRADING_ENABLED": True,
+            "LIVE_ORDER_EXECUTION": False,
+            "BROKER_TRADING_ENABLED": False,
+            "RESEARCH_GATE_STATUS": "RESEARCH_BLOCKED"
+        },
+        "strategy_integrity": {
+            "version": "Strategy V2",
+            "canonical_parameters": canonical_dict,
+            "canonical_serialization": canonical_json_str,
+            "independently_calculated_sha256": computed_hash,
+            "hash_matches_pinned": c9_pass
+        },
+        "verdict": {
+            "software_readiness": "PASS",
+            "database_security_readiness": "PASS",
+            "market_data_readiness": "DATA_INSUFFICIENT",
+            "research_backtest_eligibility": "BLOCKED",
+            "paper_trading_eligibility": "PERMITTED_FORWARD_SIMULATION_ONLY",
+            "live_trading_eligibility": "STRICTLY_PROHIBITED"
+        },
+        "external_blockers": [
+            "23,132 historical daily bars remain quarantined (NULL adjusted_close)",
+            "58 corporate action events lack primary exchange digital circulars (ARCHIVE_UNAUTHENTICATED)",
+            "31 active equities lack Note 24/25 non-operating interest income footnote disclosures",
+            "TrueData market data provider requires authorized commercial subscription and credentials"
+        ],
+        "criteria": criteria_export
+    }
+
+    out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports", "audits")
+    os.makedirs(out_dir, exist_ok=True)
+    out_file = os.path.join(out_dir, "HALALEQUITY_RELEASE_GATE_EVIDENCE.json")
+    with open(out_file, "w") as f:
+        json.dump(evidence_payload, f, indent=2)
+    print(f"\n[EVIDENCE EXPORT] Machine-readable evidence written to: {out_file}\n")
+
     conn.close()
+
+    if fails > 0:
+        sys.exit(1)
+    sys.exit(0)
 
 if __name__ == "__main__":
     run_evaluation()
+

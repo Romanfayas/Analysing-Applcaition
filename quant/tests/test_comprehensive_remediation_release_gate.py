@@ -180,6 +180,46 @@ class TestComprehensiveRemediationReleaseGate:
         assert data_insuff_cnt == 31, "31 active equities must be certified DATA_INSUFFICIENT"
 
     def test_comprehensive_strategy_v2_canonical_lock_and_gate_status(self):
-        """Invariant 8: Strategy V2 hash locked and research gate status is RESEARCH_BLOCKED."""
+        """Invariant 8: Strategy V2 hash locked, canonical serialization verified, and research gate status is RESEARCH_BLOCKED."""
+        import json
+        import hashlib
+        import pytest
+        from src.engines.research.strategy_config import (
+            compute_hash,
+            canonical_json,
+            FROZEN,
+            PINNED_HASH,
+            runtime_config,
+            enforce_request,
+            StrategyDrift
+        )
+
         canonical_hash = "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780"
-        assert len(canonical_hash) == 64
+        assert PINNED_HASH == canonical_hash
+
+        # 1. Verify exact canonical parameters and canonical serialization
+        assert FROZEN == {"BUY_THRESHOLD": 80.0, "SELL_THRESHOLD": 45.0, "ATR_MULTIPLIER": 2.0}
+        expected_json = '{"ATR_MULTIPLIER": 2.0, "BUY_THRESHOLD": 80.0, "SELL_THRESHOLD": 45.0}'
+        assert canonical_json(FROZEN) == expected_json
+
+        # 2. Recompute hash directly
+        direct_hash = hashlib.sha256(expected_json.encode("utf-8")).hexdigest()
+        assert direct_hash == canonical_hash
+        assert compute_hash(FROZEN) == canonical_hash
+
+        # 3. Verify runtime configuration introspection
+        cfg = runtime_config()
+        assert cfg["matches_pinned"] is True
+        assert cfg["runtime_hash"] == canonical_hash
+        assert not cfg["problems"], f"Runtime problems detected: {cfg['problems']}"
+
+        # 4. Negative test: changing ATR_MULTIPLIER to 1.50 alters hash
+        drifted_params = {"BUY_THRESHOLD": 80.0, "SELL_THRESHOLD": 45.0, "ATR_MULTIPLIER": 1.5}
+        drifted_hash = compute_hash(drifted_params)
+        assert drifted_hash != canonical_hash
+
+        # 5. Negative test: enforce_request rejects drifted parameters
+        with pytest.raises(StrategyDrift) as excinfo:
+            enforce_request(buy_threshold=80.0, sell_threshold=45.0, atr_multiplier=1.50)
+        assert "differ from frozen Strategy V2" in str(excinfo.value)
+

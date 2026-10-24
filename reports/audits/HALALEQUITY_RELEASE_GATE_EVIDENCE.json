@@ -1,0 +1,152 @@
+{
+  "audit_metadata": {
+    "timestamp_utc": "2026-10-24T11:44:52.450263+00:00",
+    "git_revision": "6b24042a7c8d3aea6a354d959da90ef8c9b60e07",
+    "environment": "halal-equity-local-audit-env",
+    "audit_tool_version": "v1.9.14-forensic-release-gate-audit",
+    "total_criteria_evaluated": 13,
+    "summary_counts": {
+      "PASS": 9,
+      "DATA_INSUFFICIENT": 4,
+      "FAIL": 0,
+      "NOT_TESTED": 0
+    }
+  },
+  "platform_safety_invariants": {
+    "PAPER_TRADING_ENABLED": true,
+    "LIVE_ORDER_EXECUTION": false,
+    "BROKER_TRADING_ENABLED": false,
+    "RESEARCH_GATE_STATUS": "RESEARCH_BLOCKED"
+  },
+  "strategy_integrity": {
+    "version": "Strategy V2",
+    "canonical_parameters": {
+      "ATR_MULTIPLIER": 2.0,
+      "BUY_THRESHOLD": 80.0,
+      "SELL_THRESHOLD": 45.0
+    },
+    "canonical_serialization": "{\"ATR_MULTIPLIER\": 2.0, \"BUY_THRESHOLD\": 80.0, \"SELL_THRESHOLD\": 45.0}",
+    "independently_calculated_sha256": "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780",
+    "hash_matches_pinned": true
+  },
+  "verdict": {
+    "software_readiness": "PASS",
+    "database_security_readiness": "PASS",
+    "market_data_readiness": "DATA_INSUFFICIENT",
+    "research_backtest_eligibility": "BLOCKED",
+    "paper_trading_eligibility": "PERMITTED_FORWARD_SIMULATION_ONLY",
+    "live_trading_eligibility": "STRICTLY_PROHIBITED"
+  },
+  "external_blockers": [
+    "23,132 historical daily bars remain quarantined (NULL adjusted_close)",
+    "58 corporate action events lack primary exchange digital circulars (ARCHIVE_UNAUTHENTICATED)",
+    "31 active equities lack Note 24/25 non-operating interest income footnote disclosures",
+    "TrueData market data provider requires authorized commercial subscription and credentials"
+  ],
+  "criteria": [
+    {
+      "id": 1,
+      "name": "Database Privilege & Evidence Boundaries",
+      "category": "SECURITY",
+      "status": "PASS",
+      "details": "Unlawful app role UPDATE/DELETE grants = 0 (must be 0; append-only enforced)",
+      "test_executed": true
+    },
+    {
+      "id": 2,
+      "name": "Corporate-Action Source Authenticity & Transitions",
+      "category": "DATA_PROVENANCE",
+      "status": "DATA_INSUFFICIENT",
+      "details": "Unauthenticated archives = 58, Ambiguous = 6, Primary verified = 0 (Statutory circulars pending acquisition)",
+      "test_executed": true
+    },
+    {
+      "id": 3,
+      "name": "Universe & Lineage Reconciliation",
+      "category": "UNIVERSE",
+      "status": "PASS",
+      "details": "Symbols = 52 (51 active, 1 archived), Empty sectors = 0, Canonical lineage records = 3",
+      "test_executed": true
+    },
+    {
+      "id": 4,
+      "name": "Historical OHLCV Coverage & Consumer Eligibility",
+      "category": "DATA_INTEGRITY",
+      "status": "DATA_INSUFFICIENT",
+      "details": "Total bars = 23782, Quarantined bars = 23132 (97.27%), Populated = 650 (Gated from research backtest)",
+      "test_executed": true
+    },
+    {
+      "id": 5,
+      "name": "Adjustment-Factor Correctness & Deterministic Precision",
+      "category": "QUANT_PRECISION",
+      "status": "PASS",
+      "details": "TCS Rev 3 total return factor = 0.99471203 (exact 8-decimal quantized fixed-point match)",
+      "test_executed": true
+    },
+    {
+      "id": 6,
+      "name": "Timestamp/Session Consistency & Anti-Look-Ahead Safety",
+      "category": "LOOKAHEAD_SAFETY",
+      "status": "PASS",
+      "details": "Mismatched session stamps = 0 (100% conform to 03:45 UTC = 09:15 IST opening label)",
+      "test_executed": true
+    },
+    {
+      "id": 7,
+      "name": "Shariah Evidence Completeness & Fail-Closed BUY Gate",
+      "category": "SHARIAH_COMPLIANCE",
+      "status": "DATA_INSUFFICIENT",
+      "details": "Active Shariah: 0 PASS, 20 FAIL, 31 DATA_INSUFFICIENT (BUY gate strictly fail-closed)",
+      "test_executed": true
+    },
+    {
+      "id": 8,
+      "name": "Provider Authenticity & Fixture/Live Separation",
+      "category": "VENDOR_INTEGRATION",
+      "status": "DATA_INSUFFICIENT",
+      "details": "TrueData Velocity adapter deployed; samples labeled FIXTURE:truedata_schema_simulation; \u20b90.00 spent",
+      "test_executed": true
+    },
+    {
+      "id": 9,
+      "name": "Frozen Strategy V2 Integrity",
+      "category": "STRATEGY_INTEGRITY",
+      "status": "PASS",
+      "details": "Strategy V2 canonical SHA-256 hash locked: 92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780 (verified from {\"ATR_MULTIPLIER\": 2.0, \"BUY_THRESHOLD\": 80.0, \"SELL_THRESHOLD\": 45.0})",
+      "test_executed": true
+    },
+    {
+      "id": 10,
+      "name": "Backtest Data Eligibility & Realistic Cost Assumptions",
+      "category": "QUANT_EXECUTION",
+      "status": "PASS",
+      "details": "Institutional fee model (INDIA_EQ_DELIVERY_FEES_2026Q4_V2); next-open execution; research gate locked",
+      "test_executed": true
+    },
+    {
+      "id": 11,
+      "name": "Frontend/API/Backend/Quant Contract Consistency",
+      "category": "SYSTEM_INTEGRATION",
+      "status": "PASS",
+      "details": "Market Overview API returned HTTP 200, Active Equities = 51",
+      "test_executed": true
+    },
+    {
+      "id": 12,
+      "name": "Mandatory Platform Safety Invariants",
+      "category": "SAFETY_INVARIANTS",
+      "status": "PASS",
+      "details": "PAPER_TRADING_ENABLED=true, LIVE_ORDER_EXECUTION=false, BROKER_TRADING_ENABLED=false, RESEARCH_BLOCKED",
+      "test_executed": true
+    },
+    {
+      "id": 13,
+      "name": "Reproducible Builds, Tests & Migration State",
+      "category": "BUILD_AND_TESTS",
+      "status": "PASS",
+      "details": "Migration 24 applied; 76 Go DB tests PASS; 328 Quant pytest PASS; Next.js clean build",
+      "test_executed": true
+    }
+  ]
+}

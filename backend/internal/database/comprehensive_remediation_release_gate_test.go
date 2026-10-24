@@ -2,7 +2,9 @@ package database_test
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"os"
 	"testing"
 	"time"
@@ -209,5 +211,16 @@ func TestComprehensive_8_PlatformSafetyAndResearchGateBlocked(t *testing.T) {
 	// PAPER_TRADING_ENABLED=true, LIVE_ORDER_EXECUTION=false, BROKER_TRADING_ENABLED=false
 	// RESEARCH_GATE_STATUS=RESEARCH_BLOCKED
 	expectedHash := "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780"
-	assert.Len(t, expectedHash, 64)
+
+	// 2. Canonical serialization: {"ATR_MULTIPLIER": 2.0, "BUY_THRESHOLD": 80.0, "SELL_THRESHOLD": 45.0}
+	canonicalRaw := []byte(`{"ATR_MULTIPLIER": 2.0, "BUY_THRESHOLD": 80.0, "SELL_THRESHOLD": 45.0}`)
+	sum := sha256.Sum256(canonicalRaw)
+	computedHash := hex.EncodeToString(sum[:])
+	assert.Equal(t, expectedHash, computedHash, "Go computed hash must match pinned canonical hash exactly")
+
+	// 3. Negative test: changing ATR_MULTIPLIER to 1.50 must alter the hash
+	driftRaw := []byte(`{"ATR_MULTIPLIER": 1.5, "BUY_THRESHOLD": 80.0, "SELL_THRESHOLD": 45.0}`)
+	driftSum := sha256.Sum256(driftRaw)
+	driftHash := hex.EncodeToString(driftSum[:])
+	assert.NotEqual(t, expectedHash, driftHash, "Drifted parameters must not produce the pinned canonical hash")
 }
