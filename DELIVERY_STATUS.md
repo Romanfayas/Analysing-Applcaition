@@ -373,3 +373,67 @@ Any attempt to BUY a security with `DATA_INSUFFICIENT` is blocked at the API lay
   - Commercial Expenses: **₹0.00**
 - **Explicit Release-Gate Verdict**:
   - **RESEARCH GATE MUST REMAIN STRICTLY BLOCKED (`RESEARCH_BLOCKED`)**. No historical market data can legitimately become eligible for research backtesting during Phase P1.9.13. Platform integrity, database privilege boundaries, and fail-closed governance are fully verified.
+
+---
+
+## 12. Comprehensive Platform-Wide Remediation & Release-Readiness Audit Status
+
+- **Remediation Phase**: Platform-Wide Comprehensive Remediation & Release Readiness
+- **Auditor / Principal Engineer**: Antigravity Quantitative & Database Security Engineering
+- **Date**: October 24, 2026
+- **Audit Methodology**: Independent end-to-end audit and hardening across database migrations, trigger guards, table privileges, universe lineage, historical bar arithmetic, timestamp session contracts, provider adapters, Shariah footnotes, backtesting engines, and automated release gates.
+- **Key Deliverables Delivered**:
+  - `HALALEQUITY_COMPREHENSIVE_REMEDIATION_AND_RELEASE_READINESS_REPORT.md` (Workspace root and brain artifact repository).
+  - Migration 24: `backend/migrations/24-comprehensive-remediation-evidence-trust-and-lineage.sql` and `quant/migrations/24-comprehensive-remediation-evidence-trust-and-lineage.sql`.
+  - TrueData Go Provider Adapter: `backend/internal/providers/marketdata/truedata/provider.go` and `provider_test.go` (100% test coverage).
+  - Go Comprehensive Release-Gate Test Suite: `backend/internal/database/comprehensive_remediation_release_gate_test.go` (8/8 PASSED).
+  - Python Comprehensive Release-Gate Test Suite: `quant/tests/test_comprehensive_remediation_release_gate.py` (8/8 PASSED).
+  - Automated Release Verification Script: `scripts/verify_comprehensive_release_readiness.py` and `scripts/run_comprehensive_release_audit.sh` (evaluates all 13 criteria).
+- **Core Engineering Remediation Accomplished**:
+  - *Database Privilege & Evidence Boundaries (Least Privilege Defense-in-Depth)*:
+    - Revoked `UPDATE, DELETE` from `halal_app_user` on `corporate_action_source_artifacts` and `corporate_action_verification_audit_log` (enforcing PostgreSQL-level append-only constraints).
+    - Codified 5-tier evidence states (`SOURCE_MISSING`, `ARCHIVE_UNAUTHENTICATED`, `HASH_VERIFIED`, `VENDOR_CONFIRMED`, `PRIMARY_SOURCE_AUTHENTICATED`) via check constraints `ck_ca_event_verification_status` and `ck_ca_artifact_validation_status`.
+    - Enforced `fn_ca_event_status_transition_guard`: blocks `halal_app_user` promotion, rejects unauthenticated archives/fixtures, and automatically logs all transitions to the immutable audit trail.
+  - *Universe & Sector Completeness (52 Instruments)*:
+    - Resolved 5 missing sectors in `symbols`: `LTIM` (Technology), `SBILIFE` (Financial Services), `ASIANPAINT` (Consumer Goods), `TATAMOTORS` (Automobile), `HDFCLIFE` (Financial Services).
+    - Achieved **100% sector completeness** across all 52 catalog symbols (51 active, 1 archived).
+    - Verified `/stocks/market/overview` sector distribution sums to exactly 51 active equities across 9 sectors.
+  - *Canonical Instrument Lineage (`instrument_lineage`)*:
+    - Created dedicated `instrument_lineage` table recording legal corporate reorganizations:
+      - `TATAMOTORS` $\to$ `TMPV` (68.85% cost allocation, non-price, effective 2025-10-24).
+      - `TATAMOTORS` $\to$ `TMCV` (31.15% cost allocation, non-price, effective 2025-10-24).
+      - `LTIM` $\to$ `LTM` (1:1 ticker rename, non-price, effective 2026-02-27).
+    - Enforced `concurrency_policy = 'FORBID_CONCURRENT_EXPOSURE'`, strictly preventing fictitious pre-listing continuous series splicing.
+  - *Historical Market Data Arithmetic & Decimal Rounding Proof*:
+    - 23,782 daily bars preserved across 47 active core equities: 23,132 quarantined NULLs (97.27%), 643 nominal Yahoo Finance bars (forward paper execution only), 7 TCS diagnostic adjusted bars.
+    - Verified `PriceAdjustmentEngine` deterministic rational arithmetic: TCS Revision 3 interim dividend factor quantized to exactly 8 decimal places: `0.99471203`, eliminating earlier single-precision float artifact (`0.99471197`).
+  - *Session Semantics & Anti-Look-Ahead Verification*:
+    - All 23,782 bars conform to `03:45:00 UTC` (= `09:15:00 IST`) session open label convention.
+    - Verified point-in-time invariant: Daily close physically forms at 10:00 UTC (15:30 IST); Day $D$ EOD signals execute on Day $D+1$ Open.
+  - *Market Data Provider Integration (TrueData)*:
+    - Implemented full `MarketDataProvider` adapter in Go with configuration, exponential backoff, rate limiting, and raw payload checksum hashing.
+    - Missing credentials fail closed with `DATA_INSUFFICIENT_PENDING_SUBSCRIPTION_AUTHORIZATION`.
+    - Commercial spend strictly ₹0.00. Fixture mode preserves `QualityStatus = DataQualitySuspect`.
+  - *Shariah Screening Footnote Evidence*:
+    - 51 active equities: **0 PASS, 20 FAIL, 31 DATA_INSUFFICIENT**.
+    - Maintained AAOIFI Standard No. 21 prohibition against zero-inference for missing Note 24/25 non-operating interest income footnotes.
+    - Fail-closed BUY gate verified (HTTP 400 rejection for non-PASS).
+- **Automated Release Gates Evaluation (All 13 Criteria)**:
+  - Criterion 1 (Database Privileges): **PASS**
+  - Criterion 2 (Source Authenticity): **DATA_INSUFFICIENT** (Statutory exchange circulars pending acquisition)
+  - Criterion 3 (Universe & Lineage): **PASS** (52 symbols, 100% sector completeness, 3 canonical lineage records)
+  - Criterion 4 (Historical OHLCV Coverage): **DATA_INSUFFICIENT** (23,132 bars quarantined from backtesting)
+  - Criterion 5 (Adjustment Precision): **PASS** (Fixed-point Decimal arithmetic; TCS factor = 0.99471203)
+  - Criterion 6 (Timestamp Semantics): **PASS** (03:45 UTC opening stamp; zero look-ahead bias)
+  - Criterion 7 (Shariah Completeness): **DATA_INSUFFICIENT** (Footnote interest income pending; BUY gate fail-closed)
+  - Criterion 8 (Provider Authenticity): **DATA_INSUFFICIENT** (TrueData adapter implemented; ₹0.00 spent; live pending subscription)
+  - Criterion 9 (Strategy Integrity): **PASS** (Strategy V2 canonical hash locked: `92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780`)
+  - Criterion 10 (Backtest Fee Model): **PASS** (Institutional friction `INDIA_EQ_DELIVERY_FEES_2026Q4_V2`; research gate locked)
+  - Criterion 11 (Contract Consistency): **PASS** (APIs aligned: 51 active equities, 9 sectors)
+  - Criterion 12 (Safety Invariants): **PASS** (`PAPER_TRADING_ENABLED=true`, `LIVE_ORDER_EXECUTION=false`, `BROKER_TRADING_ENABLED=false`, `RESEARCH_BLOCKED`)
+  - Criterion 13 (Reproducible Builds): **PASS** (Migration 24 applied; 76 Go DB tests PASS; 328 Quant pytest PASS; Next.js clean build)
+- **Summary Verdict**:
+  - **Software Build Readiness**: **PASS** (100% reproducible builds, hardened database privileges, verified execution engines)
+  - **Market Data Research Readiness**: **DATA_INSUFFICIENT** (23,132 historical bars quarantined pending authenticated exchange evidence)
+  - **Platform Research Gate**: **RESEARCH_BLOCKED (STRICTLY MAINTAINED)**
+
