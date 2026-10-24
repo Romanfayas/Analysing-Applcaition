@@ -1,7 +1,7 @@
 # HalalEquity — System Delivery Status & Release Decision
 
-**Date:** 2026-10-22T22:45:00+05:30  
-**Phase:** P1.9.9 Historical Data Remediation & Evidence Acquisition  
+**Date:** 2026-10-24T13:30:00+05:30  
+**Phase:** P1.9.13 Independent Evidence Authentication and Research Readiness Audit  
 **Authority:** Multi-Tier Live Runtime Verification (`halal_equity_backend`, `halal_equity_quant`, `halal_equity_frontend`, `halal_equity_postgres`)  
 
 ---
@@ -10,11 +10,11 @@
 
 | Verdict # | Release Criterion | Decision | Operational Status & Engineering Verdict |
 | :---: | :--- | :--- | :--- |
-| **1** | **Local Application Execution** | **RELEASE-READY (PASS)** | All Docker stack containers (`frontend:3000`, `backend:8081`, `quant:8000`, `postgres:5432`, `redis:6379`, `worker`) start cleanly, pass health probes, and maintain zero fatal panics or memory leaks. Next.js 16 compiles cleanly in 1.21s with Turbopack. |
+| **1** | **Local Application Execution** | **RELEASE-READY (PASS)** | All Docker stack containers (`frontend:3000`, `backend:8081`, `quant:8000`, `postgres:5432`, `redis:6379`, `worker`) start cleanly, pass health probes, and maintain zero fatal panics or memory leaks. Next.js 16 compiles cleanly with Turbopack. |
 | **2** | **End-to-End Application Workflows** | **OPERATIONAL WITH GATES (PASS)** | 11 live workflows tested via `scripts/test_workflows_live.py` (exit 0) and `scripts/verify_e2e_delivery.py` (18/18 pass). Stock universe, multi-timeframe charts, IPO monitoring, risk sizing, and paper portfolio ledger execute reliably under least-privilege `halal_app_user`. |
-| **3** | **Data Freshness & Financial Correctness** | **PASS WITH AUDIT DISCLOSURES** | P1.9.9 established multi-provider evaluation matrix (`provider_comparison_matrix_v1.json`), per-instrument recovery plan (`per_instrument_evidence_recovery_plan_v1.json`), controlled ingestion specification (`source_authentication_and_ingestion_spec_v1.json`), and dedicated Shariah footnote remediation plan (`shariah_evidence_recovery_plan_v1.json`). 8/8 Go P1.9.9 release-gate tests pass; 8/8 Python P1.9.9 release-gate tests pass; 46/46 Go DB tests pass; 22/22 Python release-gate tests pass. Quarantined bars invariant (23,132) strictly maintained. |
-| **4** | **Shariah Evidence Readiness** | **FAIL-CLOSED (GATED)** | 51 active equities screened: **0 PASS, 20 FAIL, 31 DATA_INSUFFICIENT**. Third-party secondary aggregate feeds lack statutory notes for interest income and receivables. Under AAOIFI Standard No. 21, zero is never inferred; BUY gate remains strictly fail-closed. P1.9.9 established dedicated statutory footnote evidence acquisition plan. |
-| **5** | **Quantitative Research Readiness** | **STRICTLY BLOCKED** | Research gate `RESEARCH_BLOCKED` enforced. **23,132 historical daily bars remain quarantined** (NULL adjusted close); **27 core equities** lack primary exchange filings. Canonical Strategy V2 hash `92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780` locked. Evaluated licensed providers (NSE Data & Analytics, TruData); no subscription incurred without explicit authorization. |
+| **3** | **Data Freshness & Financial Correctness** | **PASS WITH AUDIT DISCLOSURES** | P1.9.13 audited all 650 populated bars (643 nominal Yahoo, 7 TCS adjusted). 23,132 historical bars remain strictly quarantined (`adjusted_close IS NULL`). Session-open timestamp standard (`03:45:00 UTC` = 09:15 IST) enforced; zero look-ahead bias verified (EOD close evaluated at 15:30 IST / 10:00 UTC, executed at next Open). 8/8 Go P1.9.13 release-gate tests pass; 8/8 Python P1.9.13 release-gate tests pass; 68/68 Go DB tests pass; 320/320 Python tests pass. |
+| **4** | **Shariah Evidence Readiness** | **FAIL-CLOSED (GATED)** | 51 active equities screened: **0 PASS, 20 FAIL, 31 DATA_INSUFFICIENT**. Operating businesses lack audited Note 24/25 non-operating interest income footnote schedules from statutory annual reports. Under AAOIFI Standard No. 21, zero is never inferred; BUY gate remains strictly fail-closed (HTTP 400). |
+| **5** | **Quantitative Research Readiness** | **STRICTLY BLOCKED** | Research gate `RESEARCH_BLOCKED` enforced. Zero historical market data is eligible for backtesting. **23,132 historical daily bars remain quarantined**; **0 corporate action events have primary exchange verification** (`VERIFIED_EXCHANGE_PRIMARY`); 58 events demoted to `ARCHIVE_UNAUTHENTICATED`. Migration 23 hardened database privilege boundaries against application-role tampering. Canonical Strategy V2 hash `92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780` locked. Commercial expenses strictly ₹0.00. |
 | **6** | **Production Security & Broker Readiness** | **STRICTLY BLOCKED** | Non-negotiable safety rules enforced: `PAPER_TRADING_ENABLED=true`, `LIVE_ORDER_EXECUTION=false`, `BROKER_TRADING_ENABLED=false`. No live broker adapters or production credential handlers enabled. |
 
 ---
@@ -26,14 +26,15 @@ Queries executed directly against `halal_equity_postgres` (`halal_equity` databa
 ```sql
 SELECT count(*) AS total_daily_bars, count(adjusted_close) AS populated_adj, count(*) - count(adjusted_close) AS null_adj FROM ohlcv_daily;
 ```
-- **Total Daily OHLCV Bars:** `23,735` (includes 47 daily bars forward-ingested for `2026-10-22`)
-- **Populated Adjusted Close Bars:** `603` (556 historical/forward + 47 unadjusted forward bars)
-- **Quarantined NULL Adjusted Close Bars:** `23,132` (97.46% quarantine invariant strictly preserved)
+- **Total Daily OHLCV Bars:** `23,782` (47 core equities * 506 sessions through 2026-10-23)
+- **Populated Adjusted Close Bars:** `650` (643 nominal Yahoo forward bars + 7 TCS adjusted bars)
+- **Quarantined NULL Adjusted Close Bars:** `23,132` (97.27% quarantine invariant strictly preserved)
 - **Active Core Listed Equities:** `47`
 - **Canonical Universe Instruments:** `52` (47 core + 2 rename lineage `LTIM`/`LTM` + 3 demerger lineage `TATAMOTORS`/`TMPV`/`TMCV`)
 - **Duplicate Symbol/Timestamp Pairs in `ohlcv_daily`:** `0` (Zero duplicates)
-- **Total Corporate Action Events:** `64` (57 core events + 7 lineage events)
-- **Source Artifacts in Registry:** `23` (all with unique document identifiers)
+- **Total Corporate Action Events:** `64` (58 `ARCHIVE_UNAUTHENTICATED` + 6 `AMBIGUOUS`)
+- **Events with Primary Exchange Verification:** `0` (`VERIFIED_EXCHANGE_PRIMARY` = 0)
+- **Source Artifacts in Registry:** `23` (22 linked, 1 unlinked test fixture)
 - **Quarantine Anomaly Records (`ohlcv_daily_quarantine_p17`):** `235`
 
 ### 2.1 Resolution of Bar Count Reconciliation (23,594 vs 23,641 vs 23,688)
@@ -106,7 +107,7 @@ Implemented in `backend/internal/database/costs.go` and `frontend/src/lib/costs.
 
 ### 4.2 Standard Turnover Benchmarks
 | Turnover (₹) | Side | STT | Stamp | Exch | SEBI | DP | GST | Total Fees | Effective Rate |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **₹100,000.00** | **BUY** | ₹100.00 | ₹15.00 | ₹2.97 | ₹0.10 | ₹0.00 | ₹0.55 | **₹118.62** | 0.1186% |
 | **₹100,000.00** | **SELL** | ₹100.00 | ₹0.00 | ₹2.97 | ₹0.10 | ₹13.50 | ₹2.98 | **₹119.55** | 0.1196% |
 
@@ -308,5 +309,67 @@ Any attempt to BUY a security with `DATA_INSUFFICIENT` is blocked at the API lay
 - **Explicit Release-Gate Verdict**:
   - **RESEARCH GATE MUST SAFELY REMAIN BLOCKED (`RESEARCH_BLOCKED`)**. Invariants, migrations, and provenance remediations fully verified.
 
+---
 
+## 11. Phase P1.9.13 Delivery Status — Independent Evidence Authentication and Research Readiness Audit
 
+- **Report Identifier**: `P1.9.13_INDEPENDENT_EVIDENCE_AUTHENTICATION_REPORT.md`
+- **Execution Date**: 2026-10-24
+- **Privilege Vulnerability Discovery & Remediation (Migration 23)**:
+  - *Vulnerability Identified*: Migration 21 had granted `INSERT, UPDATE, DELETE` on corporate action tables to `halal_app_user`. The existing triggers only validated URL prefixes and string statuses. Consequently, an unprivileged application role or compromised worker process could insert an artifact with `source_url = 'https://www.nseindia.com/mock.pdf'`, mark `validation_status = 'PRIMARY_VERIFIED'`, and promote events to `VERIFIED_EXCHANGE_PRIMARY`.
+  - *Remediation Deployed*: Implemented Migration 23 (`23-p1913-independent-evidence-authentication-hardening.sql`) across backend and quant migrations. Hardened `ca_artifact_guard()`, `fn_ca_event_verification_guard()`, and `ca_factor_ingest_guard()` with strict database role boundary checks:
+    - `halal_app_user` is explicitly forbidden from setting or modifying `validation_status = 'PRIMARY_VERIFIED'`.
+    - `halal_app_user` is explicitly forbidden from asserting `VERIFIED_EXCHANGE_PRIMARY`.
+    - Only administrative/migration roles (`halal_user`, `postgres`) can verify primary exchange artifacts.
+    - Full append-only enforcement prevents updating existing verified artifacts or events.
+- **Forensic Evidence Authentication vs Local Hashes**:
+  - Cryptographic distinction maintained: Local SHA-256 hashes confirm only byte integrity of files stored locally; they do **not** confirm origin authenticity by the National Stock Exchange of India (NSE) or Bombay Stock Exchange (BSE).
+  - No authoritative exchange digital signatures (DSC/PKI) exist on local disk archives.
+  - Zero events can claim primary-verified status. All 58 unauthenticated events remain strictly classified as `ARCHIVE_UNAUTHENTICATED`.
+  - Direct HTTP scraping of exchange portals is blocked by Akamai Bot Manager (HTTP 403 Forbidden). No WAF evasion, spoofed headers, or proxy rotations are deployed in accordance with ethical data sourcing guidelines.
+- **Mathematical Reconciliation of Universe & Evidence Counts (52 Instruments)**:
+  - Total catalog instruments: **52** (51 active, 1 archived `TATAMOTORS`).
+  - Active core equities: **47** (with continuous trading history).
+  - Lineage entities: **5** (`TATAMOTORS`, `TMPV`, `TMCV`, `LTIM`, `LTM`) with exactly 0 bars.
+  - Total corporate action events: **64** across 22 symbols:
+    - 58 demoted to `ARCHIVE_UNAUTHENTICATED` (57 cash dividends + 1 demerger).
+    - 6 classified as `AMBIGUOUS` (`OTHER` actions).
+    - **0** events with `VERIFIED_EXCHANGE_PRIMARY`.
+  - Corporate action coverage:
+    - 20 active core equities have corporate action events (all unauthenticated archives).
+    - 27 active core equities have zero corporate action events or artifacts (`SOURCE_MISSING`).
+    - All 47 active core equities lack primary exchange circular verification.
+  - Total source artifacts in registry: **23** (22 linked to symbols, 1 unlinked test fixture `id=14`).
+- **Populated Bar Audit & Look-Ahead Leakage Prevention**:
+  - Total OHLCV daily bars: **23,782** across 47 equities.
+  - Quarantined bars: **23,132** (`adjusted_close IS NULL`) — strictly preserved (97.27% quarantine invariant).
+  - Populated bars: **650** bars:
+    - 643 bars: `source = 'yahoo_finance'`, nominal execution series (`adjusted_close == close`), eligible solely for forward paper trading execution simulation, strictly quarantined from backtesting.
+    - 7 bars: `source = 'NSE_CORPORATE_ACTION'`, TCS dividend-adjusted, strictly quarantined from backtesting.
+  - Session-Open Timestamp Audit (`03:45:00 UTC` = `09:15:00 IST`):
+    - 100% of rows conform to `ck_ohlcv_daily_session_stamp`.
+    - Point-in-time anti-leakage invariant verified: Daily EOD close physically forms at 15:30 IST (`10:00:00 UTC`). Signals evaluated on Day $D$ EOD are entered on Day $D+1$ Open (`03:45:00 UTC`), preventing look-ahead leakage.
+- **Shariah Evidence Invariants**:
+  - 51 active catalog equities: **0 PASS, 20 FAIL, 31 DATA_INSUFFICIENT**.
+  - All 31 operating equities remain `DATA_INSUFFICIENT` due to missing non-operating interest income footnote schedules from statutory annual reports.
+  - Zero inference on missing disclosures strictly prohibited under AAOIFI Standard No. 21.
+  - Fail-closed BUY gate verified (HTTP 400 rejection).
+- **Provider Status & Zero Commercial Spend**:
+  - TrueData provider status maintained as `DATA_INSUFFICIENT_PENDING_SUBSCRIPTION_AUTHORIZATION`.
+  - ₹0.00 commercial spend; zero subscriptions or trial activations incurred.
+  - Fixtures in `data/poc/` remain explicitly classified as fixtures.
+- **Automated Test Verification**:
+  - Backend Database Tests (`backend/internal/database/p1913_independent_evidence_authentication_test.go`): 8/8 PASSED (68/68 total Go DB tests passed).
+  - Quant Engine Tests (`quant/tests/test_p1913_independent_evidence_authentication.py`): 8/8 PASSED (320/320 total quant tests passed).
+  - Live Workflows (`scripts/test_workflows_live.py`): 11/11 PASSED.
+  - End-to-End Delivery (`scripts/verify_e2e_delivery.py`): 18/18 PASSED.
+  - Frontend Build (`npm run build`): PASSED (0 errors, 15 static routes).
+- **Platform Safety State**:
+  - `PAPER_TRADING_ENABLED=true`
+  - `LIVE_ORDER_EXECUTION=false`
+  - `BROKER_TRADING_ENABLED=false`
+  - Platform Research Gate: **RESEARCH_BLOCKED** (Strictly Preserved)
+  - Strategy V2 State: **FROZEN** (`92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780`)
+  - Commercial Expenses: **₹0.00**
+- **Explicit Release-Gate Verdict**:
+  - **RESEARCH GATE MUST REMAIN STRICTLY BLOCKED (`RESEARCH_BLOCKED`)**. No historical market data can legitimately become eligible for research backtesting during Phase P1.9.13. Platform integrity, database privilege boundaries, and fail-closed governance are fully verified.
