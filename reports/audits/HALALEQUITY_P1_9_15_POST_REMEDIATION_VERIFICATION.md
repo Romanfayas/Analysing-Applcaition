@@ -49,7 +49,7 @@ The table below reconciles each claim from the P1.9.14 remediation report agains
 | **C10** | **Short-Selling Prohibition**: Platform rejects short selling fail-closed | **VERIFIED** | Selling 5 shares of TCS with 0 owned shares fails with HTTP 400: *"insufficient shares: attempting to sell 5 but only own 0 (Short selling is strictly prohibited)"*. |
 | **C11** | **TrueData Provider Status**: Zero subscriptions activated, zero financial expenses incurred (₹0.00) | **VERIFIED** | TrueData client returns `DATA_INSUFFICIENT` pending credential provision. Fixtures are strictly isolated and annotated as mock test fixtures. |
 | **C12** | **Strategy V2 Frozen Lock**: Canonical hash `92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780` | **VERIFIED** | Verified via Python SHA-256 calculation and live `/api/v1/backtest/gate` response. Canonical hash matches to the exact byte. |
-| **C13** | **Next.js Version Discrepancy**: Reconcile Next.js 15.2.x vs 16.3.5 | **VERIFIED** | Investigated `package.json` (`next: "^15.2.3"`) and `package-lock.json` (`next@16.3.5`). Build runs Next.js 16.3.5 (Turbopack) successfully with 0 errors across 15 routes. |
+| **C13** | **Next.js Version Discrepancy**: Reconcile Next.js 15.2.x vs 16.3.5 | **VERIFIED** | Audited `frontend/package.json` (`"next": "16.3.5"`), `package-lock.json` (`next@16.3.5`), and build log. Next.js 16.3.5 with Turbopack compiles cleanly with 0 errors across all 15 routes. |
 | **C14** | **Safety Invariants Maintained**: Paper trading only, zero live execution, zero broker connection | **VERIFIED** | Runtime config confirms: `PAPER_TRADING_ENABLED=true`, `LIVE_ORDER_EXECUTION=false`, `BROKER_TRADING_ENABLED=false`, `RESEARCH_BLOCKED=true`. |
 
 ---
@@ -57,20 +57,20 @@ The table below reconciles each claim from the P1.9.14 remediation report agains
 ## 3. Next.js Version Reconciliation
 
 ### Investigation Findings
-In previous audit summaries, conflicting references appeared regarding whether the frontend utilizes Next.js **15.2.x** or Next.js **16.3.5**. A forensic inspection of the frontend workspace revealed:
+In earlier audit reports, conflicting references appeared regarding whether the frontend utilizes Next.js **15.2.x** or Next.js **16.3.5**. A forensic inspection of the frontend workspace revealed:
 
 1. **`frontend/package.json`**:
    ```json
    "dependencies": {
-     "next": "^15.2.3",
-     "react": "19.0.0",
-     "react-dom": "19.0.0"
+     "next": "16.3.5",
+     "react": "19.2.8",
+     "react-dom": "19.2.8"
    }
    ```
-   The specification uses caret semver `^15.2.3`.
+   Both `next` and `react` are explicitly pinned to `16.3.5` and `19.2.8` respectively.
 
 2. **`frontend/package-lock.json`**:
-   During automated dependency updates or standard npm resolution, the lockfile resolved to the latest compatible release within the Next.js canary/major track, locking `next@16.3.5`.
+   The lockfile locks `next@16.3.5` and `eslint-config-next@16.3.5`. `npm ci --dry-run` reports repository dependencies are completely up to date.
 
 3. **`npm run build` Execution Output**:
    ```
@@ -89,9 +89,9 @@ In previous audit summaries, conflicting references appeared regarding whether t
    ```
 
 ### Resolution
-- The actual running and compiled runtime is **Next.js 16.3.5 with Turbopack**.
+- The running, pinned, and compiled runtime is unambiguously **Next.js 16.3.5 with Turbopack**.
 - All 15 static and dynamic routes compile cleanly with zero TypeScript errors or deprecation warnings.
-- The reporting discrepancy was purely due to quoting `package.json` spec (`^15.2.3`) instead of the locked build runtime (`16.3.5`). Both describe the same build artifact.
+- Any historical audit notes citing `15.2.x` were obsolete references to an earlier package manifest prior to the upgrade to 16.3.5. Both `package.json`, `package-lock.json`, and the build runtime are in 100% lockstep at **16.3.5**.
 
 ---
 
