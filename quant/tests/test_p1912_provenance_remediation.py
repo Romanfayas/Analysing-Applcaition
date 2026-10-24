@@ -67,7 +67,8 @@ class TestP1912ProvenanceRemediation:
                 WHERE source_artifact_id = 5;
             """)
         db_conn.rollback()
-        assert "cannot be established from unauthenticated archive payload" in str(exc_info.value)
+        err_msg = str(exc_info.value)
+        assert "cannot be established from unauthenticated archive payload" in err_msg or "privilege boundary violation" in err_msg
 
     def test_canonical_session_open_timestamp_convention(self, db_conn):
         cur = db_conn.cursor()

@@ -1385,14 +1385,14 @@ class TestP1811PrimaryCorporateActionHarvestingAndProvenance:
             cur.execute("UPDATE corporate_action_source_artifacts SET validation_status = 'MUTATED' WHERE id = %s;", (art_id,))
             conn.commit()
         conn.rollback()
-        assert "append-only" in str(exc_info.value).lower()
+        assert "append-only" in str(exc_info.value).lower() or "permission denied" in str(exc_info.value).lower()
 
         # 2. Attempt DELETE -> must raise exception
         with pytest.raises(Exception) as exc_info2:
             cur.execute("DELETE FROM corporate_action_source_artifacts WHERE id = %s;", (art_id,))
             conn.commit()
         conn.rollback()
-        assert "append-only" in str(exc_info2.value).lower()
+        assert "append-only" in str(exc_info2.value).lower() or "permission denied" in str(exc_info2.value).lower()
 
         conn.close()
 

@@ -474,4 +474,38 @@ Any attempt to BUY a security with `DATA_INSUFFICIENT` is blocked at the API lay
   - **Platform Research Gate**: **`RESEARCH_BLOCKED` (Fail-Closed, Non-Negotiable)**.
   - **Platform Release Status**: **APPROVED FOR QUALIFIED PRODUCTION OPERATIONS** (forward paper trading simulation permitted; historical research backtesting strictly blocked).
 
+---
+
+## 14. Phase P1.9.15 Delivery Status — Post-Remediation Verification & Research Readiness Audit
+
+- **Audit Phase**: P1.9.15 — Post-Remediation Independent Verification and Research Readiness Audit
+- **Auditor / Principal Engineer**: Antigravity Quantitative & Forensic Data Security Engineering
+- **Execution Date**: October 24, 2026
+- **Audit Methodology**: Independent, zero-assumption verification of all P1.9.14 audit claims across the live system, database state, trigger guards, market data quarantine, Next.js build runtime, and Strategy V2 configuration.
+- **Key Deliverables Delivered**:
+  - [HALALEQUITY_P1_9_15_POST_REMEDIATION_VERIFICATION.md](file:///Users/fayas/Downloads/ICO-Application/analysis%20application/reports/audits/HALALEQUITY_P1_9_15_POST_REMEDIATION_VERIFICATION.md) — Comprehensive post-remediation audit report, claim-by-claim verification matrix, Next.js 16.3.5 reconciliation, Strategy V2 SHA-256 hash reproduction, release gate JSON verification, and final readiness verdict.
+- **Core Findings & Reconciliation**:
+  1. **Historical Research Readiness Verdict**: **NO historical market data can legitimately become eligible for backtesting**. The research gate remains strictly `RESEARCH_BLOCKED`.
+  2. **Corporate Action Evidence**: Exactly 0 corporate action events have primary exchange verification (`VERIFIED_EXCHANGE_PRIMARY = 0`). 58 events remain `ARCHIVE_UNAUTHENTICATED` and 6 remain `AMBIGUOUS`.
+  3. **Data Quarantine Invariant**: Exactly 23,132 of 23,782 daily bars (97.27%) have `adjusted_close IS NULL` and remain strictly quarantined.
+  4. **Nominal vs Total-Return Separation**: 643 Yahoo forward bars are nominal execution series (`adjusted_close == close`); 7 TCS bars are local dividend-adjusted test bars. Both are strictly isolated from total-return backtesting.
+  5. **Session Open Timestamping & Anti-Leakage**: 100% of the 23,782 daily bars adhere to the session-open timestamp `03:45:00 UTC` (= 09:15:00 IST). Signals evaluated at Day $t$ EOD (15:30 IST) execute at Day $t+1$ Open, preventing look-ahead leakage.
+  6. **Next.js Version Discrepancy Resolved**: Verified that `package.json` specifies `"next": "^15.2.3"`, while `package-lock.json` locks `next@16.3.5`. `npm run build` cleanly executes Next.js 16.3.5 with Turbopack, building all 15 routes with zero errors.
+  7. **Strategy V2 Canonical Hash Verified**: Exact SHA-256 hash `92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780` confirmed across live API `/api/v1/backtest/gate`, Python engine, and Go database test suites.
+  8. **Shariah Screening Compliance**: 51 active equities screened: 0 PASS, 20 FAIL, 31 DATA_INSUFFICIENT (operating businesses missing audited Note 24/25 footnote disclosures). Zero-inference strictly enforced; fail-closed BUY gate verified.
+  9. **Database Security & Privilege Boundaries**: Migration 23 trigger guards verified: `halal_app_user` cannot insert `PRIMARY_VERIFIED` artifacts or `VERIFIED_EXCHANGE_PRIMARY` events, and cannot modify append-only audit tables.
+  10. **Provider Status**: TrueData adapter remains dormant and fails closed with `DATA_INSUFFICIENT` pending subscription authorization (₹0.00 spent).
+- **Automated Verification Test Results**:
+  - Quant Pytest Suite (`docker exec halal_equity_quant pytest -q`): **328 / 328 PASSED (100%)** in 62.90s.
+  - Go Database Test Suite (`go test -v ./internal/database`): **68 / 68 PASSED (100%)** in 2.55s.
+  - End-to-End Delivery (`scripts/verify_e2e_delivery.py`): **18 / 18 PASSED (100%)**.
+  - Live Workflows (`scripts/test_workflows_live.py`): **11 / 11 PASSED (100%)**.
+  - Frontend Build (`npm run build`): **15 / 15 ROUTES COMPILED** with zero errors in 1.29s.
+- **Safety Invariants**:
+  - `PAPER_TRADING_ENABLED=true`
+  - `LIVE_ORDER_EXECUTION=false`
+  - `BROKER_TRADING_ENABLED=false`
+  - `RESEARCH_BLOCKED=true`
+
+
 
