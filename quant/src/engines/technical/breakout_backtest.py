@@ -43,6 +43,14 @@ class CompletedTrade:
     net_return: float  # After roundtrip friction (shared ledger or legacy)
     cost_model_version: str = "LEGACY_47BPS_PROVISIONAL"
     fees_inr: float = 0.0
+    # Facts known at the signal bar, for research breakdowns. They never influence the simulated trade.
+    signal_date: str = ""
+    structure_score: Optional[float] = None
+    rvol: Optional[float] = None
+    entry_high: Optional[float] = None
+    resistance: Optional[float] = None
+    atr: Optional[float] = None
+    signal_close: Optional[float] = None
 
 
 @dataclass
@@ -376,6 +384,8 @@ class BreakoutBacktester:
                             net_return=round(net_ret, 4),
                             cost_model_version=cost_ver,
                             fees_inr=round(fees_inr, 2),
+                            signal_date=active_trade.get("signal_date", ""),
+                            **active_trade.get("ctx", {}),
                         )
                         completed_trades.append(tr)
                         partition_stats[active_trade["partition"]]["trades"].append(tr)
@@ -425,6 +435,9 @@ class BreakoutBacktester:
                                 "partition": part,
                                 "entry_bar": t + 1,
                                 "entry_date": dates[t + 1],
+                                "signal_date": dates[t],
+                                "ctx": {"structure_score": res.structure_score, "rvol": res.rvol, "entry_high": res.entry_zone[1],
+                                        "resistance": res.resistance_level, "atr": res.atr, "signal_close": closes[t]},
                                 "entry_price": entry_price,
                                 "invalidation_level": inval,
                                 "target_price": target,

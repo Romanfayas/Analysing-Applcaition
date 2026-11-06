@@ -62,11 +62,11 @@ async def calculate_indicators(request: IndicatorRequest):
 
 @router.post("/support-resistance")
 async def calculate_support_resistance(request: OHLCVInput):
-    """Calculate support and resistance levels."""
-    return {"levels": []}
+    """Not implemented: answers 501 rather than an empty list that reads as "no levels found"."""
+    raise HTTPException(status_code=501, detail="support/resistance detection is not implemented")
 
 
 @router.post("/trend")
 async def detect_trend(request: OHLCVInput):
-    """Detect current trend direction and strength."""
-    return {"trend": "NEUTRAL", "strength": 0}
+    """Not implemented: answers 501 rather than a fabricated NEUTRAL trend."""
+    raise HTTPException(status_code=501, detail="trend detection is not implemented")

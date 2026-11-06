@@ -209,7 +209,7 @@ func TestNoActiveFactorHasDefaultEventID(t *testing.T) {
 			adjustment_factor, nominal_price_factor, total_return_factor, volume_adjustment_factor,
 			source_reference, revision_number
 		) VALUES (
-			(SELECT id FROM symbols WHERE symbol = 'TCS'), 'CASH_DIVIDEND', 'CASH_DISTRIBUTION', 'DEFAULT', '2026-10-14', '2026-10-14',
+			(SELECT id FROM canonical.symbols WHERE symbol = 'TCS'), 'CASH_DIVIDEND', 'CASH_DISTRIBUTION', 'DEFAULT', '2026-10-14', '2026-10-14',
 			0.99471203, 1.0, 0.99471203, 1.0,
 			'TEST_DEFAULT_REJECT', 99
 		);
@@ -256,19 +256,19 @@ func TestP1813DataReadinessAndAdjustedPriceAudit(t *testing.T) {
 			count(*) as total_bars,
 			count(adjusted_close) as pop_adj,
 			count(*) - count(adjusted_close) as null_adj
-		FROM ohlcv_daily;
+		FROM canonical.ohlcv_daily;
 	`).Scan(&totalBars, &popAdj, &nullAdj)
 	require.NoError(t, err)
-	assert.Contains(t, []int{23641, 23688, 23735, 23782}, totalBars, "Total daily bars must be 23641 (through Oct 19), 23688 (through Oct 21), 23735 (through Oct 22), or 23782 (through Oct 23)")
-	assert.Contains(t, []int{509, 556, 603, 650}, popAdj, "Populated adjusted_close must be 509 (through Oct 19), 556 (through Oct 21), 603 (through Oct 22), or 650 (through Oct 23)")
+	assertForwardSessionGrowth(t, 23641, forwardSessionBarStep, totalBars, "Total daily bars must match valid forward session count")
+	assertForwardSessionGrowth(t, 509, forwardSessionBarStep, popAdj, "Populated adjusted_close must match forward session count")
 	assert.Equal(t, 23132, nullAdj, "Quarantined NULL adjusted_close must be exactly 23132 (97.85% quarantine invariant)")
 
 	// 2. Verify that ONLY TCS has adjusted_close != close across all populated bars
 	var diffSymbols int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(DISTINCT s.symbol)
-		FROM ohlcv_daily o
-		JOIN symbols s ON o.symbol_id = s.id
+		FROM canonical.ohlcv_daily o
+		JOIN canonical.symbols s ON o.symbol_id = s.id
 		WHERE o.adjusted_close IS NOT NULL AND o.adjusted_close != o.close;
 	`).Scan(&diffSymbols)
 	require.NoError(t, err)
@@ -277,8 +277,8 @@ func TestP1813DataReadinessAndAdjustedPriceAudit(t *testing.T) {
 	var tcsDiffBars int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM ohlcv_daily o
-		JOIN symbols s ON o.symbol_id = s.id
+		FROM canonical.ohlcv_daily o
+		JOIN canonical.symbols s ON o.symbol_id = s.id
 		WHERE s.symbol = 'TCS' AND o.adjusted_close != o.close;
 	`).Scan(&tcsDiffBars)
 	require.NoError(t, err)
@@ -288,8 +288,8 @@ func TestP1813DataReadinessAndAdjustedPriceAudit(t *testing.T) {
 	var hclDiffBars int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM ohlcv_daily o
-		JOIN symbols s ON o.symbol_id = s.id
+		FROM canonical.ohlcv_daily o
+		JOIN canonical.symbols s ON o.symbol_id = s.id
 		WHERE s.symbol = 'HCLTECH' AND o.adjusted_close IS NOT NULL AND o.adjusted_close != o.close;
 	`).Scan(&hclDiffBars)
 	require.NoError(t, err)
@@ -313,8 +313,10 @@ func TestP1813DataReadinessAndAdjustedPriceAudit(t *testing.T) {
 	assert.Equal(t, 2, stateCounts["FACTOR_VALIDATED"], "Exactly 2 symbols (LTIM, TATAMOTORS) are FACTOR_VALIDATED")
 	assert.Equal(t, 0, stateCounts["PRIMARY_SOURCE_VERIFIED"], "Zero symbols are PRIMARY_SOURCE_VERIFIED after P1.9.12 remediation")
 	assert.Equal(t, 19, stateCounts["PARSE_VALIDATED"], "Exactly 19 symbols are PARSE_VALIDATED (demoted from unauthenticated archives)")
-	assert.Equal(t, 30, stateCounts["SOURCE_MISSING"], "Exactly 30 symbols are SOURCE_MISSING (27 core + 3 lineage)")
-	assert.Equal(t, 52, stateCounts["ELIGIBLE_FOR_SPECIFIC_USE"]+stateCounts["FACTOR_VALIDATED"]+stateCounts["PRIMARY_SOURCE_VERIFIED"]+stateCounts["PARSE_VALIDATED"]+stateCounts["SOURCE_MISSING"])
+	// P1.9.24 deposited exchange evidence (AUTHENTICITY_PENDING) for symbols that had none: they move from
+	// SOURCE_MISSING to ARTIFACT_DEPOSITED. Nothing is promoted, so the two together stay at 30.
+	assert.Equal(t, 30, stateCounts["SOURCE_MISSING"]+stateCounts["ARTIFACT_DEPOSITED"], "27 core + 3 lineage symbols lack verified evidence")
+	assert.Equal(t, 52, stateCounts["ELIGIBLE_FOR_SPECIFIC_USE"]+stateCounts["FACTOR_VALIDATED"]+stateCounts["PRIMARY_SOURCE_VERIFIED"]+stateCounts["PARSE_VALIDATED"]+stateCounts["SOURCE_MISSING"]+stateCounts["ARTIFACT_DEPOSITED"])
 }
 
 func TestP1815UniverseAndCorporateActionReconciliation(t *testing.T) {
@@ -331,7 +333,7 @@ func TestP1815UniverseAndCorporateActionReconciliation(t *testing.T) {
 			count(*) FILTER (WHERE symbol IN ('TATAMOTORS', 'TMPV', 'TMCV')),
 			count(*) FILTER (WHERE is_active = true),
 			count(*) FILTER (WHERE is_active = false)
-		FROM symbols;
+		FROM canonical.symbols;
 	`).Scan(&totalSymbols, &coreCount, &renameCount, &demergerCount, &activeCount, &inactiveCount)
 	require.NoError(t, err)
 
@@ -345,25 +347,26 @@ func TestP1815UniverseAndCorporateActionReconciliation(t *testing.T) {
 	// 2. DIVISLAB presence and bar verification
 	var divislabID int
 	var divislabActive bool
-	err = db.QueryRowContext(ctx, "SELECT id, is_active FROM symbols WHERE symbol = 'DIVISLAB';").Scan(&divislabID, &divislabActive)
+	err = db.QueryRowContext(ctx, "SELECT id, is_active FROM canonical.symbols WHERE symbol = 'DIVISLAB';").Scan(&divislabID, &divislabActive)
 	require.NoError(t, err)
 	assert.Equal(t, 29, divislabID)
 	assert.True(t, divislabActive)
 
 	var divislabBars int
-	err = db.QueryRowContext(ctx, "SELECT count(*) FROM ohlcv_daily WHERE symbol_id = $1;", divislabID).Scan(&divislabBars)
+	err = db.QueryRowContext(ctx, "SELECT count(*) FROM canonical.ohlcv_daily WHERE symbol_id = $1;", divislabID).Scan(&divislabBars)
 	require.NoError(t, err)
-	assert.Contains(t, []int{503, 504, 505, 506}, divislabBars, "DIVISLAB must have 503 (through Oct 19), 504 (through Oct 21), 505 (through Oct 22), or 506 (through Oct 23) daily bars")
+	assertForwardSessionGrowth(t, 503, 1, divislabBars, "DIVISLAB must have valid daily bar count")
 
 	// 3. Corporate Action Event Count Reconciliation
 	var totalArtifacts, uniqueDocIDs int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*), count(DISTINCT document_identifier)
-		FROM corporate_action_source_artifacts;
+		FROM corporate_action_source_artifacts WHERE `+p1924EvidenceFilter+`;
 	`).Scan(&totalArtifacts, &uniqueDocIDs)
 	require.NoError(t, err)
 	assert.Equal(t, 23, totalArtifacts)
 	assert.Equal(t, 23, uniqueDocIDs)
+	assertArtifactBaselineAndNewEvidence(t, db)
 
 	var totalEvents, uniqueEventIDs, coreEvents, lineageEvents int
 	err = db.QueryRowContext(ctx, `
@@ -407,11 +410,11 @@ func TestP1815UniverseAndCorporateActionReconciliation(t *testing.T) {
 			count(*),
 			count(adjusted_close),
 			count(*) - count(adjusted_close)
-		FROM ohlcv_daily;
+		FROM canonical.ohlcv_daily;
 	`).Scan(&totalBars, &populatedBars, &quarantinedBars)
 	require.NoError(t, err)
-	assert.Contains(t, []int{23641, 23688, 23735, 23782}, totalBars)
-	assert.Contains(t, []int{509, 556, 603, 650}, populatedBars)
+	assertForwardSessionGrowth(t, 23641, forwardSessionBarStep, totalBars)
+	assertForwardSessionGrowth(t, 509, forwardSessionBarStep, populatedBars)
 	assert.Equal(t, 23132, quarantinedBars)
 }
 
@@ -427,8 +430,8 @@ func TestP1814TCSMultiplicativeFactorAuditAndConsumerIsolation(t *testing.T) {
 			o.adjusted_close,
 			ROUND((o.close - o.adjusted_close), 4),
 			ROUND((o.adjusted_close / o.close), 8)
-		FROM ohlcv_daily o
-		JOIN symbols s ON o.symbol_id = s.id
+		FROM canonical.ohlcv_daily o
+		JOIN canonical.symbols s ON o.symbol_id = s.id
 		WHERE s.symbol = 'TCS'
 		  AND o.timestamp::date >= '2026-10-05'
 		  AND o.timestamp::date <= '2026-10-13'

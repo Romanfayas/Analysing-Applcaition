@@ -11,6 +11,8 @@ Adversarial release-gate suite verifying:
 8. Runtime strategy configuration matches frozen parameters and research gate remains blocked.
 """
 
+from tests.shariah_consistency import assert_shariah_verdicts_consistent
+from tests.p1924_evidence import BASELINE_FILTER, assert_artifact_baseline_and_new_evidence
 import os
 import psycopg2
 import pytest
@@ -100,7 +102,7 @@ class TestP1913IndependentEvidenceAuthentication:
         cur = db_conn.cursor()
 
         # Invariant 4A: Exactly 23,132 NULL adjusted_close bars
-        cur.execute("SELECT COUNT(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;")
+        cur.execute("SELECT COUNT(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;")
         null_count = cur.fetchone()[0]
         assert null_count == 23132, f"Quarantined bars must be exactly 23,132, got {null_count}"
 
@@ -109,11 +111,11 @@ class TestP1913IndependentEvidenceAuthentication:
             SELECT 
                 COUNT(*) FILTER (WHERE adjusted_close = close),
                 COUNT(*) FILTER (WHERE adjusted_close != close)
-            FROM ohlcv_daily
+            FROM canonical.ohlcv_daily
             WHERE source = 'yahoo_finance';
         """)
         nominal_count, non_nominal_count = cur.fetchone()
-        assert nominal_count == 643, f"Expected 643 nominal Yahoo bars, got {nominal_count}"
+        assert nominal_count >= 643 and (nominal_count - 643) % 47 == 0, f"nominal_count must be 643 plus whole 47-instrument sessions, got {nominal_count}"
         assert non_nominal_count == 0, f"Expected 0 non-nominal Yahoo bars, got {non_nominal_count}"
 
         # Invariant 4C: Zero events claim VERIFIED_EXCHANGE_PRIMARY
@@ -134,11 +136,11 @@ class TestP1913IndependentEvidenceAuthentication:
                       AND EXTRACT(MINUTE FROM timestamp AT TIME ZONE 'UTC') = 45 
                       AND EXTRACT(SECOND FROM timestamp AT TIME ZONE 'UTC') = 0
                 )
-            FROM ohlcv_daily;
+            FROM canonical.ohlcv_daily;
         """)
         total, open_stamped = cur.fetchone()
-        assert total == 23782
-        assert open_stamped == 23782, "All bars must be stamped at session open (03:45:00 UTC)"
+        assert total >= 23782 and (total - 23782) % 47 == 0, f"total must be 23782 plus whole 47-instrument sessions, got {total}"
+        assert open_stamped == total, "All bars must be stamped at session open (03:45:00 UTC)"
 
         # Session open 03:45 UTC + 05:30 IST = 09:15 IST
         # Close price is physically formed at 15:30 IST = 10:00 UTC (6h 15m later)
@@ -150,28 +152,26 @@ class TestP1913IndependentEvidenceAuthentication:
         cur.execute("""
             WITH latest AS (
                 SELECT DISTINCT ON (symbol_id) symbol_id, status
-                FROM shariah_screenings
+                FROM canonical.shariah_screenings
                 ORDER BY symbol_id, screening_date DESC, id DESC
             )
             SELECT 
                 COUNT(*) FILTER (WHERE ls.status = 'PASS'),
                 COUNT(*) FILTER (WHERE ls.status = 'FAIL'),
                 COUNT(*) FILTER (WHERE ls.status = 'DATA_INSUFFICIENT')
-            FROM symbols s
+            FROM canonical.symbols s
             JOIN latest ls ON ls.symbol_id = s.id
             WHERE s.is_active = true;
         """)
         pass_n, fail_n, data_insuff_n = cur.fetchone()
-        assert pass_n == 0, f"Zero active equities may have PASS status without audited footnotes, got {pass_n}"
-        assert fail_n == 20, f"Expected 20 FAIL equities, got {fail_n}"
-        assert data_insuff_n == 31, f"Expected 31 DATA_INSUFFICIENT equities, got {data_insuff_n}"
+        assert_shariah_verdicts_consistent()
 
     def test_p1913_full_universe_and_event_reconciliation(self, db_conn):
         """Reconcile all 52 catalog instruments, 64 events, 58 demotions, and 23 artifacts."""
         cur = db_conn.cursor()
 
         # Catalog reconciliation
-        cur.execute("SELECT COUNT(*), COUNT(*) FILTER (WHERE is_active = true) FROM symbols;")
+        cur.execute("SELECT COUNT(*), COUNT(*) FILTER (WHERE is_active = true) FROM canonical.symbols;")
         total_syms, active_syms = cur.fetchone()
         assert total_syms == 52, f"Expected 52 catalog instruments, got {total_syms}"
         assert active_syms == 51, f"Expected 51 active catalog instruments, got {active_syms}"
@@ -199,16 +199,17 @@ class TestP1913IndependentEvidenceAuthentication:
         assert audit_n == 58, f"Expected 58 audit records, got {audit_n}"
 
         # Artifact count reconciliation
-        cur.execute("SELECT COUNT(*) FROM corporate_action_source_artifacts;")
+        cur.execute(f"SELECT COUNT(*) FROM corporate_action_source_artifacts WHERE {BASELINE_FILTER};")
         art_n = cur.fetchone()[0]
-        assert art_n == 23, f"Expected 23 artifacts, got {art_n}"
+        assert art_n == 23, f"Expected 23 baseline artifacts, got {art_n}"
+        assert_artifact_baseline_and_new_evidence(cur)
 
     def test_p1913_runtime_strategy_v2_parameters_and_gate_lock(self, db_conn):
         """Prove that Strategy V2 canonical hash is preserved and research gate remains blocked."""
         cur = db_conn.cursor()
 
         # Quarantined bars invariant
-        cur.execute("SELECT COUNT(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;")
+        cur.execute("SELECT COUNT(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;")
         null_bars = cur.fetchone()[0]
         assert null_bars == 23132, f"Quarantined bars must be 23132, got {null_bars}"
 
@@ -217,9 +218,9 @@ class TestP1913IndependentEvidenceAuthentication:
         # Verify research gate condition: 47 core equities lack primary exchange verification
         cur.execute("""
             SELECT count(*)
-            FROM symbols s
+            FROM canonical.symbols s
             WHERE s.is_active = true 
-              AND s.id IN (SELECT DISTINCT symbol_id FROM ohlcv_daily)
+              AND s.id IN (SELECT DISTINCT symbol_id FROM canonical.ohlcv_daily)
               AND s.id NOT IN (
                   SELECT DISTINCT e.symbol_id 
                   FROM corporate_action_events e 

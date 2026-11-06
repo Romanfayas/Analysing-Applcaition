@@ -41,6 +41,29 @@ docker compose up -d --build
 
 ---
 
+## 2.1 Signing in (P1.9.20)
+
+The UI requires an account. Open <http://localhost:3000/login> and choose **Create one** (self-service sign-up is on
+by default in development; set `ALLOW_REGISTRATION=false` to turn it off, and it is off by default when
+`APP_ENV` is not `development`). Passwords need at least 10 characters. The session lives in an `httpOnly`
+cookie; the browser never sees the token.
+
+Set a real signing key before using the stack anywhere other than this machine. Compose otherwise falls back to a
+**publicly known** default:
+
+```bash
+echo "JWT_SECRET=$(openssl rand -hex 32)" >> .env   # then: docker compose up -d --build backend worker frontend
+```
+
+Telegram credentials (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`) are server-side environment variables only; they are
+never stored by the app or accepted through the UI.
+
+> **Port 5432 trap (macOS):** a Homebrew/host Postgres may own `127.0.0.1:5432` and shadow the container, giving
+> `role "halal_user" does not exist` on `localhost`. Reach the container through your LAN address, or use
+> `docker exec halal_equity_postgres psql -U halal_user -d halal_equity`.
+
+---
+
 ## 3. Automated End-to-End Verification
 
 Verify the entire system end-to-end with the automated verification script:
@@ -77,6 +100,12 @@ VERIFICATION SUMMARY: 18/18 checks passed.
 ======================================================================
 ```
 
+P1.9.20 end-to-end check through the real login flow (creates one throwaway `e2e-*@example.test` account; set
+`E2E_EMAIL`/`E2E_PASSWORD` to reuse an account instead):
+```bash
+python3 scripts/verify_p1920_e2e.py     # 52 checks
+```
+
 To exercise all 11 live interactive application workflows and security negative inputs:
 ```bash
 python3 scripts/test_workflows_live.py
@@ -88,9 +117,10 @@ python3 scripts/test_workflows_live.py
 
 ### 4.1 Go Backend Integration Tests
 ```bash
-cd backend
-go test -count=1 -v ./internal/database/... ./internal/services/...
+scripts/run_go_tests.sh ./...        # discovers the container's address (see the port 5432 note above)
 ```
+The DB-backed tests use the isolated `halal_equity_test` database; the few that exercise the real runtime role
+(`getAppTestDB`) connect to `halal_equity`, create rows with unique names, and clean up after themselves.
 *Expected: 100% of tests pass, specifically:*
 - `TestPaperTradingExactThreeStepLifecycle`: Reproduces the exact 3-step lifecycle (BUY 100 @ 1,000; SELL 40 @ 1,200; SELL 60 @ 1,100), logging each statutory charge, cost basis, realized P&L, and zero discrepancy against initial capital.
 - `TestIsTradingHolidayNSECalendar2024to2026`: Validates the official exchange holiday calendar (`NSE_EQ_CALENDAR_2024-10_to_2026-12_V1`).
@@ -101,7 +131,7 @@ go test -count=1 -v ./internal/database/... ./internal/services/...
 ```bash
 docker exec halal_equity_quant pytest -v
 ```
-*Expected: 265 passed, 0 failed in ~60 seconds.*
+*Expected: 381 passed, 1 skipped in ~70 seconds.*
 
 ### 4.3 Frontend Production Build Audit
 ```bash

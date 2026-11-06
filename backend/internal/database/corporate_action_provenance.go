@@ -340,6 +340,7 @@ func (db *DB) GetUniverseHarvestingCoverage(ctx context.Context) ([]HarvestingSy
 			JOIN symbols s2 ON v.symbol = s2.symbol
 			GROUP BY s2.id
 		) act ON s.id = act.symbol_id
+		WHERE COALESCE(s.metadata->>'user_added', 'false') <> 'true'
 		ORDER BY s.symbol ASC;
 	`
 

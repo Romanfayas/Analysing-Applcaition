@@ -1,0 +1,282 @@
+{
+  "audit_phase": "P1.9.19",
+  "audit_name": "Independent Release Integrity & Evidence Readiness Audit",
+  "timestamp_utc": "2026-10-30T14:45:00Z",
+  "environment": {
+    "os": "macOS (Darwin 24.6.0 arm64)",
+    "database_engine": "PostgreSQL 16.14 + TimescaleDB 2.16.1",
+    "go_version": "go1.24.0 darwin/arm64",
+    "python_version": "Python 3.12.15 (quant container) / Python 3.13.4 (host venv)",
+    "git_commit": "25d3f811e0df3d00f4d46271b8fd2fda461b6291"
+  },
+  "pre_remediation_backup": {
+    "file_path": "backend/migrations/backups/halal_equity_pre_p1918.sql",
+    "file_size_bytes": 27568600,
+    "line_count": 229737,
+    "sha256_checksum": "4ab0194a2cdf6ec6d9c827de97401ecf92601934c84ecbae600a20b0762843da",
+    "recorded_checksum_matches": true,
+    "file_permissions": "0600 (-rw-------)",
+    "git_status": "EXCLUDED",
+    "gitignore_rule": "backups/",
+    "git_tracked": false,
+    "secrets_audit": {
+      "users_table_rows": 0,
+      "user_sessions_table_rows": 0,
+      "credentials_detected": 0,
+      "status": "PASS"
+    }
+  },
+  "compensating_records_reconciliation": {
+    "audit_table": "p1918_forensic_remediation_audit",
+    "compensating_records_count": 8,
+    "audit_logs_matching_records": 8,
+    "affected_records": [
+      {
+        "id": 1,
+        "target_table": "financial_disclosure_source_artifacts",
+        "target_record_id": "FIN_TCS_FY2026_6e7b35084ee4",
+        "original_status": "PRIMARY_VERIFIED",
+        "compensated_validation_status": "REJECTED",
+        "review_status": "TEST_FIXTURE_ISOLATED",
+        "provenance_preserved": true
+      },
+      {
+        "id": 2,
+        "target_table": "corporate_action_reconciliation_reviews",
+        "target_record_id": "1",
+        "original_status": "PENDING_REVIEW",
+        "compensated_status": "REJECTED_TEST_FIXTURE",
+        "provenance_preserved": true
+      },
+      {
+        "id": 3,
+        "target_table": "corporate_action_reconciliation_reviews",
+        "target_record_id": "2",
+        "original_status": "PENDING_REVIEW",
+        "compensated_status": "REJECTED_TEST_FIXTURE",
+        "provenance_preserved": true
+      },
+      {
+        "id": 4,
+        "target_table": "corporate_action_reconciliation_reviews",
+        "target_record_id": "3",
+        "original_status": "PENDING_REVIEW",
+        "compensated_status": "REJECTED_TEST_FIXTURE",
+        "provenance_preserved": true
+      },
+      {
+        "id": 5,
+        "target_table": "corporate_action_reconciliation_reviews",
+        "target_record_id": "4",
+        "original_status": "PENDING_REVIEW",
+        "compensated_status": "REJECTED_TEST_FIXTURE",
+        "provenance_preserved": true
+      },
+      {
+        "id": 6,
+        "target_table": "corporate_action_reconciliation_reviews",
+        "target_record_id": "5",
+        "original_status": "PENDING_REVIEW",
+        "compensated_status": "REJECTED_TEST_FIXTURE",
+        "provenance_preserved": true
+      },
+      {
+        "id": 7,
+        "target_table": "corporate_action_reconciliation_reviews",
+        "target_record_id": "6",
+        "original_status": "PENDING_REVIEW",
+        "compensated_status": "REJECTED_TEST_FIXTURE",
+        "provenance_preserved": true
+      },
+      {
+        "id": 8,
+        "target_table": "corporate_action_reconciliation_reviews",
+        "target_record_id": "7",
+        "original_status": "PENDING_REVIEW",
+        "compensated_status": "REJECTED_TEST_FIXTURE",
+        "provenance_preserved": true
+      }
+    ],
+    "active_pending_reviews_count": 0,
+    "database_deletions_executed": 0,
+    "immutable_audit_history_preserved": true
+  },
+  "database_cleanliness": {
+    "application_database": "halal_equity",
+    "audited_footnote_disclosures_count": 0,
+    "test_circulars_in_corporate_action_artifacts": 0,
+    "test_events_in_corporate_action_events": 0,
+    "shariah_screenings_test_notes_count": 0,
+    "temporary_test_tables_count": 0,
+    "cleanliness_verdict": "PASS"
+  },
+  "market_data_reconciliation": {
+    "total_bars": 24017,
+    "quarantined_bars": 23132,
+    "populated_adjusted_bars": 885,
+    "quarantined_percentage": 96.3151,
+    "symmetric_difference_with_pre_p1918_backup": 0,
+    "quarantined_date_range": {
+      "start_utc": "2024-10-07 03:45:00+00",
+      "end_utc": "2026-10-15 03:45:00+00",
+      "affected_equities_count": 47
+    },
+    "forward_session_bars": [
+      {
+        "session_date": "2026-10-26",
+        "timestamp_utc": "2026-10-26 03:45:00+00",
+        "ist_time": "09:15:00 IST",
+        "bar_count": 47,
+        "source": "yahoo_finance",
+        "deviant_timestamps": 0
+      },
+      {
+        "session_date": "2026-10-27",
+        "timestamp_utc": "2026-10-27 03:45:00+00",
+        "ist_time": "09:15:00 IST",
+        "bar_count": 47,
+        "source": "yahoo_finance",
+        "deviant_timestamps": 0
+      },
+      {
+        "session_date": "2026-10-28",
+        "timestamp_utc": "2026-10-28 03:45:00+00",
+        "ist_time": "09:15:00 IST",
+        "bar_count": 47,
+        "source": "yahoo_finance",
+        "deviant_timestamps": 0
+      },
+      {
+        "session_date": "2026-10-29",
+        "timestamp_utc": "2026-10-29 03:45:00+00",
+        "ist_time": "09:15:00 IST",
+        "bar_count": 47,
+        "source": "yahoo_finance",
+        "deviant_timestamps": 0
+      },
+      {
+        "session_date": "2026-10-30",
+        "timestamp_utc": "2026-10-30 03:45:00+00",
+        "ist_time": "09:15:00 IST",
+        "bar_count": 47,
+        "source": "yahoo_finance",
+        "deviant_timestamps": 0
+      }
+    ],
+    "session_timestamp_convention": "03:45:00 UTC (09:15 IST)",
+    "timestamp_compliance_percentage": 100.0,
+    "deviant_timestamp_bars": 0
+  },
+  "out_of_sample_trade_tracing": {
+    "investigation_target": "Progression of OOS completed trades from 34 to 35 (and subsequently 36)",
+    "generating_engine": "quant/src/engines/technical/breakout_backtest.py::BreakoutBacktester",
+    "trade_generation_mechanism": "Forward walk-forward paper simulation during regression suite execution, evaluating newly ingested forward bars chronologically.",
+    "historical_research_backtest_bypass": false,
+    "research_gate_bypassed": false,
+    "trade_progression_chronology": [
+      {
+        "session_window": "Through 2026-10-15 (Base data)",
+        "oos_completed_trades": 30
+      },
+      {
+        "session_window": "Through 2026-10-19 forward bar",
+        "oos_completed_trades": 32
+      },
+      {
+        "session_window": "Through 2026-10-22 forward bar",
+        "oos_completed_trades": 33
+      },
+      {
+        "session_window": "Through 2026-10-27 forward bar",
+        "oos_completed_trades": 34
+      },
+      {
+        "session_window": "Through 2026-10-29 forward bar",
+        "oos_completed_trades": 35,
+        "trade_details": {
+          "symbol": "ULTRACEMCO",
+          "entry_date": "2026-07-21",
+          "entry_bar": 440,
+          "entry_price": 12070.0,
+          "exit_date": "2026-07-31",
+          "exit_bar": 448,
+          "exit_price": 11903.0,
+          "exit_reason": "TIME_LIMIT",
+          "bars_held": 10
+        }
+      },
+      {
+        "session_window": "Through 2026-10-30 forward bar",
+        "oos_completed_trades": 36,
+        "trade_details": {
+          "symbol": "WIPRO",
+          "entry_date": "2026-10-22",
+          "entry_bar": 504,
+          "entry_price": 190.5,
+          "exit_date": "2026-10-23",
+          "exit_bar": 505,
+          "exit_price": 193.81,
+          "exit_reason": "TARGET",
+          "bars_held": 3
+        }
+      }
+    ],
+    "lookahead_bias_verification": {
+      "execution_at_open_t_plus_1": true,
+      "entry_precedes_exit": true,
+      "forward_session_evaluation_only": true,
+      "verdict": "PASS"
+    }
+  },
+  "shariah_screening_universe": {
+    "total_catalog_symbols": 52,
+    "active_symbols": 51,
+    "archived_symbols": 1,
+    "archived_symbol_name": "TATAMOTORS",
+    "distribution": {
+      "PASS": 0,
+      "FAIL": 20,
+      "DATA_INSUFFICIENT": 31
+    },
+    "screening_evidence_requirements": {
+      "unmodified_audit_opinion_required": true,
+      "audited_footnote_citation_required": true,
+      "scholar_qualified_review_required": true,
+      "auto_promotion_on_parser_pass_prohibited": true,
+      "inference_of_zero_interest_income_prohibited": true
+    }
+  },
+  "safety_and_release_gates": {
+    "PAPER_TRADING_ENABLED": true,
+    "LIVE_ORDER_EXECUTION": false,
+    "BROKER_TRADING_ENABLED": false,
+    "RESEARCH_GATE_STATUS": "RESEARCH_BLOCKED",
+    "live_api_verifications": [
+      {
+        "route": "GET /api/v1/paper-trading/session",
+        "result": "paper_trading_enabled=true, live_order_execution=false, broker_trading_enabled=false",
+        "status": "PASS"
+      },
+      {
+        "route": "POST /api/v1/backtesting/run",
+        "result": "HTTP 200 status=RESEARCH_BLOCKED, quarantined_bars=23132",
+        "status": "PASS"
+      },
+      {
+        "route": "POST /api/v1/backtesting/run_walk_forward",
+        "result": "HTTP 200 status=RESEARCH_BLOCKED",
+        "status": "PASS"
+      },
+      {
+        "route": "POST /api/v1/portfolio/trade (BUY TCS - DATA_INSUFFICIENT)",
+        "result": "HTTP 400 Shariah compliance gate blocked: cannot BUY TCS because screening status is DATA_INSUFFICIENT",
+        "status": "PASS"
+      },
+      {
+        "route": "POST /api/v1/portfolio/trade (SELL TCS - 0 Owned Shares)",
+        "result": "HTTP 400 insufficient shares: attempting to sell 10 but only own 0 (Short selling is strictly prohibited)",
+        "status": "PASS"
+      }
+    ]
+  }
+}

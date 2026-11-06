@@ -14,9 +14,11 @@ import requests
 import json
 
 # Provided Telegram Bot Token
-BOT_TOKEN = "7727195753:AAHNNktMqAU0XmBS2H-5lthHTW-AsM5x25I"
+BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 
 def send_test_message(chat_id: str):
+    if not BOT_TOKEN:
+        raise SystemExit("Set TELEGRAM_BOT_TOKEN in the environment (never hardcode it in this file).")
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     
     payload = {

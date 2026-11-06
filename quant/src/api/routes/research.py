@@ -198,3 +198,23 @@ async def get_regimes(experiment_id: str):
 @router.get("/experiments/{experiment_id}/robustness")
 async def get_robustness(experiment_id: str):
     raise HTTPException(status_code=501, detail="not implemented: no experiment registry exists; this route used to return static placeholder data")
+
+
+@router.post("/breakout-evidence")
+async def refresh_breakout_evidence():
+    """Re-run the breakout study on the NSE series and store it. Takes about a minute."""
+    import asyncio
+    import os
+
+    import psycopg2
+
+    from src.engines.research.breakout_evidence import run_and_store
+
+    def job():
+        conn = psycopg2.connect(os.environ["DATABASE_URL"])
+        try:
+            return run_and_store(conn)
+        finally:
+            conn.close()
+
+    return await asyncio.get_running_loop().run_in_executor(None, job)

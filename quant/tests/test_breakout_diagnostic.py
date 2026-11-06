@@ -22,11 +22,11 @@ def clean_historical_candles():
         SELECT s.symbol, s.id as symbol_id, s.name, 
                COALESCE(ss.status::text, 'UNKNOWN') as shariah_status,
                d.timestamp, d.open, d.high, d.low, d.close, d.volume
-        FROM symbols s
-        JOIN ohlcv_daily d ON d.symbol_id = s.id
+        FROM canonical.symbols s
+        JOIN canonical.ohlcv_daily d ON d.symbol_id = s.id
         LEFT JOIN (
             SELECT DISTINCT ON (symbol_id) symbol_id, status
-            FROM shariah_screenings
+            FROM canonical.shariah_screenings
             ORDER BY symbol_id, screening_date DESC
         ) ss ON ss.symbol_id = s.id
         ORDER BY s.symbol, d.timestamp ASC;

@@ -135,19 +135,7 @@ func (p *Pipeline) IngestDailyEODWithTrigger(ctx context.Context, lookbackDays i
 				totalExplicitlySkipped++
 				continue // in-progress session: never store as a daily bar
 			}
-			recs = append(recs, database.OHLCVRecord{
-				SymbolID:      s.id,
-				Timestamp:     dailyStamp(c.Timestamp),
-				Open:          c.Open,
-				High:          c.High,
-				Low:           c.Low,
-				Close:         c.Close,
-				Volume:        c.Volume,
-				AdjClose:      c.AdjustedClose,
-				Source:        "yahoo_finance",
-				QualityStatus: "VALID",
-				IntervalMins:  1440,
-			})
+			recs = append(recs, dailyRecord(s.id, c))
 		}
 
 		stats, err := p.db.UpsertOHLCVBatchWithStats(ctx, recs)

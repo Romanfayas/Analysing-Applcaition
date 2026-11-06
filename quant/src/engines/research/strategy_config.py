@@ -18,7 +18,29 @@ import os
 from typing import Any, Dict, List
 
 PINNED_HASH = "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780"
+STRATEGY_V2_CONFIG_ID = "STRATEGY_V2_CORE_PARAMETERS_V1"
 FROZEN = {"BUY_THRESHOLD": 80.0, "SELL_THRESHOLD": 45.0, "ATR_MULTIPLIER": 2.0}
+
+# P1.9.16 Forensic Specification: Composite Breakout Screener and Portfolio Risk Engine
+# In P1.9.15, this 12-parameter object was erroneously cited as having hash 92ab27c2...
+# We establish its distinct versioned identity and independently reproducible hashes here.
+COMPOSITE_BREAKOUT_RISK_ID = "BREAKOUT_PORTFOLIO_RISK_COMPOSITE_V1"
+COMPOSITE_BREAKOUT_RISK_FROZEN = {
+    "atr_stop_multiplier": 2.0,
+    "cost_schedule": "INDIA_EQ_DELIVERY_FEES_2026Q4_V2",
+    "donchian_breakout_period": 20,
+    "max_open_positions": 5,
+    "max_portfolio_heat": 0.10,
+    "max_single_trade_risk": 0.02,
+    "min_volume_multiple": 1.5,
+    "partial_profit_atr": 3.0,
+    "partial_profit_size": 0.50,
+    "slippage_model": "INSTITUTIONAL_LIQUIDITY_V2",
+    "trailing_stop_activation_atr": 1.5,
+    "volume_filter_period": 20,
+}
+COMPOSITE_COMPACT_HASH = "0daac86130da4bf6e0fba7b2a9e8f7ff76c309dee4702b4a0a23c33e0a42f79f"
+COMPOSITE_STANDARD_HASH = "deb24826865c3eefb2a1c7126ccf64f1955904af8631859042de93e980e6b5ba"
 
 
 class StrategyDrift(RuntimeError):

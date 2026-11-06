@@ -55,7 +55,7 @@ func (p *Provider) getCrumb() (string, error) {
 	// 2. Fetch crumb
 	reqCrumb, _ := http.NewRequest("GET", "https://query2.finance.yahoo.com/v1/test/getcrumb", nil)
 	reqCrumb.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-	
+
 	resp, err := p.client.Do(reqCrumb)
 	if err != nil {
 		return "", err
@@ -143,7 +143,7 @@ type chartResponse struct {
 // CorporateActionInfo models authoritative exchange corporate action restructure events.
 type CorporateActionInfo struct {
 	PredecessorSymbol string
-	ActionType        string    // "DEMERGER", "RENAME"
+	ActionType        string // "DEMERGER", "RENAME"
 	EffectiveDate     time.Time
 	Notes             string
 	Successors        []SuccessorInfo
@@ -247,23 +247,37 @@ func toNSESymbol(symbol string) (string, error) {
 // GetHistoricalData fetches OHLCV candles for a given symbol and date range.
 // interval: "1d", "1wk", "1mo"
 func (p *Provider) GetHistoricalData(symbol string, from, to time.Time, interval string) ([]OHLCV, error) {
+	return p.fetchChart(symbol, func(yahooSymbol string) string {
+		return fmt.Sprintf(
+			"%s/chart/%s?period1=%d&period2=%d&interval=%s&includeAdjustedClose=true",
+			p.baseURL, yahooSymbol,
+			from.Unix(), to.Unix(), interval,
+		)
+	})
+}
+
+// GetHistoricalRange fetches by Yahoo's named range (e.g. "60d" with "5m"). For 5-minute bars an explicit
+// period1/period2 window is capped at 60 calendar days (~38 sessions) while range=60d returns 60 sessions.
+func (p *Provider) GetHistoricalRange(symbol, rng, interval string) ([]OHLCV, error) {
+	return p.fetchChart(symbol, func(yahooSymbol string) string {
+		return fmt.Sprintf("%s/chart/%s?range=%s&interval=%s&includePrePost=false", p.baseURL, yahooSymbol, rng, interval)
+	})
+}
+
+func (p *Provider) fetchChart(symbol string, buildURL func(yahooSymbol string) string) ([]OHLCV, error) {
 	yahooSymbol, err := toNSESymbol(symbol)
 	if err != nil {
 		return nil, err
 	}
 
-	url := fmt.Sprintf(
-		"%s/chart/%s?period1=%d&period2=%d&interval=%s&includeAdjustedClose=true",
-		p.baseURL, yahooSymbol,
-		from.Unix(), to.Unix(), interval,
-	)
+	url := buildURL(yahooSymbol)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)")
-	
+
 	resp, err := p.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("yahoo finance request failed: %w", err)
@@ -589,10 +603,10 @@ func (p *Provider) GetFinancialStatements(ctx context.Context, symbol string, ex
 		return nil, err
 	}
 	url := fmt.Sprintf("https://query2.finance.yahoo.com/v10/finance/quoteSummary/%s?modules=incomeStatementHistory,balanceSheetHistory,cashflowStatementHistory&crumb=%s", yahooSymbol, crumb)
-	
+
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-	
+
 	resp, err := p.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("yahoo finance fundamentals failed: %w", err)
@@ -610,28 +624,28 @@ func (p *Provider) GetFinancialStatements(ctx context.Context, symbol string, ex
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("yahoo finance returned %d", resp.StatusCode)
 	}
-	
+
 	body, _ := io.ReadAll(resp.Body)
-	
+
 	// Quick parse to avoid complex typed structs for quoteSummary
 	var parsed map[string]interface{}
 	if err := json.Unmarshal(body, &parsed); err != nil {
 		return nil, fmt.Errorf("failed to decode fundamentals: %w", err)
 	}
-	
+
 	// Safe navigate nested map
 	quoteSummary, ok := parsed["quoteSummary"].(map[string]interface{})
 	if !ok || quoteSummary["result"] == nil {
 		return nil, marketdata.ErrNoData
 	}
-	
+
 	results, ok := quoteSummary["result"].([]interface{})
 	if !ok || len(results) == 0 {
 		return nil, marketdata.ErrNoData
 	}
-	
+
 	res := results[0].(map[string]interface{})
-	
+
 	// Extract sections
 	var incomeStmts []interface{}
 	if isH, ok := res["incomeStatementHistory"].(map[string]interface{}); ok {
@@ -639,25 +653,25 @@ func (p *Provider) GetFinancialStatements(ctx context.Context, symbol string, ex
 			incomeStmts = stmts
 		}
 	}
-	
+
 	var balSheets []interface{}
 	if bsH, ok := res["balanceSheetHistory"].(map[string]interface{}); ok {
 		if stmts, ok := bsH["balanceSheetStatements"].([]interface{}); ok {
 			balSheets = stmts
 		}
 	}
-	
+
 	var cashFlows []interface{}
 	if cfH, ok := res["cashflowStatementHistory"].(map[string]interface{}); ok {
 		if stmts, ok := cfH["cashflowStatements"].([]interface{}); ok {
 			cashFlows = stmts
 		}
 	}
-	
+
 	if len(incomeStmts) == 0 {
 		return nil, marketdata.ErrNoData
 	}
-	
+
 	// Helper to extract raw float from nested Yahoo fmt object
 	getRaw := func(obj map[string]interface{}, key string) *float64 {
 		if val, ok := obj[key].(map[string]interface{}); ok && val != nil {
@@ -676,39 +690,39 @@ func (p *Provider) GetFinancialStatements(ctx context.Context, symbol string, ex
 		}
 		return time.Time{}
 	}
-	
+
 	var statements []models.FinancialStatement
-	
+
 	// Map income statements as base
 	for i, is := range incomeStmts {
 		incomeStmt, ok := is.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		periodEnd := getDate(incomeStmt, "endDate")
 		if periodEnd.IsZero() {
 			continue
 		}
-		
+
 		stmt := models.FinancialStatement{
-			PeriodEnd: periodEnd,
-			PeriodType: models.FinancialPeriodType(periodType),
-			PITMode: models.PITEstimated,
-			Source: "yahoo_finance",
-			RetrievedAt: time.Now().UTC(),
+			PeriodEnd:     periodEnd,
+			PeriodType:    models.FinancialPeriodType(periodType),
+			PITMode:       models.PITEstimated,
+			Source:        "yahoo_finance",
+			RetrievedAt:   time.Now().UTC(),
 			QualityStatus: models.DataQualityValid,
 		}
-		
+
 		// Publication Date rule constraint: Delay by 45 days as Yahoo does not have real publication dates
 		pubDate := periodEnd.AddDate(0, 0, 45)
 		stmt.PublicationDate = &pubDate
-		
+
 		stmt.Revenue = getRaw(incomeStmt, "totalRevenue")
 		stmt.EBITDA = getRaw(incomeStmt, "ebit")
 		stmt.PAT = getRaw(incomeStmt, "netIncome")
 		stmt.InterestExpense = getRaw(incomeStmt, "interestExpense")
-		
+
 		// Attempt to match Balance Sheet by same index (usually aligned by year)
 		if i < len(balSheets) {
 			bs, _ := balSheets[i].(map[string]interface{})
@@ -720,7 +734,7 @@ func (p *Provider) GetFinancialStatements(ctx context.Context, symbol string, ex
 				stmt.TotalReceivables = getRaw(bs, "netReceivables")
 			}
 		}
-		
+
 		// Attempt to match Cashflow by same index
 		if i < len(cashFlows) {
 			cf, _ := cashFlows[i].(map[string]interface{})
@@ -728,7 +742,7 @@ func (p *Provider) GetFinancialStatements(ctx context.Context, symbol string, ex
 				stmt.OperatingCashFlow = getRaw(cf, "totalCashFromOperatingActivities")
 			}
 		}
-		
+
 		statements = append(statements, stmt)
 	}
 
@@ -757,4 +771,69 @@ func (p *Provider) SupportsRealtime() bool {
 // FormatPrice formats a price for display in INR.
 func FormatPrice(price float64) string {
 	return "₹" + strconv.FormatFloat(price, 'f', 2, 64)
+}
+
+
+// SymbolMeta identifies an instrument as Yahoo describes it.
+type SymbolMeta struct {
+	Symbol         string
+	Name           string
+	Exchange       string
+	InstrumentType string
+	Currency       string
+	LastPrice      float64
+}
+
+// GetSymbolMeta looks a ticker up on NSE (".NS") and reports what it is. It fails for unknown tickers, so it is
+// the check that a user-supplied symbol really exists before anything is stored for it.
+func (p *Provider) GetSymbolMeta(symbol string) (*SymbolMeta, error) {
+	yahooSymbol, err := toNSESymbol(symbol)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/chart/%s?interval=1d&range=5d", p.baseURL, yahooSymbol), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)")
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("yahoo finance request failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == 422 {
+		return nil, fmt.Errorf("%s was not found on NSE", symbol)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("yahoo finance returned %d", resp.StatusCode)
+	}
+	var body struct {
+		Chart struct {
+			Result []struct {
+				Meta struct {
+					Currency           string  `json:"currency"`
+					ExchangeName       string  `json:"exchangeName"`
+					InstrumentType     string  `json:"instrumentType"`
+					LongName           string  `json:"longName"`
+					ShortName          string  `json:"shortName"`
+					RegularMarketPrice float64 `json:"regularMarketPrice"`
+				} `json:"meta"`
+			} `json:"result"`
+			Error *struct {
+				Description string `json:"description"`
+			} `json:"error"`
+		} `json:"chart"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+	if body.Chart.Error != nil || len(body.Chart.Result) == 0 {
+		return nil, fmt.Errorf("%s was not found on NSE", symbol)
+	}
+	m := body.Chart.Result[0].Meta
+	name := m.LongName
+	if name == "" {
+		name = m.ShortName
+	}
+	return &SymbolMeta{Symbol: symbol, Name: name, Exchange: m.ExchangeName, InstrumentType: m.InstrumentType, Currency: m.Currency, LastPrice: m.RegularMarketPrice}, nil
 }

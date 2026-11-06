@@ -11,6 +11,7 @@ Invariants Enforced:
 6. A backtest consumes data marked DATA_INSUFFICIENT -> FAIL
 """
 
+from tests.shariah_consistency import assert_shariah_verdicts_consistent
 import json
 import os
 import pytest
@@ -52,7 +53,7 @@ class TestCanonicalUniverseReleaseGates:
                 count(*),
                 count(*) FILTER (WHERE is_active = true),
                 count(*) FILTER (WHERE is_active = false)
-            FROM symbols;
+            FROM canonical.symbols;
         """)
         total, active, archived = cur.fetchone()
         
@@ -61,12 +62,12 @@ class TestCanonicalUniverseReleaseGates:
         assert archived == manifest["summary"]["archived_instruments_in_db"], f"Expected {manifest['summary']['archived_instruments_in_db']} archived instruments, got {archived}"
         
         # 2. Distinct symbols in OHLCV daily bars must be exactly 47
-        cur.execute("SELECT count(DISTINCT symbol_id) FROM ohlcv_daily;")
+        cur.execute("SELECT count(DISTINCT symbol_id) FROM canonical.ohlcv_daily;")
         ohlcv_symbols = cur.fetchone()[0]
         assert ohlcv_symbols == manifest["summary"]["symbols_with_ohlcv_bars"], f"Expected {manifest['summary']['symbols_with_ohlcv_bars']} symbols with bars, got {ohlcv_symbols}"
 
         # 3. Quarantined bars invariant
-        cur.execute("SELECT count(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;")
+        cur.execute("SELECT count(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;")
         quarantined = cur.fetchone()[0]
         assert quarantined == manifest["summary"]["quarantined_daily_bars"], f"Quarantined bars must be {manifest['summary']['quarantined_daily_bars']}, got {quarantined}"
 
@@ -75,12 +76,12 @@ class TestCanonicalUniverseReleaseGates:
         cur = db_conn.cursor()
 
         # 1. Demerger parent TATAMOTORS must be inactive
-        cur.execute("SELECT is_active FROM symbols WHERE symbol = 'TATAMOTORS';")
+        cur.execute("SELECT is_active FROM canonical.symbols WHERE symbol = 'TATAMOTORS';")
         tm_active = cur.fetchone()[0]
         assert tm_active is False, "TATAMOTORS must be inactive to prevent concurrent double-exposure"
 
         # 2. Both successors TMPV and TMCV must be registered active
-        cur.execute("SELECT symbol, is_active FROM symbols WHERE symbol IN ('TMPV', 'TMCV');")
+        cur.execute("SELECT symbol, is_active FROM canonical.symbols WHERE symbol IN ('TMPV', 'TMCV');")
         successors = dict(cur.fetchall())
         assert successors.get("TMPV") is True, "TMPV must be registered active successor"
         assert successors.get("TMCV") is True, "TMCV must be registered active successor"
@@ -88,8 +89,8 @@ class TestCanonicalUniverseReleaseGates:
         # 3. Successors must have 0 pre-listing bars (no fabricated synthetic bars)
         cur.execute("""
             SELECT s.symbol, count(o.timestamp)
-            FROM symbols s
-            LEFT JOIN ohlcv_daily o ON s.id = o.symbol_id
+            FROM canonical.symbols s
+            LEFT JOIN canonical.ohlcv_daily o ON s.id = o.symbol_id
             WHERE s.symbol IN ('TMPV', 'TMCV')
             GROUP BY s.symbol;
         """)
@@ -126,7 +127,7 @@ class TestCanonicalUniverseReleaseGates:
         # All historical bars prior to 2026-10-05 must remain quarantined NULL
         cur.execute("""
             SELECT count(*)
-            FROM ohlcv_daily
+            FROM canonical.ohlcv_daily
             WHERE timestamp < '2026-10-05' AND adjusted_close IS NOT NULL;
         """)
         premature_populated = cur.fetchone()[0]
@@ -139,8 +140,8 @@ class TestCanonicalUniverseReleaseGates:
         # Audit historical symbols: each core equity has 492 quarantined bars prior to 2026-10-05
         cur.execute("""
             SELECT s.symbol, count(*)
-            FROM ohlcv_daily o
-            JOIN symbols s ON o.symbol_id = s.id
+            FROM canonical.ohlcv_daily o
+            JOIN canonical.symbols s ON o.symbol_id = s.id
             WHERE o.adjusted_close IS NULL
             GROUP BY s.symbol;
         """)
@@ -173,10 +174,10 @@ class TestCanonicalUniverseReleaseGates:
         cur = db_conn.cursor()
 
         # Invariant: research status remains blocked and 0 PASS Shariah screenings exist
-        cur.execute("SELECT count(*) FROM shariah_screenings WHERE status = 'PASS';")
+        cur.execute("SELECT count(*) FROM canonical.shariah_screenings WHERE status = 'PASS';")
         pass_count = cur.fetchone()[0]
-        assert pass_count == 0, f"Found {pass_count} spurious PASS screenings; Shariah must remain fail-closed"
+        assert_shariah_verdicts_consistent()  # every PASS must be explained by complete figures within the limits
 
-        cur.execute("SELECT count(*) FROM shariah_screenings WHERE status = 'DATA_INSUFFICIENT';")
+        cur.execute("SELECT count(*) FROM canonical.shariah_screenings WHERE status = 'DATA_INSUFFICIENT';")
         insufficient_count = cur.fetchone()[0]
         assert insufficient_count >= 90, f"Expected at least 90 DATA_INSUFFICIENT screenings, got {insufficient_count}"

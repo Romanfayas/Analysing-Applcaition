@@ -54,6 +54,10 @@ class BreakoutResult:
     score_disclaimer: str = "The ranking score is a multi-factor structural evidence score, NOT a calibrated probability of profit."
     market_depth_disclosure: str = "Volume demand proxy is derived from bar volume distribution. Actual Level 2 order-book market depth is unavailable without a licensed exchange feed."
     input_freshness: Dict[str, Any] = field(default_factory=dict)
+    # Pure price-structure score (0-100) BEFORE the Shariah gate. `overall_score` is zeroed for any instrument that is
+    # not a certified Shariah PASS ("zero recommendations"), which made every score 0 while no instrument is screened.
+    # `structure_score` is what the chart actually shows; it is NOT a buy recommendation and carries no Shariah view.
+    structure_score: Optional[float] = None
 
 
 class BreakoutEngine:
@@ -429,6 +433,7 @@ class BreakoutEngine:
             target_2=target_2,
             risk_reward_ratio=rr_ratio,
             overall_score=overall_score,
+            structure_score=round(raw_score, 1),
             score_breakdown=score_breakdown,
             shariah_status=self.shariah_status,
             is_shariah_eligible=is_shariah_eligible,

@@ -27,6 +27,10 @@ type Config struct {
 	JWTSecret      string
 	JWTExpiryHours int
 
+	// AllowRegistration enables self-service account creation (POST /auth/register).
+	// Defaults to on only in development; production accounts must be provisioned deliberately.
+	AllowRegistration bool
+
 	// Quant Engine
 	QuantEngineURL string
 
@@ -92,6 +96,7 @@ func Load() (*Config, error) {
 		RedisURL:            getEnv("REDIS_URL", "redis://localhost:6379/0"),
 		JWTSecret:           getEnv("JWT_SECRET", ""),
 		JWTExpiryHours:      getEnvInt("JWT_EXPIRY_HOURS", 24),
+		AllowRegistration:   getEnvBool("ALLOW_REGISTRATION", getEnv("APP_ENV", "development") == "development"),
 		QuantEngineURL:      getEnv("QUANT_ENGINE_URL", "http://localhost:8000"),
 		PaperTradingEnabled: getEnvBool("PAPER_TRADING_ENABLED", true),
 		LiveOrderExecution:  liveOrder,

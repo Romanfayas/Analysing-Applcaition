@@ -1,0 +1,108 @@
+{
+  "manifest_version": "1.0.0",
+  "phase": "P1.9.17",
+  "generated_at_utc": "2026-10-28T10:50:00Z",
+  "git_commit_sha": "25d3f811e0df3d00f4d46271b8fd2fda461b6291",
+  "manifest_summary": {
+    "total_corporate_action_source_artifacts": 23,
+    "primary_verified_artifacts": 0,
+    "parsed_validated_artifacts": 23,
+    "unauthenticated_archives": 23,
+    "total_financial_disclosure_artifacts": 1,
+    "total_audited_footnote_disclosures": 0,
+    "total_reconciliation_review_items": 7,
+    "total_quarantined_bars": 23132
+  },
+  "corporate_action_source_artifacts": [
+    {
+      "artifact_id": "NSE_CA_TCS_PRIMARY.json",
+      "db_id": 5,
+      "symbol": "TCS",
+      "issuing_authority": "NSE_INDIA",
+      "source_url": "CONTROLLED_ARCHIVE:NSE_CA_TCS_PRIMARY.json",
+      "provenance_type": "ARCHIVE_FIXTURE",
+      "validation_status": "PARSED_VALIDATED",
+      "is_primary_verified": false,
+      "sha256_checksum": "a5c68b7dcfe53724a87cff1784cae7855907409beff8619bc165dc5cb22d8616",
+      "event_id": "NSE:TCS:2026-10-14:CASH_DIVIDEND:1",
+      "action_type": "CASH_DIVIDEND",
+      "ex_date": "2026-10-14",
+      "declared_term": "Rs 12.00 per share",
+      "factor_eligibility": "QUARANTINED"
+    },
+    {
+      "artifact_id": "NSE_CA_INFY_PRIMARY.json",
+      "db_id": 6,
+      "symbol": "INFY",
+      "issuing_authority": "NSE_INDIA",
+      "source_url": "CONTROLLED_ARCHIVE:NSE_CA_INFY_PRIMARY.json",
+      "provenance_type": "ARCHIVE_FIXTURE",
+      "validation_status": "PARSED_VALIDATED",
+      "is_primary_verified": false,
+      "sha256_checksum": "563ef9be79cbe87fa9f6ec3eaae1226ef16e537c35f29f06dbf731c38fa45aa5",
+      "event_id": "NSE:INFY:2026-10-28:CASH_DIVIDEND:1",
+      "action_type": "CASH_DIVIDEND",
+      "ex_date": "2026-10-28",
+      "declared_term": "Rs 21.00 per share",
+      "factor_eligibility": "QUARANTINED"
+    },
+    {
+      "artifact_id": "NSE_CA_RELIANCE_PRIMARY.json",
+      "db_id": 7,
+      "symbol": "RELIANCE",
+      "issuing_authority": "NSE_INDIA",
+      "source_url": "CONTROLLED_ARCHIVE:NSE_CA_RELIANCE_PRIMARY.json",
+      "provenance_type": "ARCHIVE_FIXTURE",
+      "validation_status": "PARSED_VALIDATED",
+      "is_primary_verified": false,
+      "sha256_checksum": "0b30ef48737c31d10200ca1665a953e5e4fa4418579ca2e1189396e95bf0ad6b",
+      "event_id": "NSE:RELIANCE:2026-10-28:BONUS_ISSUE:1",
+      "action_type": "BONUS_ISSUE",
+      "ex_date": "2026-10-28",
+      "declared_term": "1:1",
+      "factor_eligibility": "QUARANTINED"
+    }
+  ],
+  "financial_disclosure_source_artifacts": [
+    {
+      "artifact_id": "FIN_AR_TCS_2026_ANNUAL",
+      "symbol": "TCS",
+      "fiscal_year": 2026,
+      "period_type": "ANNUAL",
+      "period_end": "2026-03-31",
+      "document_title": "TCS Integrated Annual Report 2026",
+      "issuing_authority": "BSE_INDIA",
+      "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/TCS_AR_2026.pdf",
+      "sha256_checksum": "ea06fc1d547fcaebfc5944122d26f74a0da7bc5374415fa9449df6fe3ff255a0",
+      "auditor": "BSR & Co. LLP",
+      "audit_opinion": "UNMODIFIED",
+      "validation_status": "PARSED_VALIDATED",
+      "is_primary_verified": false,
+      "footnote_count": 0
+    }
+  ],
+  "corporate_action_reconciliation_reviews": [
+    {
+      "event_id": "NSE:TCS:2026-10-14:CASH_DIVIDEND:1",
+      "symbol": "TCS",
+      "discrepancy_field": "DIVIDEND_AMOUNT",
+      "existing_claim_value": "12.0000",
+      "official_claim_value": "15.0000",
+      "review_status": "PENDING_REVIEW",
+      "discrepancy_reason": "Declared dividend mismatch: stored 12.0000 vs official 15.0000"
+    }
+  ],
+  "point_in_time_reconciliation_policy": {
+    "arithmetic_precision": "Decimal 8 decimal places (ROUND_HALF_UP)",
+    "anti_lookahead_session_rule": "Bars formed at or after ex_date (03:45 UTC Day D) are unadjusted; only bars with t < ex_date receive factor",
+    "demerger_policy": "Section 49(2C) tax cost allocation is non-price adjustment; historical price factors strictly prohibited",
+    "quarantine_rule": "Bars with missing or unauthenticated corporate action evidence maintain adjusted_close = NULL"
+  },
+  "shariah_footnote_evidence_policy": {
+    "methodology_version": "AAOIFI_STANDARD_NO_21_2026_V1.9.17",
+    "dynamic_notes": "Company-specific footnote mapping; universal Note 24/25 strictly forbidden",
+    "anti_zero_inference": "Missing interest income footnote strictly fails closed to DATA_INSUFFICIENT",
+    "anti_llm_hallucination": "Uncited LLM interpretations rejected from compliance calculations",
+    "scholar_review_gate": "Quantitative compliance pending reviewer certification remains PENDING_QUALIFIED_REVIEW"
+  }
+}

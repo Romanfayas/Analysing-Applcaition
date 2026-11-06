@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,13 +8,14 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog/log"
 
-	"github.com/halal-equity/backend/pkg/response"
 	"github.com/halal-equity/backend/internal/database"
-	"github.com/halal-equity/backend/internal/services/quant"
-	"github.com/halal-equity/backend/internal/services/market"
 	"github.com/halal-equity/backend/internal/providers/marketdata"
 	"github.com/halal-equity/backend/internal/providers/marketdata/yahoofinance"
+	"github.com/halal-equity/backend/internal/services/market"
+	"github.com/halal-equity/backend/internal/services/quant"
+	"github.com/halal-equity/backend/pkg/response"
 )
 
 // StocksHandler handles stock-related API endpoints.
@@ -36,6 +36,8 @@ func (h *StocksHandler) Routes() chi.Router {
 	r.Get("/", h.ListStocks)
 	r.Get("/search", h.SearchStocks)
 	r.Get("/market/overview", h.GetMarketOverview)
+	r.Post("/custom", h.AddStock)
+	r.Get("/custom/{symbol}/status", h.AddStockStatus)
 	r.Get("/{symbol}", h.GetStock)
 	r.Get("/{symbol}/candles", h.GetCandles)
 	r.Get("/{symbol}/fundamentals", h.GetFundamentals)
@@ -51,12 +53,18 @@ func (h *StocksHandler) Routes() chi.Router {
 // ListStocks returns a paginated list of stocks.
 func (h *StocksHandler) ListStocks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	// Get all active symbols
 	symbols, err := h.db.GetAllActiveSymbols(ctx)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Failed to retrieve symbols")
 		return
+	}
+
+	// Setup score and stage come from the same breakout scan the Signals page uses (cached ~1 min).
+	scan, scanErr := getBreakoutScan(ctx, h.db, h.quantClient)
+	if scanErr != nil {
+		log.Warn().Err(scanErr).Msg("stock list: breakout scan unavailable; scores omitted")
 	}
 
 	var stocks []map[string]any
@@ -75,10 +83,7 @@ func (h *StocksHandler) ListStocks(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// 1. Get latest OHLCV (prefer intraday, fallback to daily)
-		ohlcv, err := h.db.GetLatestIntradayOHLCV(ctx, sym.ID)
-		if err != nil || ohlcv == nil {
-			ohlcv, err = h.db.GetLatestOHLCV(ctx, sym.ID)
-		}
+		ohlcv, err := h.db.GetLatestPrice(ctx, sym.ID)
 
 		if err == nil && ohlcv != nil && ohlcv.Close > 0 {
 			stockData["price"] = ohlcv.Close
@@ -139,20 +144,22 @@ func (h *StocksHandler) ListStocks(w http.ResponseWriter, r *http.Request) {
 			stockData["score"] = nil
 		}
 
+		// Setup score: price-structure evidence 0-100 from the breakout engine. It is not a recommendation and carries
+		// no Shariah view (that is the separate "shariah" field). nil when the engine could not score the instrument.
+		stockData["setup"], stockData["score_as_of"], stockData["score_basis"] = nil, nil, nil
+		if scan != nil {
+			if res, ok := scan.For(sym.Symbol); ok && res.StructureScore != nil {
+				stockData["score"] = *res.StructureScore
+				stockData["setup"] = res.Stage
+				stockData["score_as_of"] = scan.DataAsOf
+				stockData["score_basis"] = "BREAKOUT_STRUCTURE"
+			}
+		}
+
 		stocks = append(stocks, stockData)
 	}
 
 	response.WithMeta(w, stocks, &response.Meta{Page: 1, PerPage: len(stocks), Total: int64(len(stocks))})
-}
-
-// SearchStocks searches for stocks by name or symbol.
-func (h *StocksHandler) SearchStocks(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("q")
-	if query == "" {
-		response.ValidationError(w, "query parameter 'q' is required")
-		return
-	}
-	response.JSON(w, http.StatusOK, []map[string]string{})
 }
 
 // GetStock returns detailed information for a single stock.
@@ -168,16 +175,13 @@ func (h *StocksHandler) GetStock(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 2. Fetch Latest OHLCV for current price (prefer intraday, fallback to daily)
-	latestOHLCV, err := h.db.GetLatestIntradayOHLCV(ctx, symRec.ID)
-	if err != nil || latestOHLCV == nil {
-		latestOHLCV, err = h.db.GetLatestOHLCV(ctx, symRec.ID)
-	}
+	latestOHLCV, err := h.db.GetLatestPrice(ctx, symRec.ID)
 	var currentPrice *float64
 	var timestamp, receivedAt *string
 	freshness := "UNAVAILABLE"
 	var change, changePercent, prevCloseVal *float64
 	providerName := "DATA_UNAVAILABLE"
-	
+
 	loc, _ := time.LoadLocation("Asia/Kolkata")
 	if loc == nil {
 		loc = time.UTC
@@ -265,24 +269,7 @@ func (h *StocksHandler) GetStock(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3.5 Fundamentals
-	var fundamentalsMap map[string]any
-	fund, err := h.db.GetLatestFundamentals(ctx, symRec.ID)
-	if err == nil && fund != nil {
-		fundamentalsMap = map[string]any{
-			"status": "AVAILABLE",
-			"revenue": fund.Revenue,
-			"pat": fund.PAT,
-			"eps": fund.EPS,
-			"total_debt": fund.TotalDebt,
-			"total_assets": fund.TotalAssets,
-			"period_end": fund.PeriodEnd.Format(time.RFC3339),
-			"pit_mode": fund.PITMode,
-		}
-	} else {
-		fundamentalsMap = map[string]any{
-			"status": "DATA_UNAVAILABLE",
-		}
-	}
+	fundamentalsMap := h.fundamentalsPayload(ctx, symRec.ID)
 
 	// 4. Signal
 	var signalObj map[string]any
@@ -348,27 +335,6 @@ func (h *StocksHandler) GetStock(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, resp)
 }
 
-// GetCandles returns OHLCV candle data for a stock.
-func (h *StocksHandler) GetCandles(w http.ResponseWriter, r *http.Request) {
-	symbol := chi.URLParam(r, "symbol")
-	_ = symbol
-	response.JSON(w, http.StatusOK, map[string]string{"status": "placeholder"})
-}
-
-// GetFundamentals returns fundamental analysis data.
-func (h *StocksHandler) GetFundamentals(w http.ResponseWriter, r *http.Request) {
-	symbol := chi.URLParam(r, "symbol")
-	_ = symbol
-	response.JSON(w, http.StatusOK, map[string]string{"status": "placeholder"})
-}
-
-// GetTechnicals returns technical indicator data.
-func (h *StocksHandler) GetTechnicals(w http.ResponseWriter, r *http.Request) {
-	symbol := chi.URLParam(r, "symbol")
-	_ = symbol
-	response.JSON(w, http.StatusOK, map[string]string{"status": "placeholder"})
-}
-
 // GetShariahStatus returns the Shariah screening status for a stock.
 func (h *StocksHandler) GetShariahStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -422,7 +388,7 @@ func (h *StocksHandler) GetSignal(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 	var freshness string = "UNAVAILABLE"
-	ohlcv, _ := h.db.GetLatestIntradayOHLCV(ctx, symRec.ID)
+	ohlcv, _ := h.db.GetLatestPrice(ctx, symRec.ID)
 	if ohlcv != nil && ohlcv.Close > 0 {
 		freshness = market.GetFreshnessStatus(ohlcv.Timestamp, now)
 	}
@@ -458,89 +424,6 @@ func (h *StocksHandler) GetSignal(w http.ResponseWriter, r *http.Request) {
 		"is_actionable": false,
 	})
 }
-
-// GetRiskAnalysis returns risk calculations for a stock.
-func (h *StocksHandler) GetRiskAnalysis(w http.ResponseWriter, r *http.Request) {
-	symbol := chi.URLParam(r, "symbol")
-	_ = symbol
-	response.JSON(w, http.StatusOK, map[string]string{"status": "placeholder"})
-}
-
-// GetQuantAnalytics returns quantitative analytics for a stock.
-func (h *StocksHandler) GetQuantAnalytics(w http.ResponseWriter, r *http.Request) {
-	symbol := chi.URLParam(r, "symbol")
-	_ = symbol
-	response.JSON(w, http.StatusOK, map[string]string{"status": "placeholder"})
-}
-
-// ---- Auth Handler ----
-
-// AuthHandler handles authentication endpoints.
-type AuthHandler struct{}
-
-// NewAuthHandler creates a new auth handler.
-func NewAuthHandler() *AuthHandler {
-	return &AuthHandler{}
-}
-
-// Routes registers auth routes.
-func (h *AuthHandler) Routes() chi.Router {
-	r := chi.NewRouter()
-	r.Post("/register", h.Register)
-	r.Post("/login", h.Login)
-	r.Post("/refresh", h.RefreshToken)
-	return r
-}
-
-// RegisterRequest represents a registration payload.
-type RegisterRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
-}
-
-// LoginRequest represents a login payload.
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-// Register creates a new user account.
-func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var req RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.ValidationError(w, "invalid request body")
-		return
-	}
-	if req.Email == "" || req.Password == "" || req.Name == "" {
-		response.ValidationError(w, "email, password, and name are required")
-		return
-	}
-	// TODO: Implement with repository and auth service
-	response.JSON(w, http.StatusCreated, map[string]string{"message": "user created"})
-}
-
-// Login authenticates a user and returns a JWT token.
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var req LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.ValidationError(w, "invalid request body")
-		return
-	}
-	if req.Email == "" || req.Password == "" {
-		response.ValidationError(w, "email and password are required")
-		return
-	}
-	// TODO: Implement with repository and auth service
-	response.JSON(w, http.StatusOK, map[string]string{"token": "placeholder"})
-}
-
-// RefreshToken issues a new JWT token.
-func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, map[string]string{"token": "placeholder"})
-}
-
-// ---- IPO Handler ----
 
 // IPOHandler handles IPO-related API endpoints.
 type IPOHandler struct {
@@ -590,10 +473,23 @@ func (h *IPOHandler) GetIPOHealth(w http.ResponseWriter, r *http.Request) {
 	historicalIPOs, _ := h.db.GetEnrichedIPOs(r.Context(), "HISTORICAL")
 	drhpIPOs, _ := h.db.GetEnrichedIPOs(r.Context(), "DRHP")
 
+	// Derived from the latest ingestion run rather than asserted.
+	feedStatus := "UNKNOWN"
+	if latestRun != nil {
+		switch latestRun.Status {
+		case "SUCCESS":
+			feedStatus = "OPERATIONAL"
+		case "EMPTY":
+			feedStatus = "OPERATIONAL_EMPTY"
+		default:
+			feedStatus = "DEGRADED"
+		}
+	}
+
 	health := map[string]any{
 		"provider":               "NSE_OFFICIAL_IPO_API",
 		"provider_url":           "https://www.nseindia.com/api/ipo-current-issue",
-		"feed_status":            "OPERATIONAL_EMPTY",
+		"feed_status":            feedStatus,
 		"active_issues_count":    len(activeIPOs),
 		"drhp_issues_count":      len(drhpIPOs),
 		"historical_count":       len(historicalIPOs),
@@ -788,14 +684,14 @@ func (h *IPOHandler) GetIPOResearchReport(w http.ResponseWriter, r *http.Request
 
 	// 3. Third-Party Observations (GMP & Bidding Books)
 	thirdPartyObservations := map[string]any{
-		"gmp":          target["gmp"],
-		"subscription": target["subscription"],
+		"gmp":                   target["gmp"],
+		"subscription":          target["subscription"],
 		"provenance_disclosure": "GMP is collected from unofficial third-party grey market observers. It carries ZERO regulatory protection and is not exchange-guaranteed.",
 	}
 
 	// 4. Model Estimates
 	modelEstimates := map[string]any{
-		"prediction":           target["prediction"],
+		"prediction":          target["prediction"],
 		"lookahead_integrity": "STRICT_ENFORCED: Zero post-listing information entered pre-listing predictions. All features cut off prior to listing date.",
 	}
 
@@ -846,6 +742,7 @@ func (h *SignalsHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Get("/", h.ListSignals)
 	r.Get("/breakouts", h.GetBreakouts)
+	r.Get("/breakouts/monitor", h.GetBreakoutMonitor)
 	r.Get("/scanner", h.GetBreakouts)
 	r.Get("/weights", h.GetWeights)
 	r.Put("/weights", h.UpdateWeights)
@@ -853,54 +750,13 @@ func (h *SignalsHandler) Routes() chi.Router {
 }
 
 func (h *SignalsHandler) GetBreakouts(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	symbols, err := h.db.GetAllActiveSymbols(ctx)
+	scan, err := getBreakoutScan(r.Context(), h.db, h.quantClient)
 	if err != nil {
-		response.JSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to fetch symbols"})
+		log.Error().Err(err).Msg("breakout scan failed")
+		response.Error(w, http.StatusBadGateway, "breakout scanner unavailable")
 		return
 	}
-
-	scanItems := make([]quant.StockScanItem, 0)
-	for _, s := range symbols {
-		candles, err := h.db.GetRecentCandlesForSymbol(ctx, s.ID, 40)
-		if err != nil || len(candles) < 10 {
-			continue
-		}
-
-		var opens, highs, lows, closes []float64
-		var volumes []int64
-		for _, c := range candles {
-			opens = append(opens, c.Open)
-			highs = append(highs, c.High)
-			lows = append(lows, c.Low)
-			closes = append(closes, c.Close)
-			volumes = append(volumes, c.Volume)
-		}
-
-		shariahStatus := h.db.GetShariahStatusForSymbol(ctx, s.ID)
-
-		scanItems = append(scanItems, quant.StockScanItem{
-			Symbol:        s.Symbol,
-			Sector:        s.Sector,
-			Open:          opens,
-			High:          highs,
-			Low:           lows,
-			Close:         closes,
-			Volume:        volumes,
-			ShariahStatus: shariahStatus,
-			DataQuality:   "LAST_AVAILABLE",
-		})
-	}
-
-	scanResp, err := h.quantClient.ScanBreakouts(ctx, quant.BreakoutScanRequest{
-		Stocks: scanItems,
-	})
-	if err != nil {
-		response.JSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("quant scanner failed: %v", err)})
-		return
-	}
-
-	response.JSON(w, http.StatusOK, scanResp)
+	response.JSON(w, http.StatusOK, scan)
 }
 
 func (h *SignalsHandler) ListSignals(w http.ResponseWriter, r *http.Request) {
@@ -971,24 +827,6 @@ func (h *SignalsHandler) ListSignals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, http.StatusOK, signals)
-}
-
-func (h *SignalsHandler) GetWeights(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, map[string]float64{
-		"fundamental":   0.30,
-		"technical":     0.20,
-		"candlestick":   0.10,
-		"momentum":      0.10,
-		"volume":        0.05,
-		"valuation":     0.10,
-		"market_regime": 0.05,
-		"risk":          0.05,
-		"quality":       0.05,
-	})
-}
-
-func (h *SignalsHandler) UpdateWeights(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, map[string]string{"status": "updated"})
 }
 
 // ---- Shariah Handler ----
@@ -1075,65 +913,6 @@ func (h *ShariahHandler) CreateRuleVersion(w http.ResponseWriter, r *http.Reques
 
 // ---- Portfolio & Paper Trade Handler ----
 
-type ExecuteTradeRequest struct {
-	Symbol    string  `json:"symbol"`
-	TradeType string  `json:"trade_type"` // "BUY" or "SELL"
-	Shares    int     `json:"shares"`
-	Price     float64 `json:"price,omitempty"`
-}
-
-func executePaperTradeCore(ctx context.Context, db *database.DB, req ExecuteTradeRequest) (*database.PortfolioTrade, error) {
-	if req.Shares <= 0 {
-		return nil, fmt.Errorf("shares must be positive")
-	}
-	req.TradeType = strings.ToUpper(strings.TrimSpace(req.TradeType))
-	if req.TradeType != "BUY" && req.TradeType != "SELL" {
-		return nil, fmt.Errorf("trade_type must be BUY or SELL")
-	}
-
-	sym, err := db.GetSymbolByTicker(ctx, strings.TrimSpace(req.Symbol))
-	if err != nil || sym == nil {
-		return nil, fmt.Errorf("symbol not found: %s", req.Symbol)
-	}
-
-	// Shariah Gate: For BUY orders, ensure stock is Shariah PASS
-	if req.TradeType == "BUY" {
-		shariah, err := db.GetLatestShariahScreening(ctx, sym.ID)
-		if err != nil || shariah == nil || shariah.Status != "PASS" {
-			statusStr := "UNKNOWN"
-			if shariah != nil {
-				statusStr = string(shariah.Status)
-			}
-			return nil, fmt.Errorf("Shariah compliance gate blocked: cannot BUY %s because screening status is %s (must be certified PASS)", sym.Symbol, statusStr)
-		}
-	}
-
-	// Obtain execution price: use intraday or daily latest close if not supplied
-	execPrice := req.Price
-	if execPrice <= 0 {
-		ohlcv, err := db.GetLatestIntradayOHLCV(ctx, sym.ID)
-		if err != nil || ohlcv == nil || ohlcv.Close <= 0 {
-			ohlcv, err = db.GetLatestOHLCV(ctx, sym.ID)
-		}
-		if err != nil || ohlcv == nil || ohlcv.Close <= 0 {
-			return nil, fmt.Errorf("market price currently unavailable for %s", sym.Symbol)
-		}
-		execPrice = ohlcv.Close
-	}
-
-	pRecord, err := db.GetOrCreatePortfolio(ctx, 1)
-	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve paper portfolio: %w", err)
-	}
-
-	trade, err := db.ExecutePaperTrade(ctx, pRecord.ID, sym.ID, req.TradeType, req.Shares, execPrice)
-	if err != nil {
-		return nil, err
-	}
-	trade.Symbol = sym.Symbol
-	return trade, nil
-}
-
 type PortfolioHandler struct {
 	db          *database.DB
 	quantClient *quant.Client
@@ -1153,121 +932,6 @@ func (h *PortfolioHandler) Routes() chi.Router {
 	return r
 }
 
-func (h *PortfolioHandler) GetPortfolio(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, err := h.db.GetOrCreatePortfolio(ctx, 1)
-	if err != nil {
-		response.JSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to load portfolio"})
-		return
-	}
-
-	positions, err := h.db.GetPortfolioPositions(ctx, pRecord.ID)
-	if err != nil {
-		positions = []database.PortfolioPosition{}
-	}
-
-	var investedVal float64
-	var totalUnrealizedPnL float64
-	for i := range positions {
-		sym, err := h.db.GetSymbolByTicker(ctx, positions[i].Symbol)
-		if err == nil && sym != nil {
-			ohlcv, err := h.db.GetLatestIntradayOHLCV(ctx, sym.ID)
-			if err != nil || ohlcv == nil || ohlcv.Close <= 0 {
-				ohlcv, _ = h.db.GetLatestOHLCV(ctx, sym.ID)
-			}
-			if ohlcv != nil && ohlcv.Close > 0 {
-				positions[i].LastPrice = ohlcv.Close
-				positions[i].UnrealizedPnL = (ohlcv.Close - positions[i].AvgCostBasis) * float64(positions[i].Shares)
-			} else {
-				positions[i].LastPrice = positions[i].AvgCostBasis
-			}
-		} else {
-			positions[i].LastPrice = positions[i].AvgCostBasis
-		}
-		investedVal += float64(positions[i].Shares) * positions[i].LastPrice
-		totalUnrealizedPnL += positions[i].UnrealizedPnL
-	}
-
-	totalEquity := pRecord.CashBalance + investedVal
-	dailyPnlPct := 0.0
-	if pRecord.InitialCapital > 0 {
-		dailyPnlPct = (totalUnrealizedPnL / pRecord.InitialCapital) * 100.0
-	}
-
-	response.JSON(w, http.StatusOK, map[string]any{
-		"portfolio": map[string]any{
-			"id":              pRecord.ID,
-			"cash_balance":    pRecord.CashBalance,
-			"initial_capital": pRecord.InitialCapital,
-			"total_equity":    totalEquity,
-			"daily_pnl":       totalUnrealizedPnL,
-			"daily_pnl_pct":   dailyPnlPct,
-		},
-		"positions": positions,
-	})
-}
-
-func (h *PortfolioHandler) ListPositions(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, err := h.db.GetOrCreatePortfolio(ctx, 1)
-	if err != nil {
-		response.JSON(w, http.StatusOK, []any{})
-		return
-	}
-	positions, err := h.db.GetPortfolioPositions(ctx, pRecord.ID)
-	if err != nil {
-		response.JSON(w, http.StatusOK, []any{})
-		return
-	}
-	response.JSON(w, http.StatusOK, positions)
-}
-
-func (h *PortfolioHandler) ListTrades(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, err := h.db.GetOrCreatePortfolio(ctx, 1)
-	if err != nil {
-		response.JSON(w, http.StatusOK, []any{})
-		return
-	}
-	trades, err := h.db.GetPortfolioTrades(ctx, pRecord.ID)
-	if err != nil {
-		response.JSON(w, http.StatusOK, []any{})
-		return
-	}
-	response.JSON(w, http.StatusOK, trades)
-}
-
-func (h *PortfolioHandler) ExecuteTrade(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	var req ExecuteTradeRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.Error(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-
-	trade, err := executePaperTradeCore(ctx, h.db, req)
-	if err != nil {
-		response.Error(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	pRecord, _ := h.db.GetOrCreatePortfolio(ctx, 1)
-	positions, _ := h.db.GetPortfolioPositions(ctx, pRecord.ID)
-
-	response.JSON(w, http.StatusCreated, map[string]any{
-		"trade": trade,
-		"portfolio": map[string]any{
-			"id":           pRecord.ID,
-			"cash_balance": pRecord.CashBalance,
-		},
-		"positions": positions,
-	})
-}
-
-func (h *PortfolioHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
-	h.GetPortfolio(w, r)
-}
-
 // ---- Backtesting Handler ----
 
 type BacktestingHandler struct {
@@ -1281,6 +945,10 @@ func NewBacktestingHandler(db *database.DB, quantClient *quant.Client) *Backtest
 
 func (h *BacktestingHandler) Routes() chi.Router {
 	r := chi.NewRouter()
+	r.Get("/gate", h.GetGate)
+	r.Get("/research", h.GetResearch)
+	r.Get("/gate/diagnostics", h.GetGateDiagnostics)
+	r.Get("/gate/security/{symbol}", h.GetSecurityGateDiagnostics)
 	r.Get("/strategies", h.ListStrategies)
 	r.Post("/strategies", h.CreateStrategy)
 	r.Post("/run", h.RunBacktest)
@@ -1290,82 +958,154 @@ func (h *BacktestingHandler) Routes() chi.Router {
 	return r
 }
 
-func (h *BacktestingHandler) ListStrategies(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, []map[string]string{})
-}
-
-func (h *BacktestingHandler) CreateStrategy(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusCreated, map[string]string{"status": "created"})
-}
-
-func (h *BacktestingHandler) RunBacktest(w http.ResponseWriter, r *http.Request) {
+func (h *BacktestingHandler) GetGateDiagnostics(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
-	// Enforce Research Gate:
-	// Section 3 & 5.F: Never run backtests on quarantined price history or unresolved corporate actions.
-	// Return explicit RESEARCH_BLOCKED with exact provenance and counts.
-	var nullAdjCount int64
-	_ = h.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM ohlcv_daily WHERE adjusted_close IS NULL").Scan(&nullAdjCount)
-	
-	if nullAdjCount > 0 {
-		response.JSON(w, http.StatusOK, map[string]any{
-			"status": "RESEARCH_BLOCKED",
-			"reason": fmt.Sprintf("Historical backtest blocked: %d historical daily bars remain quarantined (NULL adjusted close) and 27 core equities lack complete primary-source corporate-action reconciliation. Backtesting is gated to prevent survivorship and adjustment bias until all corporate actions are verified from primary exchange disclosures.", nullAdjCount),
-			"quarantined_bars":          nullAdjCount,
-			"pending_evidence_equities": 27,
-			"verified_instruments":      52,
-			"active_core_equities":      47,
-			"frozen_strategy": map[string]any{
-				"version":          "Strategy V2",
-				"buy_threshold":    80.0,
-				"sell_threshold":   45.0,
-				"atr_multiplier":   2.0,
-				"canonical_sha256": "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780",
-			},
-			"execution_safety": map[string]any{
-				"paper_trading_enabled":  true,
-				"live_order_execution":   false,
-				"broker_trading_enabled": false,
-			},
-		})
+	query := `
+		WITH latest_screenings AS (
+			SELECT DISTINCT ON (symbol_id) symbol_id, status
+			FROM shariah_screenings
+			ORDER BY symbol_id, screening_date DESC, id DESC
+		),
+		ca_stats AS (
+			SELECT symbol_id, 
+			       COUNT(*) FILTER (WHERE verification_status = 'ARCHIVE_UNAUTHENTICATED') as unauth_ca,
+			       COUNT(*) FILTER (WHERE verification_status = 'VERIFIED_EXCHANGE_PRIMARY') as verified_ca
+			FROM corporate_action_events
+			GROUP BY symbol_id
+		),
+		ohlcv_stats AS (
+			SELECT symbol_id,
+			       COUNT(*) FILTER (WHERE adjusted_close IS NULL) as quarantined_bars,
+			       COUNT(*) as total_bars
+			FROM ohlcv_daily
+			GROUP BY symbol_id
+		)
+		SELECT 
+			s.symbol,
+			s.name,
+			s.is_active,
+			COALESCE(ls.status, 'UNKNOWN') as shariah_status,
+			COALESCE(os.quarantined_bars, 0) as quarantined_bars,
+			COALESCE(os.total_bars, 0) as total_bars,
+			COALESCE(cs.unauth_ca, 0) as unauth_events,
+			COALESCE(cs.verified_ca, 0) as verified_events
+		FROM symbols s
+		LEFT JOIN latest_screenings ls ON ls.symbol_id = s.id
+		LEFT JOIN ca_stats cs ON cs.symbol_id = s.id
+		LEFT JOIN ohlcv_stats os ON os.symbol_id = s.id
+		ORDER BY s.symbol;
+	`
+	rows, err := h.db.QueryContext(ctx, query)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	defer rows.Close()
+
+	type SecDiag struct {
+		Symbol             string `json:"symbol"`
+		Name               string `json:"name"`
+		IsActive           bool   `json:"is_active"`
+		ShariahStatus      string `json:"shariah_status"`
+		QuarantinedBars    int    `json:"quarantined_bars"`
+		TotalBars          int    `json:"total_bars"`
+		UnauthEvents       int    `json:"unauthenticated_events"`
+		VerifiedEvents     int    `json:"verified_events"`
+		ResearchEligible   bool   `json:"research_eligible"`
+		NextActionRequired string `json:"next_action_required"`
+	}
+
+	var diags []SecDiag
+	for rows.Next() {
+		var d SecDiag
+		if err := rows.Scan(&d.Symbol, &d.Name, &d.IsActive, &d.ShariahStatus, &d.QuarantinedBars, &d.TotalBars, &d.UnauthEvents, &d.VerifiedEvents); err != nil {
+			continue
+		}
+		d.ResearchEligible = (d.QuarantinedBars == 0 && d.VerifiedEvents > 0 && d.ShariahStatus == "PASS")
+
+		if d.QuarantinedBars > 0 && d.UnauthEvents > 0 {
+			d.NextActionRequired = "Acquire primary exchange circular PDF to authenticate historical corporate actions and unquarantine bars"
+		} else if d.ShariahStatus == "DATA_INSUFFICIENT" {
+			d.NextActionRequired = "Acquire audited annual report Note 24/25 non-operating interest income footnote"
+		} else if d.ShariahStatus == "FAIL" {
+			d.NextActionRequired = "Security failed Shariah screening; trading and research restricted"
+		} else if d.TotalBars == 0 {
+			d.NextActionRequired = "Restructuring/lineage symbol; zero bars present in daily table"
+		} else {
+			d.NextActionRequired = "Pending verification of primary exchange corporate actions"
+		}
+
+		diags = append(diags, d)
+	}
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"global_status": "RESEARCH_BLOCKED",
+		"total_symbols": len(diags),
+		"diagnostics":   diags,
+	})
+}
+
+func (h *BacktestingHandler) GetSecurityGateDiagnostics(w http.ResponseWriter, r *http.Request) {
+	symbol := chi.URLParam(r, "symbol")
+	ctx := r.Context()
+
+	var symID int
+	var symName string
+	var isActive bool
+	err := h.db.QueryRowContext(ctx, "SELECT id, name, is_active FROM symbols WHERE symbol = $1;", symbol).Scan(&symID, &symName, &isActive)
+	if err != nil {
+		response.Error(w, http.StatusNotFound, fmt.Sprintf("symbol %s not found", symbol))
 		return
 	}
 
-	response.JSON(w, http.StatusBadRequest, map[string]string{"error": "Historical backtest requires reconciled price history"})
-}
+	var quarantinedBars, totalBars int
+	_ = h.db.QueryRowContext(ctx, `
+		SELECT 
+			COUNT(*) FILTER (WHERE adjusted_close IS NULL),
+			COUNT(*)
+		FROM ohlcv_daily WHERE symbol_id = $1;
+	`, symID).Scan(&quarantinedBars, &totalBars)
 
-func (h *BacktestingHandler) RunWalkForward(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	
-	var nullAdjCount int64
-	_ = h.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM ohlcv_daily WHERE adjusted_close IS NULL").Scan(&nullAdjCount)
+	var unauthEvents, verifiedEvents int
+	_ = h.db.QueryRowContext(ctx, `
+		SELECT 
+			COUNT(*) FILTER (WHERE verification_status = 'ARCHIVE_UNAUTHENTICATED'),
+			COUNT(*) FILTER (WHERE verification_status = 'VERIFIED_EXCHANGE_PRIMARY')
+		FROM corporate_action_events WHERE symbol_id = $1;
+	`, symID).Scan(&unauthEvents, &verifiedEvents)
 
-	if nullAdjCount > 0 {
-		response.JSON(w, http.StatusOK, map[string]any{
-			"status": "RESEARCH_BLOCKED",
-			"reason": fmt.Sprintf("Walk-forward simulation blocked: %d historical daily bars remain quarantined (NULL adjusted close). Institutional evaluation requires complete adjustment factors and verified corporate action evidence.", nullAdjCount),
-			"quarantined_bars":          nullAdjCount,
-			"pending_evidence_equities": 27,
-			"frozen_strategy": map[string]any{
-				"version":          "Strategy V2",
-				"buy_threshold":    80.0,
-				"sell_threshold":   45.0,
-				"atr_multiplier":   2.0,
-				"canonical_sha256": "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780",
-			},
-		})
-		return
+	var shariahStatus string
+	_ = h.db.QueryRowContext(ctx, `
+		SELECT status FROM shariah_screenings 
+		WHERE symbol_id = $1 
+		ORDER BY screening_date DESC, id DESC LIMIT 1;
+	`, symID).Scan(&shariahStatus)
+	if shariahStatus == "" {
+		shariahStatus = "UNKNOWN"
 	}
 
-	response.JSON(w, http.StatusBadRequest, map[string]string{"error": "Walk-forward validation requires reconciled price history"})
-}
+	nextAction := "Pending verification of primary exchange corporate actions"
+	if quarantinedBars > 0 && unauthEvents > 0 {
+		nextAction = "Acquire primary exchange circular PDF to authenticate historical corporate actions and unquarantine bars"
+	} else if shariahStatus == "DATA_INSUFFICIENT" {
+		nextAction = "Acquire audited annual report Note 24/25 non-operating interest income footnote"
+	} else if shariahStatus == "FAIL" {
+		nextAction = "Security failed Shariah screening; trading and research restricted"
+	}
 
-func (h *BacktestingHandler) ListRuns(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, []map[string]string{})
-}
-
-func (h *BacktestingHandler) GetRunResults(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, map[string]string{"status": "placeholder"})
+	response.JSON(w, http.StatusOK, map[string]any{
+		"symbol":                 symbol,
+		"name":                   symName,
+		"is_active":              isActive,
+		"shariah_status":         shariahStatus,
+		"quarantined_bars":       quarantinedBars,
+		"total_bars":             totalBars,
+		"unauthenticated_events": unauthEvents,
+		"verified_events":        verifiedEvents,
+		"research_eligible":      false,
+		"global_gate":            "RESEARCH_BLOCKED",
+		"next_action_required":   nextAction,
+	})
 }
 
 // ---- Risk Handler ----
@@ -1462,9 +1202,11 @@ func (h *RiskHandler) CalculatePositionSize(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *RiskHandler) GetPortfolioRisk(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, _ := h.db.GetOrCreatePortfolio(ctx, 1)
-	positions, _ := h.db.GetPortfolioPositions(ctx, pRecord.ID)
+	pRecord, ok := ownedPortfolio(w, r, h.db)
+	if !ok {
+		return
+	}
+	positions, _ := h.db.GetPortfolioPositions(r.Context(), pRecord.ID)
 
 	var investedVal float64
 	for _, pos := range positions {
@@ -1488,42 +1230,6 @@ func (h *RiskHandler) GetPortfolioRisk(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// ---- Alerts Handler ----
-
-type AlertsHandler struct {
-	db          *database.DB
-	quantClient *quant.Client
-}
-
-func NewAlertsHandler(db *database.DB, quantClient *quant.Client) *AlertsHandler {
-	return &AlertsHandler{db: db, quantClient: quantClient}
-}
-
-func (h *AlertsHandler) Routes() chi.Router {
-	r := chi.NewRouter()
-	r.Get("/", h.ListAlerts)
-	r.Post("/", h.CreateAlert)
-	r.Delete("/{id}", h.DeleteAlert)
-	r.Get("/history", h.GetHistory)
-	return r
-}
-
-func (h *AlertsHandler) ListAlerts(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, []map[string]string{})
-}
-
-func (h *AlertsHandler) CreateAlert(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusCreated, map[string]string{"status": "created"})
-}
-
-func (h *AlertsHandler) DeleteAlert(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, map[string]string{"status": "deleted"})
-}
-
-func (h *AlertsHandler) GetHistory(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, []map[string]string{})
-}
-
 // ---- Data Quality Handler ----
 
 type DataQualityHandler struct {
@@ -1540,6 +1246,11 @@ func (h *DataQualityHandler) Routes() chi.Router {
 	r.Get("/", h.GetDashboard)
 	r.Get("/health", h.GetDashboard)
 	r.Get("/issues", h.ListIssues)
+	r.Get("/evidence/corporate-actions", h.GetCorporateActionsEvidence)
+	r.Get("/evidence/financial-disclosures", h.GetFinancialDisclosuresEvidence)
+	r.Get("/evidence/reconciliations", h.GetReconciliationReviews)
+	r.Get("/historical-readiness", h.GetHistoricalReadiness)
+	r.Get("/intraday-feed", h.GetIntradayFeedHealth)
 	return r
 }
 
@@ -1570,7 +1281,7 @@ func (h *DataQualityHandler) GetDashboard(w http.ResponseWriter, r *http.Request
 	// 2. Corporate Actions Primary Evidence
 	var caCount int64
 	var caLastUpdated time.Time
-	_ = h.db.QueryRowContext(ctx, `SELECT COUNT(*), COALESCE(MAX(retrieved_at), NOW()) FROM corporate_action_source_artifacts`).Scan(&caCount, &caLastUpdated)
+	_ = h.db.QueryRowContext(ctx, `SELECT COUNT(*), COALESCE(MAX(retrieval_timestamp), NOW()) FROM corporate_action_source_artifacts`).Scan(&caCount, &caLastUpdated)
 
 	// 3. Financial Statements (PIT)
 	var finCount int64
@@ -1582,7 +1293,33 @@ func (h *DataQualityHandler) GetDashboard(w http.ResponseWriter, r *http.Request
 	var ipoLastFetch time.Time
 	_ = h.db.QueryRowContext(ctx, `SELECT COUNT(*), COALESCE(MAX(updated_at), NOW()) FROM ipos`).Scan(&ipoCount, &ipoLastFetch)
 
+	// 5. NSE's own daily record and index closes
+	var exCount, exFiles int64
+	var exLatest, exFetched time.Time
+	_ = h.db.QueryRowContext(ctx, `SELECT count(*), (SELECT count(*) FROM exchange_source_files), COALESCE(max(trade_date), NOW()), COALESCE((SELECT max(retrieved_at) FROM exchange_source_files), NOW()) FROM exchange_daily_bars`).Scan(&exCount, &exFiles, &exLatest, &exFetched)
+	var idxCount int64
+	var idxLatest, idxFetched time.Time
+	_ = h.db.QueryRowContext(ctx, `SELECT count(*), COALESCE(max(trade_date), NOW()), COALESCE(max(retrieved_at), NOW()) FROM index_daily_bars`).Scan(&idxCount, &idxLatest, &idxFetched)
+
 	resp := []map[string]any{
+		{
+			"dataset":               "NSE Daily Bhavcopy (exchange record)",
+			"provider":              fmt.Sprintf("NSE archives, %d daily files with SHA-256", exFiles),
+			"latest_data":           exLatest.Format(time.RFC3339),
+			"valid_records":         exCount,
+			"invalid_records":       0,
+			"last_successful_fetch": exFetched.Format(time.RFC3339),
+			"status":                "VALID",
+		},
+		{
+			"dataset":               "NSE Index Closes",
+			"provider":              "NSE archives (ind_close_all)",
+			"latest_data":           idxLatest.Format(time.RFC3339),
+			"valid_records":         idxCount,
+			"invalid_records":       0,
+			"last_successful_fetch": idxFetched.Format(time.RFC3339),
+			"status":                "VALID",
+		},
 		{
 			"dataset":               "OHLCV Market Data",
 			"provider":              provider,
@@ -1594,25 +1331,25 @@ func (h *DataQualityHandler) GetDashboard(w http.ResponseWriter, r *http.Request
 		},
 		{
 			"dataset":               "Corporate Actions Primary Evidence",
-			"provider":              "bse_nse_announcements",
+			"provider":              "NSE corporate-actions feed and filings (awaiting human review)",
 			"latest_data":           caLastUpdated.Format(time.RFC3339),
 			"valid_records":         caCount,
 			"invalid_records":       0,
 			"last_successful_fetch": caLastUpdated.Format(time.RFC3339),
-			"status":                "VALID",
+			"status":                "PENDING_REVIEW",
 		},
 		{
 			"dataset":               "Financial Statements (PIT)",
-			"provider":              "verified_exchange_filings",
+			"provider":              "Yahoo Finance annual figures (unverified aggregation)",
 			"latest_data":           finLatest.Format(time.RFC3339),
 			"valid_records":         finCount,
 			"invalid_records":       0,
 			"last_successful_fetch": finLatest.Format(time.RFC3339),
-			"status":                "VALID",
+			"status":                "UNVERIFIED",
 		},
 		{
 			"dataset":               "IPO Offerings & Subscriptions",
-			"provider":              "chittorgarh_bse_nse",
+			"provider":              "NSE IPO API; GMP and SME share counts from IPOWatch (unofficial)",
 			"latest_data":           ipoLastFetch.Format(time.RFC3339),
 			"valid_records":         ipoCount,
 			"invalid_records":       0,
@@ -1628,27 +1365,29 @@ func (h *DataQualityHandler) ListIssues(w http.ResponseWriter, r *http.Request) 
 	ctx := r.Context()
 	issues := make([]map[string]any, 0)
 
-	// Fetch from ohlcv_daily_quarantine_p17
+	// Bars already caught and removed from the price history. They need no action, so they are summarised per date as
+	// resolved items rather than listed as one warning per stock.
 	qQuery := `
-		SELECT q.quarantine_reason, s.symbol, q.timestamp, q.quarantined_at 
+		SELECT split_part(q.quarantine_reason, ':', 1), q.timestamp::date, count(*), max(q.quarantined_at)
 		FROM ohlcv_daily_quarantine_p17 q
-		JOIN symbols s ON s.id = q.symbol_id
-		ORDER BY q.quarantined_at DESC LIMIT 25
+		GROUP BY 1, 2 ORDER BY 2 DESC LIMIT 25
 	`
 	rows, err := h.db.QueryContext(ctx, qQuery)
 	if err == nil {
 		defer rows.Close()
 		id := 1
 		for rows.Next() {
-			var reason, symbol string
-			var ts, qAt time.Time
-			if err := rows.Scan(&reason, &symbol, &ts, &qAt); err == nil {
+			var reason string
+			var day, qAt time.Time
+			var n int
+			if err := rows.Scan(&reason, &day, &n, &qAt); err == nil {
+				why := "the exchange did not trade that day"
+				if holiday, name := market.IsTradingHoliday(day); holiday && name != "" {
+					why = "the exchange was closed for " + name
+				}
 				issues = append(issues, map[string]any{
-					"id":          id,
-					"symbol":      symbol,
-					"check_type":  "quarantined_holiday_phantom",
-					"severity":    "WARNING",
-					"message":     fmt.Sprintf("%s on %s", reason, ts.Format("2006-01-02")),
+					"id": id, "symbol": fmt.Sprintf("%d stocks", n), "check_type": "resolved_" + strings.ToLower(reason), "severity": "RESOLVED",
+					"message":     fmt.Sprintf("The data vendor sent %d empty bars dated %s, but %s. They were removed from the price history automatically; no action is needed.", n, day.Format("2006-01-02"), why),
 					"recorded_at": qAt.Format(time.RFC3339),
 				})
 				id++
@@ -1686,30 +1425,118 @@ func (h *DataQualityHandler) ListIssues(w http.ResponseWriter, r *http.Request) 
 	response.JSON(w, http.StatusOK, issues)
 }
 
-// ---- Settings Handler ----
+func (h *DataQualityHandler) GetCorporateActionsEvidence(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	rows, err := h.db.QueryContext(ctx, `
+		SELECT id, artifact_id, issuing_authority, source_url, document_identifier,
+		       document_type, sha256_checksum, parser_version, validation_status, created_at
+		FROM corporate_action_source_artifacts
+		ORDER BY id DESC LIMIT 50;
+	`)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	defer rows.Close()
 
-type SettingsHandler struct {
-	db          *database.DB
-	quantClient *quant.Client
+	var artifacts []map[string]any
+	for rows.Next() {
+		var id int
+		var artID, auth, url, docID, docType, chk, ver, status string
+		var cr time.Time
+		if err := rows.Scan(&id, &artID, &auth, &url, &docID, &docType, &chk, &ver, &status, &cr); err == nil {
+			artifacts = append(artifacts, map[string]any{
+				"id":                  id,
+				"artifact_id":         artID,
+				"issuing_authority":   auth,
+				"source_url":          url,
+				"document_identifier": docID,
+				"document_type":       docType,
+				"sha256_checksum":     chk,
+				"parser_version":      ver,
+				"validation_status":   status,
+				"created_at":          cr.Format(time.RFC3339),
+			})
+		}
+	}
+	response.JSON(w, http.StatusOK, artifacts)
 }
 
-func NewSettingsHandler(db *database.DB, quantClient *quant.Client) *SettingsHandler {
-	return &SettingsHandler{db: db, quantClient: quantClient}
+func (h *DataQualityHandler) GetFinancialDisclosuresEvidence(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	rows, err := h.db.QueryContext(ctx, `
+		SELECT id, artifact_id, symbol, fiscal_year, period_type, period_end,
+		       document_title, issuing_authority, source_url, sha256_checksum,
+		       validation_status, review_status, created_at
+		FROM financial_disclosure_source_artifacts
+		ORDER BY id DESC LIMIT 50;
+	`)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	defer rows.Close()
+
+	var disclosures []map[string]any
+	for rows.Next() {
+		var id, fy int
+		var artID, sym, pt, dt, auth, url, chk, vStat, rStat string
+		var pe, cr time.Time
+		if err := rows.Scan(&id, &artID, &sym, &fy, &pt, &pe, &dt, &auth, &url, &chk, &vStat, &rStat, &cr); err == nil {
+			disclosures = append(disclosures, map[string]any{
+				"id":                id,
+				"artifact_id":       artID,
+				"symbol":            sym,
+				"fiscal_year":       fy,
+				"period_type":       pt,
+				"period_end":        pe.Format("2006-01-02"),
+				"document_title":    dt,
+				"issuing_authority": auth,
+				"source_url":        url,
+				"sha256_checksum":   chk,
+				"validation_status": vStat,
+				"review_status":     rStat,
+				"created_at":        cr.Format(time.RFC3339),
+			})
+		}
+	}
+	response.JSON(w, http.StatusOK, disclosures)
 }
 
-func (h *SettingsHandler) Routes() chi.Router {
-	r := chi.NewRouter()
-	r.Get("/", h.GetSettings)
-	r.Put("/", h.UpdateSettings)
-	return r
-}
+func (h *DataQualityHandler) GetReconciliationReviews(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	rows, err := h.db.QueryContext(ctx, `
+		SELECT id, event_id, symbol, discrepancy_field, existing_claim_value,
+		       official_claim_value, discrepancy_reason, review_status, created_at
+		FROM corporate_action_reconciliation_reviews
+		ORDER BY id DESC LIMIT 50;
+	`)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	defer rows.Close()
 
-func (h *SettingsHandler) GetSettings(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, map[string]string{"status": "placeholder"})
-}
-
-func (h *SettingsHandler) UpdateSettings(w http.ResponseWriter, r *http.Request) {
-	response.JSON(w, http.StatusOK, map[string]string{"status": "updated"})
+	var reviews []map[string]any
+	for rows.Next() {
+		var id int
+		var evID, sym, field, existV, offV, reason, status string
+		var cr time.Time
+		if err := rows.Scan(&id, &evID, &sym, &field, &existV, &offV, &reason, &status, &cr); err == nil {
+			reviews = append(reviews, map[string]any{
+				"id":                   id,
+				"event_id":             evID,
+				"symbol":               sym,
+				"discrepancy_field":    field,
+				"existing_claim_value": existV,
+				"official_claim_value": offV,
+				"discrepancy_reason":   reason,
+				"review_status":        status,
+				"created_at":           cr.Format(time.RFC3339),
+			})
+		}
+	}
+	response.JSON(w, http.StatusOK, reviews)
 }
 
 // ---- Paper Trading Handler ----
@@ -1727,6 +1554,10 @@ func (h *PaperTradingHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Get("/session", h.GetSession)
 	r.Get("/orders", h.ListOrders)
+	r.Get("/price-at", h.PriceAt)
+	r.Get("/performance", h.Performance)
+	r.Get("/risk-rules", h.RiskRules)
+	r.Post("/simulate", h.Simulate)
 	r.Post("/orders", h.PlaceOrder)
 	r.Post("/trade", h.PlaceOrder)
 	r.Get("/positions", h.ListPositions)
@@ -1739,91 +1570,6 @@ func (h *PaperTradingHandler) Routes() chi.Router {
 	r.Get("/portfolios/{id}/positions", h.ListPositions)
 	r.Get("/portfolios/{id}/analytics", h.GetAnalytics)
 	return r
-}
-
-func (h *PaperTradingHandler) GetSession(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, _ := h.db.GetOrCreatePortfolio(ctx, 1)
-	response.JSON(w, http.StatusOK, map[string]any{
-		"session_status":         "ACTIVE",
-		"portfolio_id":           pRecord.ID,
-		"cash_balance":           pRecord.CashBalance,
-		"initial_capital":        pRecord.InitialCapital,
-		"paper_trading_enabled":  true,
-		"live_order_execution":   false,
-		"broker_trading_enabled": false,
-		"frozen_strategy": map[string]any{
-			"version":          "Strategy V2",
-			"buy_threshold":    80.0,
-			"sell_threshold":   45.0,
-			"atr_multiplier":   2.0,
-			"canonical_sha256": "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780",
-		},
-	})
-}
-
-func (h *PaperTradingHandler) ListOrders(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, _ := h.db.GetOrCreatePortfolio(ctx, 1)
-	trades, err := h.db.GetPortfolioTrades(ctx, pRecord.ID)
-	if err != nil {
-		response.JSON(w, http.StatusOK, []any{})
-		return
-	}
-	response.JSON(w, http.StatusOK, trades)
-}
-
-func (h *PaperTradingHandler) PlaceOrder(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	var req ExecuteTradeRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.Error(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-
-	trade, err := executePaperTradeCore(ctx, h.db, req)
-	if err != nil {
-		response.Error(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	response.JSON(w, http.StatusCreated, map[string]any{
-		"status": "FILLED",
-		"trade":  trade,
-	})
-}
-
-func (h *PaperTradingHandler) ListPositions(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, _ := h.db.GetOrCreatePortfolio(ctx, 1)
-	positions, err := h.db.GetPortfolioPositions(ctx, pRecord.ID)
-	if err != nil {
-		response.JSON(w, http.StatusOK, []any{})
-		return
-	}
-	response.JSON(w, http.StatusOK, positions)
-}
-
-func (h *PaperTradingHandler) GetPortfolio(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, _ := h.db.GetOrCreatePortfolio(ctx, 1)
-	response.JSON(w, http.StatusOK, pRecord)
-}
-
-func (h *PaperTradingHandler) ListPortfolios(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, _ := h.db.GetOrCreatePortfolio(ctx, 1)
-	response.JSON(w, http.StatusOK, []any{pRecord})
-}
-
-func (h *PaperTradingHandler) CreatePortfolio(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	pRecord, _ := h.db.GetOrCreatePortfolio(ctx, 1)
-	response.JSON(w, http.StatusOK, pRecord)
-}
-
-func (h *PaperTradingHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
-	h.GetSession(w, r)
 }
 
 // ---- Health Handler ----
@@ -1841,7 +1587,7 @@ func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // GetMarketHealth returns the health and freshness of the market data.
 func (h *StocksHandler) GetMarketHealth(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	stats, err := h.db.GetMarketDataHealthStats(ctx)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "failed to get market health stats")
@@ -1881,7 +1627,7 @@ func (h *StocksHandler) GetMarketHealth(w http.ResponseWriter, r *http.Request) 
 		"exchange_verified":         false,
 		"guaranteed_realtime":       false,
 		"latest_market_timestamp":   latestMarketTs,
-		"latest_received_timestamp": latestReceivedTs, // Retrieval timestamp of the latest candle
+		"latest_received_timestamp": latestReceivedTs,  // Retrieval timestamp of the latest candle
 		"latest_ingestion_time":     latestIngestionTs, // Latest DB write activity across table
 		"data_age_seconds":          dataAgeSeconds,
 		"freshness_status":          freshness,
@@ -1893,64 +1639,6 @@ func (h *StocksHandler) GetMarketHealth(w http.ResponseWriter, r *http.Request) 
 	}
 
 	response.JSON(w, http.StatusOK, resp)
-}
-
-// GetMarketOverview returns index and sector summary data.
-func (h *StocksHandler) GetMarketOverview(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	loc, _ := time.LoadLocation("Asia/Kolkata")
-	if loc == nil {
-		loc = time.UTC
-	}
-	now := time.Now().In(loc)
-
-	symbols, err := h.db.GetAllActiveSymbols(ctx)
-	if err != nil {
-		response.Error(w, http.StatusInternalServerError, "Failed to retrieve market overview")
-		return
-	}
-
-	sectorCounts := make(map[string]int)
-	for _, s := range symbols {
-		if s.Sector != "" {
-			sectorCounts[s.Sector]++
-		}
-	}
-
-	var sectors []map[string]any
-	for sec, count := range sectorCounts {
-		sectors = append(sectors, map[string]any{
-			"sector": sec,
-			"count":  count,
-		})
-	}
-
-	overview := map[string]any{
-		"market_status": string(market.GetCurrentSession(now)),
-		"timestamp":     now.Format(time.RFC3339),
-		"indices": []map[string]any{
-			{
-				"symbol":         "^NSEI",
-				"name":           "NIFTY 50",
-				"value":          24850.30,
-				"change":         142.10,
-				"change_percent": 0.58,
-				"status":         string(market.GetCurrentSession(now)),
-			},
-			{
-				"symbol":         "^NSE500",
-				"name":           "NIFTY 500",
-				"value":          23180.45,
-				"change":         95.20,
-				"change_percent": 0.41,
-				"status":         string(market.GetCurrentSession(now)),
-			},
-		},
-		"total_active_equities": len(symbols),
-		"sectors":               sectors,
-	}
-
-	response.JSON(w, http.StatusOK, overview)
 }
 
 // ---- Providers Handler ----
@@ -2091,5 +1779,3 @@ func (h *PaperObservationsHandler) GetSummary(w http.ResponseWriter, r *http.Req
 	}
 	response.JSON(w, http.StatusOK, summary)
 }
-
-

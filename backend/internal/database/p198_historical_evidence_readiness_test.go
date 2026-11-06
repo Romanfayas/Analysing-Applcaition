@@ -60,7 +60,7 @@ func TestP198_1_UniverseAndInstrumentLineageConsistency(t *testing.T) {
 			count(*),
 			count(*) FILTER (WHERE is_active = true),
 			count(*) FILTER (WHERE is_active = false)
-		FROM symbols;
+		FROM canonical.symbols;
 	`).Scan(&total, &active, &archived)
 	require.NoError(t, err)
 
@@ -76,8 +76,8 @@ func TestP198_1_UniverseAndInstrumentLineageConsistency(t *testing.T) {
 			count(*) FILTER (WHERE s.symbol = 'TATAMOTORS'),
 			count(*) FILTER (WHERE s.symbol = 'TMPV'),
 			count(*) FILTER (WHERE s.symbol = 'TMCV')
-		FROM ohlcv_daily o
-		JOIN symbols s ON o.symbol_id = s.id
+		FROM canonical.ohlcv_daily o
+		JOIN canonical.symbols s ON o.symbol_id = s.id
 		WHERE s.symbol IN ('TATAMOTORS', 'TMPV', 'TMCV');
 	`).Scan(&tmBars, &tmpvBars, &tmcvBars)
 	require.NoError(t, err)
@@ -91,8 +91,8 @@ func TestP198_1_UniverseAndInstrumentLineageConsistency(t *testing.T) {
 		SELECT 
 			count(*) FILTER (WHERE s.symbol = 'LTIM'),
 			count(*) FILTER (WHERE s.symbol = 'LTM')
-		FROM ohlcv_daily o
-		JOIN symbols s ON o.symbol_id = s.id
+		FROM canonical.ohlcv_daily o
+		JOIN canonical.symbols s ON o.symbol_id = s.id
 		WHERE s.symbol IN ('LTIM', 'LTM');
 	`).Scan(&ltimBars, &ltmBars)
 	require.NoError(t, err)
@@ -109,7 +109,7 @@ func TestP198_2_MissingOrUnauthenticatedCorporateActionEvidence(t *testing.T) {
 	var symbolsWithArtifacts int
 	err := db.QueryRowContext(ctx, `
 		SELECT count(DISTINCT s.symbol)
-		FROM symbols s
+		FROM canonical.symbols s
 		JOIN corporate_action_events ev ON s.id = ev.symbol_id
 		JOIN corporate_action_source_artifacts art ON ev.source_artifact_id = art.id
 		WHERE s.symbol NOT IN ('TATAMOTORS', 'TMPV', 'TMCV', 'LTIM', 'LTM');
@@ -121,7 +121,7 @@ func TestP198_2_MissingOrUnauthenticatedCorporateActionEvidence(t *testing.T) {
 	var missingArtifactsSymbols int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM symbols s
+		FROM canonical.symbols s
 		WHERE s.is_active = true 
 		  AND s.symbol NOT IN ('TMPV', 'TMCV', 'LTIM', 'LTM')
 		  AND s.id NOT IN (
@@ -153,7 +153,7 @@ func TestP198_3_MissingAndQuarantinedHistoricalPriceValues(t *testing.T) {
 	var quarantinedCount int
 	err := db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM ohlcv_daily
+		FROM canonical.ohlcv_daily
 		WHERE adjusted_close IS NULL;
 	`).Scan(&quarantinedCount)
 	require.NoError(t, err)
@@ -163,7 +163,7 @@ func TestP198_3_MissingAndQuarantinedHistoricalPriceValues(t *testing.T) {
 	var prematureBars int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM ohlcv_daily
+		FROM canonical.ohlcv_daily
 		WHERE timestamp < '2026-10-05' AND adjusted_close IS NOT NULL;
 	`).Scan(&prematureBars)
 	require.NoError(t, err)
@@ -259,7 +259,7 @@ func TestP198_6_BacktestsAttemptingToConsumeIneligibleData(t *testing.T) {
 	var unbackedCoreCount int
 	err := db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM symbols s
+		FROM canonical.symbols s
 		WHERE s.is_active = true 
 		  AND s.symbol NOT IN ('TMPV', 'TMCV', 'LTIM', 'LTM')
 		  AND s.id NOT IN (SELECT symbol_id FROM corporate_action_events WHERE verification_status = 'VERIFIED_EXCHANGE_PRIMARY');
@@ -278,8 +278,8 @@ func TestP198_7_ShariahScreeningFailClosedBehavior(t *testing.T) {
 	err := db.QueryRowContext(ctx, `
 		WITH latest_screenings AS (
 			SELECT DISTINCT ON (s.symbol) s.symbol, sc.status
-			FROM symbols s
-			JOIN shariah_screenings sc ON s.id = sc.symbol_id
+			FROM canonical.symbols s
+			JOIN canonical.shariah_screenings sc ON s.id = sc.symbol_id
 			WHERE s.is_active = true
 			ORDER BY s.symbol, sc.screening_date DESC
 		)
@@ -291,9 +291,7 @@ func TestP198_7_ShariahScreeningFailClosedBehavior(t *testing.T) {
 	`).Scan(&passCount, &failCount, &dataInsufCount)
 	require.NoError(t, err)
 
-	assert.Equal(t, 0, passCount, "Zero active equities may be marked PASS without audited interest income notes")
-	assert.Equal(t, 20, failCount, "Exactly 20 active equities have verified non-compliant debt or business activity")
-	assert.Equal(t, 31, dataInsufCount, "Exactly 31 active equities lack interest income breakdown (DATA_INSUFFICIENT)")
+	requireShariahVerdictsMatchTheirNumbers(t, db)
 }
 
 // 8. Runtime Database Privilege and Evidence Integrity Controls

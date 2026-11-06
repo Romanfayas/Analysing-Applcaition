@@ -1,0 +1,236 @@
+{
+  "audit_metadata": {
+    "audit_phase": "P1.9.16",
+    "phase_title": "Forensic Configuration Integrity, Financial Data Reconciliation & Reproducible Release Verification",
+    "timestamp_utc": "2026-10-27T12:00:00Z",
+    "commit_sha": "25d3f811e0df3d00f4d46271b8fd2fda461b6291",
+    "environment": "halal-equity-local-audit-env",
+    "overall_phase_verdict": "PASS",
+    "research_gate_verdict": "BLOCKED",
+    "live_trading_verdict": "STRICTLY_PROHIBITED",
+    "paper_trading_verdict": "PERMITTED_FORWARD_SIMULATION_ONLY"
+  },
+  "mandatory_safety_rules": {
+    "PAPER_TRADING_ENABLED": true,
+    "LIVE_ORDER_EXECUTION": false,
+    "BROKER_TRADING_ENABLED": false,
+    "RESEARCH_GATE_STATUS": "RESEARCH_BLOCKED",
+    "live_trading_prohibited": true,
+    "research_gate_bypassed": false,
+    "buy_order_without_pass_prohibited": true,
+    "quarantined_data_backtest_prohibited": true,
+    "unauthenticated_ca_promotion_prohibited": true
+  },
+  "configurations_integrity": {
+    "strategy_v2_core": {
+      "config_id": "STRATEGY_V2_CORE_PARAMETERS_V1",
+      "description": "Governs Strategy V2 quantitative momentum breakout signal generation",
+      "parameters": {
+        "ATR_MULTIPLIER": 2.0,
+        "BUY_THRESHOLD": 80.0,
+        "SELL_THRESHOLD": 45.0
+      },
+      "canonical_serialization": "{\"ATR_MULTIPLIER\": 2.0, \"BUY_THRESHOLD\": 80.0, \"SELL_THRESHOLD\": 45.0}",
+      "sha256": "92ab27c24e4bc4c65977c17238a85df8e3aa9e1fbdec727d4bd9bab2c398c780",
+      "runtime_verified": true,
+      "serialization_contract": {
+        "encoding": "UTF-8",
+        "key_sorting": "alphabetical_ascending",
+        "item_separator": ", ",
+        "key_value_separator": ": ",
+        "numeric_format": "single_decimal_float",
+        "trailing_newline": "none"
+      }
+    },
+    "breakout_portfolio_risk_composite": {
+      "config_id": "BREAKOUT_PORTFOLIO_RISK_COMPOSITE_V1",
+      "description": "Governs breakout screener and portfolio risk management engine",
+      "parameter_count": 12,
+      "parameters": {
+        "atr_stop_multiplier": 2.0,
+        "cost_schedule": "INDIA_EQ_DELIVERY_FEES_2026Q4_V2",
+        "donchian_breakout_period": 20,
+        "max_open_positions": 5,
+        "max_portfolio_heat": 0.1,
+        "max_single_trade_risk": 0.02,
+        "min_volume_multiple": 1.5,
+        "partial_profit_atr": 3.0,
+        "partial_profit_size": 0.5,
+        "slippage_model": "INSTITUTIONAL_LIQUIDITY_V2",
+        "trailing_stop_activation_atr": 1.5,
+        "volume_filter_period": 20
+      },
+      "canonical_serialization_compact": "{\"atr_stop_multiplier\":2.0,\"cost_schedule\":\"INDIA_EQ_DELIVERY_FEES_2026Q4_V2\",\"donchian_breakout_period\":20,\"max_open_positions\":5,\"max_portfolio_heat\":0.1,\"max_single_trade_risk\":0.02,\"min_volume_multiple\":1.5,\"partial_profit_atr\":3.0,\"partial_profit_size\":0.5,\"slippage_model\":\"INSTITUTIONAL_LIQUIDITY_V2\",\"trailing_stop_activation_atr\":1.5,\"volume_filter_period\":20}",
+      "sha256_compact": "0daac86130da4bf6e0fba7b2a9e8f7ff76c309dee4702b4a0a23c33e0a42f79f",
+      "canonical_serialization_standard": "{\"atr_stop_multiplier\": 2.0, \"cost_schedule\": \"INDIA_EQ_DELIVERY_FEES_2026Q4_V2\", \"donchian_breakout_period\": 20, \"max_open_positions\": 5, \"max_portfolio_heat\": 0.1, \"max_single_trade_risk\": 0.02, \"min_volume_multiple\": 1.5, \"partial_profit_atr\": 3.0, \"partial_profit_size\": 0.5, \"slippage_model\": \"INSTITUTIONAL_LIQUIDITY_V2\", \"trailing_stop_activation_atr\": 1.5, \"volume_filter_period\": 20}",
+      "sha256_standard": "deb24826865c3eefb2a1c7126ccf64f1955904af8631859042de93e980e6b5ba",
+      "disambiguated_from_strategy_v2": true
+    }
+  },
+  "tcs_corporate_action_reconciliation": {
+    "event_id": "NSE:TCS:2026-10-14:CASH_DIVIDEND:1",
+    "source_artifact_id": 5,
+    "source_document": "CONTROLLED_ARCHIVE:NSE_CA_TCS_PRIMARY.json",
+    "ex_date": "2026-10-14",
+    "action_type": "CASH_DIVIDEND",
+    "dividend_amount": 12.0,
+    "reference_close": 2269.3,
+    "adjustment_factor_formula": "(reference_close - dividend_amount) / reference_close",
+    "computed_adjustment_factor": "0.99471203",
+    "reconciliation_verdict": "PASS",
+    "p1_9_15_erroneous_claim": "₹10 dividend on ₹1,891 close ((1891-10)/1891 = 0.99471179 != 0.99471203). Reconciled as report transcription error; database and code are correct.",
+    "affected_bars_count": 7,
+    "source_classification": "ARCHIVE_UNAUTHENTICATED",
+    "research_quarantine_status": "EXCLUDED_FROM_RESEARCH_BACKTESTING"
+  },
+  "test_count_reconciliation": {
+    "p1_9_12_baseline": 320,
+    "p1_9_13_added": 8,
+    "p1_9_15_actual_total": 328,
+    "p1_9_15_narrative_discrepancy": "P1.9.15 executive summary lazily stated 320 tests while its test table listed 328. Root cause: failure to update narrative text when test_p1913 suite was added.",
+    "p1_9_16_added": 4,
+    "p1_9_16_current_total": 332,
+    "passed": 332,
+    "failed": 0,
+    "skipped": 0,
+    "test_command": "docker exec halal_equity_quant pytest -q",
+    "exit_code": 0,
+    "duration_seconds": 72.78
+  },
+  "test_suites_execution_summary": [
+    {
+      "suite_name": "Go Backend Database & Privilege Suite",
+      "command": "DB_HOST=192.168.18.43 go test -v ./internal/database/...",
+      "exit_code": 0,
+      "duration": "2.53s",
+      "passed": 103,
+      "failed": 0,
+      "skipped": 0,
+      "status": "PASS"
+    },
+    {
+      "suite_name": "Go Backend Full Package Suite",
+      "command": "DB_HOST=192.168.18.43 go test -count=1 ./...",
+      "exit_code": 0,
+      "duration": "25.0s",
+      "passed": 145,
+      "failed": 0,
+      "skipped": 0,
+      "status": "PASS"
+    },
+    {
+      "suite_name": "Python Quant & Forensic Integrity Suite",
+      "command": "docker exec halal_equity_quant pytest -q",
+      "exit_code": 0,
+      "duration": "72.78s",
+      "passed": 332,
+      "failed": 0,
+      "skipped": 0,
+      "status": "PASS"
+    },
+    {
+      "suite_name": "Frontend Clean Lockfile Verification",
+      "command": "npm ci --dry-run",
+      "exit_code": 0,
+      "duration": "2.0s",
+      "details": "Dependencies up to date; zero audit vulnerabilities",
+      "status": "PASS"
+    },
+    {
+      "suite_name": "Frontend Production Build",
+      "command": "npm run build",
+      "exit_code": 0,
+      "duration": "3.9s",
+      "details": "Next.js 16.3.5 Turbopack compiled 15/15 routes cleanly",
+      "status": "PASS"
+    },
+    {
+      "suite_name": "End-to-End Delivery Verification",
+      "command": "python3 scripts/verify_e2e_delivery.py",
+      "exit_code": 0,
+      "duration": "3.4s",
+      "passed": 18,
+      "failed": 0,
+      "status": "PASS"
+    },
+    {
+      "suite_name": "Live Workflows Integration Verification",
+      "command": "python3 scripts/test_workflows_live.py",
+      "exit_code": 0,
+      "duration": "4.1s",
+      "passed": 11,
+      "failed": 0,
+      "status": "PASS"
+    }
+  ],
+  "database_counts_verification": {
+    "symbols_total": 52,
+    "symbols_active": 51,
+    "symbols_inactive": 1,
+    "corporate_action_events_total": 64,
+    "corporate_action_events_verified_primary": 0,
+    "corporate_action_events_unauthenticated_archive": 58,
+    "corporate_action_events_ambiguous": 6,
+    "corporate_action_source_artifacts_total": 23,
+    "corporate_action_source_artifacts_primary_verified": 0,
+    "corporate_action_source_artifacts_parsed_validated": 23,
+    "ohlcv_daily_bars_total": 23876,
+    "ohlcv_daily_bars_quarantined": 23132,
+    "ohlcv_daily_bars_nominal_yahoo": 737,
+    "ohlcv_daily_bars_diagnostic_tcs": 7,
+    "shariah_screenings_active_pass": 0,
+    "shariah_screenings_active_fail": 20,
+    "shariah_screenings_active_data_insufficient": 31
+  },
+  "safety_gates_status": {
+    "research_gate": {
+      "status": "BLOCKED",
+      "enforced_by": "/api/v1/backtest/gate",
+      "response_code": 400,
+      "verified": true
+    },
+    "shariah_buy_gate": {
+      "status": "BLOCKED",
+      "data_insufficient_rejected": true,
+      "fail_rejected": true,
+      "verified": true
+    },
+    "short_selling_gate": {
+      "status": "BLOCKED",
+      "unauthorized_sales_rejected": true,
+      "verified": true
+    },
+    "live_execution_gate": {
+      "status": "BLOCKED",
+      "live_orders_disabled": true,
+      "verified": true
+    },
+    "database_privilege_gate": {
+      "status": "BLOCKED",
+      "app_user_primary_promotion_rejected": true,
+      "verified": true
+    }
+  },
+  "remaining_external_blockers": [
+    {
+      "item": "NSE/BSE Primary Corporate Action Circulars",
+      "status": "BLOCKED",
+      "description": "47 active core equities require cryptographic exchange circular PDFs to promote 58 events from ARCHIVE_UNAUTHENTICATED to VERIFIED_EXCHANGE_PRIMARY."
+    },
+    {
+      "item": "Audited Financial Statement Footnotes (Note 24/25 Interest Income)",
+      "status": "BLOCKED",
+      "description": "31 operating equities require audited footnote disclosures to resolve DATA_INSUFFICIENT Shariah status to either PASS or FAIL."
+    },
+    {
+      "item": "Historical Market Data Quarantine",
+      "status": "BLOCKED",
+      "description": "23,132 historical daily bars remain quarantined with NULL adjusted_close to prevent look-ahead and unverified price adjustment distortion."
+    },
+    {
+      "item": "Commercial Market Data Credentials",
+      "status": "BLOCKED",
+      "description": "TrueData market data provider requires funded commercial credentials; currently running in isolated mock mode."
+    }
+  ]
+}

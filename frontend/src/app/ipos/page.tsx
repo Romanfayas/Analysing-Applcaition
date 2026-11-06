@@ -10,32 +10,36 @@ import {
   InformationCircleIcon, 
   ShieldCheckIcon,
   ShieldExclamationIcon,
-  CalendarDaysIcon,
-  BuildingOffice2Icon,
   ArrowPathIcon,
   CheckCircleIcon,
-  ClockIcon,
-  ExclamationTriangleIcon
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import { useIPOs, useIPOHealth, useIPOIngestionRuns } from '@/lib/api/hooks';
+import type { IpoView } from '@/lib/api/types';
+import IpoDetailsModal from '@/components/IpoDetailsModal';
+
+// Dates arrive as UTC midnights; format in UTC so they never shift a day.
+const fmtDay = (iso: string) => new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', timeZone: 'UTC' });
+const fmtX = (v?: number | null) => (v == null ? '—' : `${Number(v).toFixed(2)}x`);
 
 export default function IPOPage() {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'drhp' | 'historical' | 'telemetry'>('upcoming');
-  const { ipos: allIpos, isLoading: iposLoading } = useIPOs('all');
-  const { health, isLoading: healthLoading } = useIPOHealth();
+  const { ipos: allIpos } = useIPOs('all');
+  const { health } = useIPOHealth();
   const { runs, isLoading: runsLoading, mutate: refreshRuns } = useIPOIngestionRuns();
-  const [selectedIpo, setSelectedIpo] = useState<any | null>(null);
+  const [selectedIpo, setSelectedIpo] = useState<IpoView | null>(null);
+  const [detailsFor, setDetailsFor] = useState<IpoView | null>(null);
 
   // Group issues by lifecycle state
-  const upcomingIpos = (allIpos || []).filter((ipo: any) => 
-    ['UPCOMING', 'OPEN', 'ACTIVE', 'ALLOTMENT'].includes(ipo.status)
+  const upcomingIpos = (allIpos || []).filter((ipo) => 
+    ['UPCOMING', 'OPEN', 'ACTIVE', 'ALLOTMENT', 'CLOSED_AWAITING_LISTING'].includes(ipo.status)
   );
 
-  const drhpIpos = (allIpos || []).filter((ipo: any) => 
+  const drhpIpos = (allIpos || []).filter((ipo) => 
     ['DRHP_FILED', 'PROPOSED'].includes(ipo.status)
   );
 
-  const historicalIpos = (allIpos || []).filter((ipo: any) => 
+  const historicalIpos = (allIpos || []).filter((ipo) => 
     ['HISTORICAL_LISTED', 'LISTED', 'ARCHIVED', 'CLOSED'].includes(ipo.status)
   );
 
@@ -46,7 +50,7 @@ export default function IPOPage() {
         : (activeTab === 'historical' ? historicalIpos : []));
 
   // Default select first item if none selected or if active tab changes
-  const activeSelected = selectedIpo && currentDisplayIpos.some((i: any) => i.id === selectedIpo.id)
+  const activeSelected = selectedIpo && currentDisplayIpos.some((i) => i.id === selectedIpo.id)
     ? selectedIpo
     : (currentDisplayIpos.length > 0 ? currentDisplayIpos[0] : null);
 
@@ -182,7 +186,7 @@ export default function IPOPage() {
                     <td colSpan={8} className="p-6 text-center text-slate-500">No ingestion runs logged yet.</td>
                   </tr>
                 ) : (
-                  runs.map((run: any) => (
+                  runs.map((run) => (
                     <tr key={run.id} className="hover:bg-slate-800/40 font-mono">
                       <td className="p-3 text-slate-400">#{run.id}</td>
                       <td className="p-3 font-semibold text-blue-400">{run.provider}</td>
@@ -226,9 +230,9 @@ export default function IPOPage() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-heading font-semibold text-white flex items-center gap-2">
                 <span>
-                  {activeTab === 'upcoming' && 'Upcoming & Active Issues (0)'}
-                  {activeTab === 'drhp' && 'DRHP Filed / Proposed with SEBI (1)'}
-                  {activeTab === 'historical' && 'Historical Research Archive (6)'}
+                  {activeTab === 'upcoming' && `Upcoming & Active Issues (${upcomingIpos.length})`}
+                  {activeTab === 'drhp' && `DRHP Filed / Proposed with SEBI (${drhpIpos.length})`}
+                  {activeTab === 'historical' && `Historical Research Archive (${historicalIpos.length})`}
                 </span>
               </h3>
               <span className="text-xs text-slate-500">Official Filings & Corporate Disclosures</span>
@@ -263,9 +267,13 @@ export default function IPOPage() {
             )}
 
             {/* Render IPO Cards */}
-            {currentDisplayIpos.map((ipo: any) => {
+            {currentDisplayIpos.map((ipo) => {
               const isSelected = activeSelected?.id === ipo.id;
-              const isSME = ipo.sector?.toLowerCase().includes('sme') || Number(ipo.issue_size_raw || 0) < 250;
+              // Board comes from the exchange's own series (EQ = mainboard, SME = SME platform).
+              const isSME = ipo.board === 'SME' || ipo.source === 'NSE_EMERGE';
+              const board = ipo.listing_at ?? (isSME ? 'SME' : (ipo.board === 'MAINBOARD' || ipo.source === 'NSE_OFFICIAL_FILING') ? 'Mainboard' : null);
+              const upcoming = ipo.status === 'UPCOMING' || ipo.status === 'DRHP_FILED';
+              const missing = upcoming ? 'Not announced yet' : 'Not published';
               const shariahStatus = ipo.shariah_status || ipo.prediction?.shariah_status || 'UNKNOWN';
 
               return (
@@ -284,18 +292,20 @@ export default function IPOPage() {
                             {ipo.symbol}
                           </span>
                         )}
-                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
-                          isSME ? 'bg-amber-950/60 text-amber-300 border border-amber-800/50' : 'bg-slate-800 text-slate-300 border border-slate-700'
-                        }`}>
-                          {isSME ? 'NSE SME' : 'Mainboard'}
-                        </span>
+                        {board && (
+                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
+                            isSME ? 'bg-amber-950/60 text-amber-300 border border-amber-800/50' : 'bg-slate-800 text-slate-300 border border-slate-700'
+                          }`}>
+                            {board}
+                          </span>
+                        )}
                         <Badge variant={shariahStatus === 'PASS' ? 'pass' : (shariahStatus === 'FAIL' ? 'fail' : 'neutral')}>
                           {shariahStatus}
                         </Badge>
                       </div>
 
                       <p className="text-xs text-slate-400 flex items-center gap-2">
-                        <span>Sector: <strong className="text-slate-300">{ipo.sector || 'Financial Services'}</strong></span>
+                        <span>Sector: <strong className="text-slate-300" title="NSE does not publish a sector for an issue before it lists">{ipo.sector || 'not published by NSE'}</strong></span>
                         <span>•</span>
                         <span>Lifecycle: <strong className={ipo.status === 'HISTORICAL_LISTED' ? 'text-purple-400' : 'text-blue-400'}>{ipo.status}</strong></span>
                       </p>
@@ -303,45 +313,86 @@ export default function IPOPage() {
 
                     <div className="text-left sm:text-right flex sm:flex-col justify-between items-center sm:items-end">
                       <p className="text-xs text-slate-400">
-                        {ipo.status === 'HISTORICAL_LISTED' ? 'Realized Listing Gain' : 'Estimated GMP'}
+                        {ipo.status === 'HISTORICAL_LISTED' ? 'Realized Listing Gain' : 'Grey-market premium (GMP)'}
                       </p>
                       <div className="flex items-center gap-1.5">
                         {ipo.prediction?.actual_listing_return != null ? (
                           <span className={`font-bold text-base ${ipo.prediction.actual_listing_return >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {ipo.prediction.actual_listing_return >= 0 ? '+' : ''}{ipo.prediction.actual_listing_return}%
                           </span>
+                        ) : ipo.gmp ? (
+                          <span className="font-bold text-base text-amber-300">
+                            ₹{ipo.gmp.value}{ipo.gmp.percentage != null ? ` (${ipo.gmp.percentage}%)` : ''}
+                          </span>
                         ) : (
-                          <span className="font-bold text-base text-slate-500">DATA_UNAVAILABLE</span>
+                          <span className="font-bold text-base text-slate-500">Not available</span>
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-500">
-                        {ipo.status === 'HISTORICAL_LISTED' ? 'Official Exchange Return' : 'Unofficial Estimate'}
+                      <span className="text-[10px] text-slate-500 max-w-44">
+                        {ipo.status === 'HISTORICAL_LISTED' ? 'Official Exchange Return'
+                          : ipo.gmp ? `Unofficial, ${ipo.gmp.source ?? 'third party'}, ${new Date(ipo.gmp.updated_at ?? '').toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`
+                          : 'None published for this issue'}
                       </span>
                     </div>
                   </div>
-                  
+
                   {/* Key Metrics Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-slate-700/50 text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5 pt-4 border-t border-slate-700/50 text-xs">
+                    <div>
+                      <p className="text-slate-500 mb-0.5">Bidding window</p>
+                      <p className="font-semibold text-white">
+                        {ipo.open_date ? `${fmtDay(ipo.open_date)} → ${ipo.close_date ? fmtDay(ipo.close_date) : '?'}` : ipo.status === 'DRHP_FILED' ? 'Not scheduled' : 'Not announced'}
+                      </p>
+                    </div>
                     <div>
                       <p className="text-slate-500 mb-0.5">Issue Size</p>
-                      <p className="font-semibold text-white">{ipo.issue_size || 'TBD (DRHP stage)'}</p>
+                      <p className="font-semibold text-white">{ipo.issue_size || (ipo.status === 'DRHP_FILED' ? 'TBD (DRHP stage)' : missing)}</p>
                     </div>
                     <div>
                       <p className="text-slate-500 mb-0.5">Price Band</p>
-                      <p className="font-semibold text-white">{ipo.price_band || 'TBD'}</p>
+                      <p className="font-semibold text-white">{ipo.price_band || (ipo.status === 'DRHP_FILED' ? 'TBD' : missing)}</p>
                     </div>
                     <div>
                       <p className="text-slate-500 mb-0.5">Listing Date</p>
-                      <p className="font-semibold text-slate-300">
-                        {ipo.listing_date ? new Date(ipo.listing_date).toLocaleDateString() : 'Pending SEBI clearance'}
-                      </p>
+                      {ipo.listing_date ? (
+                        <p className="font-semibold text-slate-300">{fmtDay(ipo.listing_date)} <span className="text-[10px] text-emerald-400 font-normal">announced</span></p>
+                      ) : ipo.expected_listing_date ? (
+                        <p className="font-semibold text-slate-300" title="The exchange has not yet announced the date.">
+                          ≈ {fmtDay(ipo.expected_listing_date)} <span className="text-[10px] text-amber-300 font-normal">{ipo.listing_date_basis === 'SCHEDULED_IN_PROSPECTUS' ? 'scheduled' : 'expected (T+3)'}</span>
+                        </p>
+                      ) : (
+                        <p className="font-semibold text-slate-300">{ipo.status === 'DRHP_FILED' ? 'Pending SEBI clearance' : 'Not yet announced'}</p>
+                      )}
                     </div>
                     <div>
                       <p className="text-slate-500 mb-0.5">Subscription</p>
                       <p className="font-semibold text-emerald-400">
-                        {ipo.subscription?.total ? `${ipo.subscription.total}x` : 'N/A'}
+                        {ipo.subscription?.total != null ? `${Number(ipo.subscription.total).toFixed(2)}x` : 'N/A'}
                       </p>
+                      {ipo.subscription && (ipo.subscription.qib != null || ipo.subscription.nii != null || ipo.subscription.retail != null) ? (
+                        <p className="text-[10px] text-slate-500 mt-0.5">
+                          QIB {fmtX(ipo.subscription.qib)} · NII {fmtX(ipo.subscription.nii)} · Retail {fmtX(ipo.subscription.retail)}
+                        </p>
+                      ) : null}
                     </div>
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center justify-between gap-3 text-xs">
+                    <span className="text-slate-400">
+                      {ipo.details?.fresh_issue_cr != null && <>Fresh ₹{ipo.details.fresh_issue_cr.toFixed(1)} Cr</>}
+                      {ipo.details?.fresh_issue_cr != null && ' · '}
+                      {ipo.details?.ofs_cr != null ? <>OFS ₹{ipo.details.ofs_cr.toFixed(1)} Cr</> : ipo.details?.fresh_issue_cr != null ? 'No OFS' : null}
+                      {ipo.details?.lot_size ? ` · Lot ${ipo.details.lot_size}` : ''}
+                      {ipo.listing_price != null && ipo.issue_price != null && (
+                        <span className={ipo.listing_price >= ipo.issue_price ? 'text-emerald-400' : 'text-rose-400'}>
+                          {' '}Listed at ₹{ipo.listing_price.toFixed(2)} ({((ipo.listing_price / ipo.issue_price - 1) * 100).toFixed(1)}%)
+                        </span>
+                      )}
+                    </span>
+                    <button onClick={(e) => { e.stopPropagation(); setDetailsFor(ipo); }}
+                      className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold shrink-0">
+                      View details
+                    </button>
                   </div>
                 </Card>
               );
@@ -371,7 +422,7 @@ export default function IPOPage() {
                         <span>HISTORICAL POINT-IN-TIME AUDIT</span>
                       </div>
                       <p className="text-[11px] text-purple-200/80">
-                        This issue listed in late 2024. The model prediction below was captured at bidding cutoff (<strong className="font-mono text-purple-100">{new Date(activeSelected.prediction?.data_cutoff_at || activeSelected.close_date).toLocaleDateString()}</strong>) and is benchmarked against actual market listing price.
+                        This issue listed in late 2024. The model prediction below was captured at bidding cutoff (<strong className="font-mono text-purple-100">{(() => { const d = activeSelected.prediction?.data_cutoff_at || activeSelected.close_date; return d ? new Date(d).toLocaleDateString() : '—'; })()}</strong>) and is benchmarked against actual market listing price.
                       </p>
                     </div>
                   )}
@@ -436,7 +487,7 @@ export default function IPOPage() {
                     <div className="space-y-2">
                       <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Historical Cutoff Inputs</h5>
                       <div className="bg-slate-800/40 rounded-xl p-3 border border-slate-700/50 text-xs space-y-1.5 font-mono">
-                        {Object.entries(activeSelected.prediction.inputs).map(([k, v]: [string, any]) => (
+                        {Object.entries(activeSelected.prediction.inputs).map(([k, v]) => (
                           <div key={k} className="flex justify-between items-center">
                             <span className="text-slate-400">{k}:</span>
                             <span className="text-slate-200">{String(v)}</span>
@@ -465,9 +516,13 @@ export default function IPOPage() {
                       <p className="text-[11px] text-rose-300/80 leading-relaxed">
                         Strict restriction: Core business involves interest-bearing lending, asset management fees derived from non-compliant financial instruments, or excessive debt leverage. Automatically disqualified.
                       </p>
-                    ) : (
+                    ) : activeSelected.shariah_status === 'PASS' ? (
                       <p className="text-[11px] text-slate-500 italic">
-                        Verified compliant against AAOIFI / BSE TAC guidelines with debt and interest income within allowable thresholds.
+                        Screened compliant against AAOIFI / BSE TAC guidelines with debt and interest income within allowable thresholds.
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-amber-300/80 leading-relaxed">
+                        Not evaluated: no Shariah screening has been performed for this issue. Do not treat it as compliant.
                       </p>
                     )}
                   </div>
@@ -492,6 +547,7 @@ export default function IPOPage() {
 
         </div>
       )}
+      {detailsFor && <IpoDetailsModal ipo={detailsFor} onClose={() => setDetailsFor(null)} />}
     </div>
   );
 }

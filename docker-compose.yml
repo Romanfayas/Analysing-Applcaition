@@ -52,6 +52,8 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret-change-me}
       - JWT_EXPIRY_HOURS=${JWT_EXPIRY_HOURS:-24}
+      - ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-}
+      - PAPER_SHARIAH_GATE_ENABLED=${PAPER_SHARIAH_GATE_ENABLED:-false}
       - QUANT_ENGINE_URL=http://quant:8000
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
@@ -79,7 +81,9 @@ services:
     command: ["/app/bin/worker"]
     environment:
       - APP_ENV=${APP_ENV:-development}
+      - INTRADAY_POLL_MINUTES=${INTRADAY_POLL_MINUTES:-3}
       - DATABASE_URL=postgres://${APP_DB_USER:-halal_app_user}:${APP_DB_PASSWORD:-app_password}@postgres:5432/${POSTGRES_DB:-halal_equity}?sslmode=disable
+      - EVIDENCE_DATABASE_URL=postgres://${EVIDENCE_DB_USER:-halal_evidence_loader}:${EVIDENCE_DB_PASSWORD:-evidence_password}@postgres:5432/${POSTGRES_DB:-halal_equity}?sslmode=disable
       - REDIS_URL=redis://redis:6379/0
       - QUANT_ENGINE_URL=http://quant:8000
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}

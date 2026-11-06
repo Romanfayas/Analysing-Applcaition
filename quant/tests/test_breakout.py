@@ -84,3 +84,36 @@ def test_failed_breakout_detection():
 
     assert r.stage == BreakoutState.FAILED_BREAKOUT
     assert any("False breakout" in reason for reason in r.reasons)
+
+
+# ---- P1.9.25: structure_score is visible even when the Shariah gate zeroes overall_score ----
+
+def _trend_series(n=45):
+    import numpy as np
+    base = 100 + np.cumsum(np.full(n, 0.3))
+    close = base.tolist()
+    high = (base + 1).tolist()
+    low = (base - 1).tolist()
+    open_ = (base - 0.2).tolist()
+    vol = [1_000_000] * n
+    return open_, high, low, close, vol
+
+
+def test_structure_score_survives_the_shariah_gate():
+    from src.engines.technical.breakout import BreakoutEngine
+    o, h, l, c, v = _trend_series()
+    gated = BreakoutEngine("X", o, h, l, c, v, shariah_status="DATA_INSUFFICIENT").analyze()
+    passed = BreakoutEngine("X", o, h, l, c, v, shariah_status="PASS").analyze()
+    assert gated.overall_score == 0.0, "the hard gate on overall_score is unchanged"
+    assert gated.is_shariah_eligible is False
+    assert gated.structure_score is not None and gated.structure_score > 0
+    assert gated.structure_score == passed.overall_score, "same structural evidence, with or without the gate"
+    assert abs(sum(gated.score_breakdown.values()) - gated.structure_score) < 0.11
+
+
+def test_structure_score_is_absent_when_there_is_too_little_data():
+    from src.engines.technical.breakout import BreakoutEngine
+    o, h, l, c, v = _trend_series(12)
+    res = BreakoutEngine("X", o, h, l, c, v, shariah_status="PASS").analyze()
+    assert res.stage == "UNAVAILABLE"
+    assert res.structure_score is None, "never a made-up score for insufficient history"

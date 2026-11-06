@@ -1,7 +1,6 @@
 "use client";
 
 import Card, { CardHeader } from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
 import { 
   WalletIcon, 
   ArrowTrendingUpIcon, 
@@ -9,16 +8,17 @@ import {
   BuildingOfficeIcon,
   InformationCircleIcon 
 } from '@heroicons/react/24/outline';
-import { usePortfolio } from '@/lib/api/hooks';
+import { usePortfolio, useStocks } from '@/lib/api/hooks';
+
+const inr = (n: number, d = 2) => `₹${n.toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 
 export default function PortfolioPage() {
-  const { portfolio, positions, isLoading } = usePortfolio();
+  const { portfolio, positions, isLoading, isError } = usePortfolio();
+  const { stocks } = useStocks();
 
-  const cashBalance = Number(portfolio?.cash_balance ?? 1000000);
-  const investedValue = positions.reduce((acc: number, pos: any) => acc + (Number(pos.shares || 0) * Number(pos.current_price || pos.avg_price || 0)), 0);
-  const totalEquity = cashBalance + investedValue;
-  const totalPnl = positions.reduce((acc: number, pos: any) => acc + Number(pos.pnl || 0), 0);
-  const totalPnlPct = totalEquity > 0 ? (totalPnl / totalEquity) * 100 : 0;
+  // Holdings whose *current* screening is a certified PASS. BUY orders are gated on PASS, but status can change afterwards.
+  const statusBySymbol = new Map(stocks.map((st) => [st.symbol, st.shariah]));
+  const certifiedHeld = positions.filter((p) => statusBySymbol.get(p.symbol) === 'PASS').length;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
@@ -43,23 +43,23 @@ export default function PortfolioPage() {
             <WalletIcon className="w-5 h-5 text-blue-400" />
           </div>
           <p className="text-2xl font-bold text-white mt-2">
-            ₹{totalEquity.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {portfolio ? inr(portfolio.total_equity) : '—'}
           </p>
           <p className="text-xs text-slate-500 mt-1">
-            Cash: ₹{cashBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            {portfolio ? `Cash: ${inr(portfolio.cash_balance)}` : isError ? 'Ledger unavailable' : 'Loading…'}
           </p>
         </div>
 
         <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
           <div className="flex justify-between items-center text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total P&L</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Unrealized P&L</span>
             <ArrowTrendingUpIcon className="w-5 h-5 text-emerald-400" />
           </div>
-          <p className={`text-2xl font-bold mt-2 ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-            {totalPnl >= 0 ? '+' : ''}₹{totalPnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <p className={`text-2xl font-bold mt-2 ${(portfolio?.unrealized_pnl ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {portfolio ? `${portfolio.unrealized_pnl >= 0 ? '+' : ''}${inr(portfolio.unrealized_pnl)}` : '—'}
           </p>
           <p className="text-xs text-slate-500 mt-1">
-            {totalPnl >= 0 ? '+' : ''}{totalPnlPct.toFixed(2)}% net paper return
+            {portfolio ? `${portfolio.unrealized_pnl >= 0 ? '+' : ''}${portfolio.unrealized_pnl_pct.toFixed(2)}% of initial capital, vs cost basis` : ''}
           </p>
         </div>
 
@@ -70,7 +70,7 @@ export default function PortfolioPage() {
           </div>
           <p className="text-2xl font-bold text-white mt-2">{positions.length}</p>
           <p className="text-xs text-slate-500 mt-1">
-            Invested: ₹{investedValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            {portfolio ? `Invested: ${inr(portfolio.invested_value)}` : ''}
           </p>
         </div>
 
@@ -79,8 +79,10 @@ export default function PortfolioPage() {
             <span className="text-xs font-semibold uppercase tracking-wider">Shariah Compliance</span>
             <ShieldCheckIcon className="w-5 h-5 text-emerald-400" />
           </div>
-          <p className="text-2xl font-bold text-emerald-400 mt-2">100.0%</p>
-          <p className="text-xs text-slate-500 mt-1">Zero non-compliant equity holdings</p>
+          <p className="text-2xl font-bold text-white mt-2">{positions.length === 0 ? '—' : `${certifiedHeld}/${positions.length}`}</p>
+          <p className="text-xs text-slate-500 mt-1">
+            {positions.length === 0 ? 'Paper BUYs are not Shariah-gated; each trade records the status' : 'holdings currently certified PASS'}
+          </p>
         </div>
       </div>
 
@@ -117,30 +119,38 @@ export default function PortfolioPage() {
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-slate-500">Loading ledger positions...</td>
                 </tr>
-              ) : positions && positions.length > 0 ? (
-                positions.map((pos: any) => (
-                  <tr key={pos.symbol} className="hover:bg-slate-800/20 transition-colors">
-                    <td className="py-3 pl-2 font-bold text-white">{pos.symbol}</td>
-                    <td className="py-3 text-right text-slate-300">{pos.shares}</td>
-                    <td className="py-3 text-right text-slate-300">₹{Number(pos.avg_price || 0).toFixed(2)}</td>
-                    <td className="py-3 text-right text-slate-300">₹{Number(pos.current_price || pos.avg_price || 0).toFixed(2)}</td>
-                    <td className="py-3 text-right text-white font-medium">
-                      ₹{(Number(pos.shares || 0) * Number(pos.current_price || pos.avg_price || 0)).toFixed(2)}
-                    </td>
-                    <td className={`py-3 text-right font-medium ${pos.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {pos.pnl >= 0 ? '+' : ''}₹{Number(pos.pnl || 0).toFixed(2)}
-                    </td>
-                    <td className={`py-3 text-right pr-2 font-bold ${pos.pnl_pct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {pos.pnl_pct >= 0 ? '+' : ''}{Number(pos.pnl_pct || 0).toFixed(2)}%
-                    </td>
-                  </tr>
-                ))
+              ) : isError ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-rose-400">Could not load the paper ledger.</td>
+                </tr>
+              ) : positions.length > 0 ? (
+                positions.map((pos) => {
+                  const last = pos.last_price ?? pos.avg_cost_basis;
+                  const value = pos.shares * last;
+                  const pnl = pos.unrealized_pnl ?? 0;
+                  const pct = pos.avg_cost_basis > 0 ? ((last - pos.avg_cost_basis) / pos.avg_cost_basis) * 100 : 0;
+                  return (
+                    <tr key={pos.symbol} className="hover:bg-slate-800/20 transition-colors">
+                      <td className="py-3 pl-2 font-bold text-white">{pos.symbol}</td>
+                      <td className="py-3 text-right text-slate-300">{pos.shares}</td>
+                      <td className="py-3 text-right text-slate-300">{inr(pos.avg_cost_basis)}</td>
+                      <td className="py-3 text-right text-slate-300">{inr(last)}</td>
+                      <td className="py-3 text-right text-white font-medium">{inr(value)}</td>
+                      <td className={`py-3 text-right font-medium ${pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {pnl >= 0 ? '+' : ''}{inr(pnl)}
+                      </td>
+                      <td className={`py-3 text-right pr-2 font-bold ${pct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {pct >= 0 ? '+' : ''}{pct.toFixed(2)}%
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-500">
                     <p className="font-semibold text-slate-300 text-sm">No Active Paper Trading Positions</p>
                     <p className="text-xs text-slate-500 mt-1">
-                      Initial cash balance of ₹{cashBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })} is ready for strategy execution.
+                      {portfolio ? `Cash balance of ${inr(portfolio.cash_balance)} is available for paper execution.` : ''}
                     </p>
                   </td>
                 </tr>

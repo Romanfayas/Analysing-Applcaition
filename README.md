@@ -7,7 +7,7 @@ A full-stack, Shariah-conscious Indian equity and IPO quantitative research plat
 | Component | Technology | Port |
 |-----------|-----------|------|
 | Frontend | Next.js + TypeScript + Tailwind CSS | 3000 |
-| Backend API | Go (chi router) | 8080 |
+| Backend API | Go (chi router) | 8081 (host) → 8080 (container) |
 | Quant Engine | Python (FastAPI) | 8000 |
 | Database | PostgreSQL 16 + TimescaleDB | 5432 |
 | Cache | Redis 7 | 6379 |
@@ -41,7 +41,7 @@ docker compose up -d
 
 # 3. Access
 # Frontend: http://localhost:3000
-# Backend API: http://localhost:8080/health
+# Backend API: http://localhost:8081/health
 # Quant Engine: http://localhost:8000/health
 ```
 

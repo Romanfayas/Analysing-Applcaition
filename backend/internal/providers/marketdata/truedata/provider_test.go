@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/halal-equity/backend/internal/models"
+	"github.com/halal-equity/backend/internal/providers/marketdata"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,7 +27,7 @@ func TestTrueData_UnauthenticatedCallsFailClosed(t *testing.T) {
 
 	caps := p.Capabilities()
 	assert.True(t, caps.DailyOHLCV)
-	assert.True(t, caps.IntradayOHLCV)
+	assert.False(t, caps.IntradayOHLCV, "intraday is not implemented, so it must not be advertised")
 
 	ctx := context.Background()
 	_, err := p.GetDailyCandles(ctx, "TCS", "NSE", time.Now().AddDate(0, -1, 0), time.Now())
@@ -92,12 +93,12 @@ func TestTrueData_LiveMockResponseAndRateLimiting(t *testing.T) {
 	defer ts.Close()
 
 	cfg := Config{
-		BaseURL:      ts.URL,
-		APIKey:       "mock-live-key",
-		Timeout:      2 * time.Second,
-		MaxRetries:   2,
-		BackoffBase:  10 * time.Millisecond,
-		FixtureMode:  false,
+		BaseURL:     ts.URL,
+		APIKey:      "mock-live-key",
+		Timeout:     2 * time.Second,
+		MaxRetries:  2,
+		BackoffBase: 10 * time.Millisecond,
+		FixtureMode: false,
 	}
 
 	p := NewProvider(cfg)
@@ -112,4 +113,15 @@ func TestTrueData_LiveMockResponseAndRateLimiting(t *testing.T) {
 	assert.Equal(t, models.DataQualityValid, dp.QualityStatus)
 	assert.Len(t, dp.Data, 2)
 	assert.Equal(t, 2, requestCount) // Proves 429 triggered retry
+}
+
+func TestUnimplementedEndpointsFailClosedEvenWithCredentials(t *testing.T) {
+	cfg := DefaultConfig()
+	cfg.APIKey = "configured"
+	p := NewProvider(cfg)
+	_, err := p.GetIntradayCandles(context.Background(), "TCS", "NSE", "1m", time.Now().Add(-time.Hour), time.Now())
+	assert.ErrorIs(t, err, marketdata.ErrNoData)
+	_, err = p.GetCurrentPrice(context.Background(), "TCS", "NSE")
+	assert.ErrorIs(t, err, marketdata.ErrNoData, "never return a 0.0 quote as VALID")
+	assert.False(t, p.Capabilities().RealTimeQuotes)
 }

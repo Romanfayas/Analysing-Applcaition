@@ -82,7 +82,7 @@ def test_intraday_only_allowed_intervals(audit):
 
 def test_daily_table_rejects_intraday_stamp(conn):
     cur = conn.cursor()
-    sid = q1(conn, "SELECT id FROM symbols ORDER BY id LIMIT 1")
+    sid = q1(conn, "SELECT id FROM canonical.symbols ORDER BY id LIMIT 1")
     with pytest.raises(psycopg2.errors.CheckViolation):
         cur.execute("INSERT INTO ohlcv_daily (symbol_id,timestamp,open,high,low,close,volume,source) "
                     "VALUES (%s,'2030-01-02 04:01:00+00',1,2,1,2,10,'t')", (sid,))
@@ -92,7 +92,7 @@ def test_daily_table_rejects_intraday_stamp(conn):
 @pytest.mark.parametrize("o,h,l,c,v", [(10, 9, 10, 10, 5), (0, 1, 0, 1, 5), (10, 11, 9, 10, -1), (10, 10, 10, 10, 0)])
 def test_daily_table_rejects_bad_ohlc_and_phantoms(conn, o, h, l, c, v):
     cur = conn.cursor()
-    sid = q1(conn, "SELECT id FROM symbols ORDER BY id LIMIT 1")
+    sid = q1(conn, "SELECT id FROM canonical.symbols ORDER BY id LIMIT 1")
     with pytest.raises(psycopg2.errors.CheckViolation):
         cur.execute("INSERT INTO ohlcv_daily (symbol_id,timestamp,open,high,low,close,volume,source) "
                     "VALUES (%s,'2030-01-02 03:45:00+00',%s,%s,%s,%s,%s,'t')", (sid, o, h, l, c, v))
@@ -101,7 +101,7 @@ def test_daily_table_rejects_bad_ohlc_and_phantoms(conn, o, h, l, c, v):
 
 def test_intraday_table_rejects_daily_interval(conn):
     cur = conn.cursor()
-    sid = q1(conn, "SELECT id FROM symbols ORDER BY id LIMIT 1")
+    sid = q1(conn, "SELECT id FROM canonical.symbols ORDER BY id LIMIT 1")
     with pytest.raises(psycopg2.errors.CheckViolation):
         cur.execute("INSERT INTO ohlcv_intraday (symbol_id,timestamp,interval_minutes,open,high,low,close,volume,source) "
                     "VALUES (%s,'2030-01-02 03:45:00+00',1440,1,2,1,2,10,'t')", (sid,))
@@ -113,7 +113,7 @@ def test_contamination_backup_recoverable_and_not_double_counted(conn):
     n_backup = q1(conn, "SELECT count(*) FROM ohlcv_daily_contamination_backup_20261014")
     missing = q1(conn, """SELECT count(*) FROM ohlcv_daily_contamination_backup_20261014 b WHERE NOT EXISTS
         (SELECT 1 FROM ohlcv_intraday i WHERE i.symbol_id=b.symbol_id AND i."timestamp"=b."timestamp")""")
-    in_daily = q1(conn, """SELECT count(*) FROM ohlcv_daily_contamination_backup_20261014 b JOIN ohlcv_daily d
+    in_daily = q1(conn, """SELECT count(*) FROM ohlcv_daily_contamination_backup_20261014 b JOIN canonical.ohlcv_daily d
         ON d.symbol_id=b.symbol_id AND d."timestamp"=b."timestamp" """)
     assert n_backup > 0 and missing == 0
     # a backup row may coincide with the single legitimate 03:45 aggregate bar only by (symbol,ts) key; none may carry intraday volume
@@ -122,7 +122,7 @@ def test_contamination_backup_recoverable_and_not_double_counted(conn):
 
 def test_quarantined_rows_excluded_from_daily(conn):
     for t in ("ohlcv_holiday_phantom_quarantine", "ohlcv_daily_quarantine_p17"):
-        assert q1(conn, f"SELECT count(*) FROM {t} q JOIN ohlcv_daily d USING (symbol_id,\"timestamp\")") == 0
+        assert q1(conn, f"SELECT count(*) FROM {t} q JOIN canonical.ohlcv_daily d USING (symbol_id,\"timestamp\")") == 0
 
 
 def test_no_views_expose_intraday_as_daily(conn):

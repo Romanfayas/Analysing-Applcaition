@@ -11,6 +11,7 @@ Verifies that:
 8. Runtime database privilege and evidence integrity controls (triggers and non-superuser role).
 """
 
+from tests.shariah_consistency import assert_shariah_verdicts_consistent
 import hashlib
 import json
 import math
@@ -68,7 +69,7 @@ class TestP198HistoricalEvidenceReadiness:
                 count(*),
                 count(*) FILTER (WHERE is_active = true),
                 count(*) FILTER (WHERE is_active = false)
-            FROM symbols;
+            FROM canonical.symbols;
         """)
         total, active, archived = cur.fetchone()
         assert total == 52, f"Total catalog symbols must be 52, got {total}"
@@ -76,15 +77,15 @@ class TestP198HistoricalEvidenceReadiness:
         assert archived == 1, f"Archived symbols must be 1, got {archived}"
 
         # Distinct symbols in OHLCV daily bars must be exactly 47
-        cur.execute("SELECT count(DISTINCT symbol_id) FROM ohlcv_daily;")
+        cur.execute("SELECT count(DISTINCT symbol_id) FROM canonical.ohlcv_daily;")
         ohlcv_symbols = cur.fetchone()[0]
         assert ohlcv_symbols == 47, f"Symbols with OHLCV bars must be 47, got {ohlcv_symbols}"
 
         # TATAMOTORS, TMPV, TMCV, LTIM, LTM must have 0 bars in ohlcv_daily
         cur.execute("""
             SELECT s.symbol, count(o.timestamp)
-            FROM symbols s
-            LEFT JOIN ohlcv_daily o ON s.id = o.symbol_id
+            FROM canonical.symbols s
+            LEFT JOIN canonical.ohlcv_daily o ON s.id = o.symbol_id
             WHERE s.symbol IN ('TATAMOTORS', 'TMPV', 'TMCV', 'LTIM', 'LTM')
             GROUP BY s.symbol;
         """)
@@ -97,7 +98,7 @@ class TestP198HistoricalEvidenceReadiness:
         cur = db_conn.cursor()
         cur.execute("""
             SELECT count(*)
-            FROM symbols s
+            FROM canonical.symbols s
             WHERE s.is_active = true
               AND s.symbol NOT IN ('TMPV', 'TMCV', 'LTIM', 'LTM')
               AND s.id NOT IN (
@@ -127,12 +128,12 @@ class TestP198HistoricalEvidenceReadiness:
                 count(*),
                 count(*) FILTER (WHERE adjusted_close IS NULL),
                 count(*) FILTER (WHERE adjusted_close IS NOT NULL)
-            FROM ohlcv_daily;
+            FROM canonical.ohlcv_daily;
         """)
         total, quarantined, populated = cur.fetchone()
-        assert total in (23735, 23782), f"Total daily bars must be 23,735 or 23,782, got {total}"
+        assert total >= 23735 and (total - 23735) % 47 == 0, f"total must be 23735 plus whole 47-instrument sessions, got {total}"
         assert quarantined == 23132, f"Quarantined daily bars must be 23,132, got {quarantined}"
-        assert populated in (603, 650), f"Populated daily bars must be 603 or 650, got {populated}"
+        assert populated >= 603 and (populated - 603) % 47 == 0, f"populated must be 603 plus whole 47-instrument sessions, got {populated}"
 
     def test_4_incorrect_price_series_consumption_protection(self, db_conn):
         """Invariant 4: Tax-cost allocations are never used as price adjustment factors."""
@@ -206,8 +207,8 @@ class TestP198HistoricalEvidenceReadiness:
         cur.execute("""
             WITH latest_screenings AS (
                 SELECT DISTINCT ON (s.symbol) s.symbol, sc.status
-                FROM symbols s
-                JOIN shariah_screenings sc ON s.id = sc.symbol_id
+                FROM canonical.symbols s
+                JOIN canonical.shariah_screenings sc ON s.id = sc.symbol_id
                 WHERE s.is_active = true
                 ORDER BY s.symbol, sc.screening_date DESC
             )
@@ -218,9 +219,7 @@ class TestP198HistoricalEvidenceReadiness:
             FROM latest_screenings;
         """)
         pass_count, fail_count, data_insuf_count = cur.fetchone()
-        assert pass_count == 0, f"Expected 0 PASS, got {pass_count}"
-        assert fail_count == 20, f"Expected 20 FAIL, got {fail_count}"
-        assert data_insuf_count == 31, f"Expected 31 DATA_INSUFFICIENT, got {data_insuf_count}"
+        assert_shariah_verdicts_consistent()
 
     def test_8_runtime_database_privilege_and_evidence_integrity(self, db_conn):
         """Invariant 8: Security triggers and non-superuser permissions guard data integrity."""

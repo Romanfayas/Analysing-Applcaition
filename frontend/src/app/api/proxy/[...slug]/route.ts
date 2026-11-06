@@ -1,66 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { AUTH_COOKIE, BACKEND_API_URL, isLive } from '@/lib/auth/session';
 
-const API_BASE_URL = process.env.BACKEND_API_URL || 'http://backend:8080/api/v1';
+// Backend-for-frontend: the browser talks only to this route; the JWT is attached server-side
+// from the httpOnly session cookie. Anything the client sends in Authorization/Cookie is discarded.
 
-async function handleRequest(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string[] }> }
-) {
-  if (process.env.APP_ENV === 'production') {
-    return NextResponse.json(
-      { error: 'Development proxy is strictly disabled in production environments.' },
-      { status: 403 }
-    );
+const FORWARDED_REQUEST_HEADERS = ['content-type', 'accept', 'accept-language'];
+
+async function handleRequest(request: NextRequest, { params }: { params: Promise<{ slug: string[] }> }) {
+  const token = request.cookies.get(AUTH_COOKIE)?.value;
+  if (!token || !isLive(token)) {
+    return NextResponse.json({ error: 'not authenticated' }, { status: 401 });
   }
 
   const { slug } = await params;
-  const path = slug.join('/');
-  const targetUrl = `${API_BASE_URL}/${path}${request.nextUrl.search}`;
-
-  const headers = new Headers(request.headers);
-  headers.delete('host');
-  headers.delete('connection');
-  headers.delete('accept-encoding');
-
-  const devToken = process.env.DEV_JWT || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwiZW1haWwiOiJkZXZAaGFsYWxlcXVpdHkubG9jYWwiLCJuYW1lIjoiRGV2ZWxvcGVyIiwiaXNzIjoiaGFsYWwtZXF1aXR5LXBsYXRmb3JtIiwiZXhwIjoxODIzMzMzMjcxLCJpYXQiOjE3OTE3OTcyNzF9.Z4UjUvH3BdXm-xM0kpj1JuJm8-vpU2yZOOxt2tAtkeo';
-  if (!headers.get('Authorization') && devToken) {
-    headers.set('Authorization', `Bearer ${devToken}`);
+  // Normalised segments can't climb out of the API prefix.
+  if (slug.some((s) => s === '..' || s === '.' || s.includes('/') || s.includes('\\'))) {
+    return NextResponse.json({ error: 'invalid path' }, { status: 400 });
   }
+  const targetUrl = `${BACKEND_API_URL}/${slug.map(encodeURIComponent).join('/')}${request.nextUrl.search}`;
 
-  const init: RequestInit = {
-    method: request.method,
-    headers,
-    redirect: 'manual',
-  };
+  const headers = new Headers();
+  for (const name of FORWARDED_REQUEST_HEADERS) {
+    const v = request.headers.get(name);
+    if (v) headers.set(name, v);
+  }
+  headers.set('Authorization', `Bearer ${token}`);
 
-  if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
-    try {
-      const clonedReq = request.clone();
-      init.body = await clonedReq.blob();
-    } catch (e) {
-      // Body missing or unparseable, ignore
-    }
+  const init: RequestInit = { method: request.method, headers, redirect: 'manual', cache: 'no-store' };
+  if (!['GET', 'HEAD'].includes(request.method)) {
+    init.body = await request.blob();
   }
 
   try {
-    const response = await fetch(targetUrl, init);
-    const data = await response.blob();
-
+    const upstream = await fetch(targetUrl, init);
+    const body = await upstream.blob();
     const responseHeaders = new Headers();
-    response.headers.forEach((value, key) => {
-      // Don't forward content-encoding to avoid double-compression issues
-      if (key.toLowerCase() !== 'content-encoding') {
-        responseHeaders.set(key, value);
-      }
-    });
-
-    return new NextResponse(data, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
-    });
+    const contentType = upstream.headers.get('content-type');
+    if (contentType) responseHeaders.set('content-type', contentType);
+    responseHeaders.set('Cache-Control', 'no-store');
+    return new NextResponse(body, { status: upstream.status, headers: responseHeaders });
   } catch (error) {
-    console.error('Proxy Error:', error);
+    console.error('Proxy error:', error);
     return NextResponse.json({ error: 'Proxy request to backend failed' }, { status: 502 });
   }
 }

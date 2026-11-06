@@ -65,3 +65,33 @@ async def calculate_risk_metrics(request: RiskMetricsRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class ClosedTradeIn(BaseModel):
+    pnl: float
+    invested: float
+    fees: float = 0.0
+    holding_days: Optional[float] = None
+    benchmark_return_pct: Optional[float] = None
+
+
+class PerformanceRequest(BaseModel):
+    trades: List[ClosedTradeIn]
+    initial_capital: float
+
+
+@router.post("/performance")
+async def performance_report_endpoint(request: PerformanceRequest):
+    """Bootstrap-backed performance statistics for a list of closed trades (P1.9.26)."""
+    from src.engines.research.performance import ClosedTrade, performance_report
+
+    if request.initial_capital <= 0:
+        raise HTTPException(status_code=400, detail="initial_capital must be positive")
+    if len(request.trades) > 5000:
+        raise HTTPException(status_code=400, detail="too many trades")
+    try:
+        trades = [ClosedTrade(pnl=t.pnl, invested=t.invested, fees=t.fees, holding_days=t.holding_days,
+                              benchmark_return_pct=t.benchmark_return_pct) for t in request.trades]
+        return performance_report(trades, request.initial_capital)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=str(e))

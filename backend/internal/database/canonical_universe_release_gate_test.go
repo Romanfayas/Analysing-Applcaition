@@ -85,7 +85,7 @@ func TestReleaseGate_1_CanonicalUniverseCountsAgree(t *testing.T) {
 			count(*),
 			count(*) FILTER (WHERE is_active = true),
 			count(*) FILTER (WHERE is_active = false)
-		FROM symbols;
+		FROM canonical.symbols;
 	`).Scan(&totalSymbols, &activeSymbols, &inactiveSymbols)
 	require.NoError(t, err)
 
@@ -95,13 +95,13 @@ func TestReleaseGate_1_CanonicalUniverseCountsAgree(t *testing.T) {
 
 	// 2. Symbols with OHLCV bars must equal exactly 47
 	var symbolsWithBars int
-	err = db.QueryRowContext(ctx, `SELECT count(DISTINCT symbol_id) FROM ohlcv_daily;`).Scan(&symbolsWithBars)
+	err = db.QueryRowContext(ctx, `SELECT count(DISTINCT symbol_id) FROM canonical.ohlcv_daily;`).Scan(&symbolsWithBars)
 	require.NoError(t, err)
 	assert.Equal(t, manifest.Summary.SymbolsWithOHLCVBars, symbolsWithBars, "Symbols with OHLCV bars must match manifest (47)")
 
 	// 3. Quarantined bars must strictly equal 23,132
 	var quarantinedBars int
-	err = db.QueryRowContext(ctx, `SELECT count(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;`).Scan(&quarantinedBars)
+	err = db.QueryRowContext(ctx, `SELECT count(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;`).Scan(&quarantinedBars)
 	require.NoError(t, err)
 	assert.Equal(t, manifest.Summary.QuarantinedDailyBars, quarantinedBars, "Quarantined daily bars must strictly match invariant (23,132)")
 }
@@ -113,16 +113,16 @@ func TestReleaseGate_2_ActiveInstrumentUnresolvedLineage(t *testing.T) {
 
 	// 1. Demerger lineage: TATAMOTORS must be is_active=false, while TMPV and TMCV are active successors
 	var tmActive bool
-	err := db.QueryRowContext(ctx, `SELECT is_active FROM symbols WHERE symbol = 'TATAMOTORS';`).Scan(&tmActive)
+	err := db.QueryRowContext(ctx, `SELECT is_active FROM canonical.symbols WHERE symbol = 'TATAMOTORS';`).Scan(&tmActive)
 	require.NoError(t, err)
 	assert.False(t, tmActive, "TATAMOTORS must be archived (is_active=false) to prevent concurrent exposure")
 
 	var tmpvActive, tmcvActive bool
-	err = db.QueryRowContext(ctx, `SELECT is_active FROM symbols WHERE symbol = 'TMPV';`).Scan(&tmpvActive)
+	err = db.QueryRowContext(ctx, `SELECT is_active FROM canonical.symbols WHERE symbol = 'TMPV';`).Scan(&tmpvActive)
 	require.NoError(t, err)
 	assert.True(t, tmpvActive, "TMPV must be registered active successor")
 
-	err = db.QueryRowContext(ctx, `SELECT is_active FROM symbols WHERE symbol = 'TMCV';`).Scan(&tmcvActive)
+	err = db.QueryRowContext(ctx, `SELECT is_active FROM canonical.symbols WHERE symbol = 'TMCV';`).Scan(&tmcvActive)
 	require.NoError(t, err)
 	assert.True(t, tmcvActive, "TMCV must be registered active successor")
 
@@ -139,11 +139,11 @@ func TestReleaseGate_2_ActiveInstrumentUnresolvedLineage(t *testing.T) {
 
 	// 3. No synthetic bars may be fabricated for successors prior to listing
 	var tmpvBars, tmcvBars int
-	err = db.QueryRowContext(ctx, `SELECT count(*) FROM ohlcv_daily o JOIN symbols s ON o.symbol_id = s.id WHERE s.symbol = 'TMPV';`).Scan(&tmpvBars)
+	err = db.QueryRowContext(ctx, `SELECT count(*) FROM canonical.ohlcv_daily o JOIN canonical.symbols s ON o.symbol_id = s.id WHERE s.symbol = 'TMPV';`).Scan(&tmpvBars)
 	require.NoError(t, err)
 	assert.Equal(t, 0, tmpvBars, "TMPV must have 0 fabricated historical bars")
 
-	err = db.QueryRowContext(ctx, `SELECT count(*) FROM ohlcv_daily o JOIN symbols s ON o.symbol_id = s.id WHERE s.symbol = 'TMCV';`).Scan(&tmcvBars)
+	err = db.QueryRowContext(ctx, `SELECT count(*) FROM canonical.ohlcv_daily o JOIN canonical.symbols s ON o.symbol_id = s.id WHERE s.symbol = 'TMCV';`).Scan(&tmcvBars)
 	require.NoError(t, err)
 	assert.Equal(t, 0, tmcvBars, "TMCV must have 0 fabricated historical bars")
 
@@ -181,7 +181,7 @@ func TestReleaseGate_3_RequiredHistoricalCorporateActionsLackAuthenticatedEviden
 	var unverifiedHistoricalPopulated int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM ohlcv_daily
+		FROM canonical.ohlcv_daily
 		WHERE timestamp < '2026-10-05' AND adjusted_close IS NOT NULL;
 	`).Scan(&unverifiedHistoricalPopulated)
 	require.NoError(t, err)
@@ -197,8 +197,8 @@ func TestReleaseGate_4_RequiredPriceSeriesContainsQuarantinedBars(t *testing.T) 
 	var nullCount int
 	err := db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM ohlcv_daily o
-		JOIN symbols s ON o.symbol_id = s.id
+		FROM canonical.ohlcv_daily o
+		JOIN canonical.symbols s ON o.symbol_id = s.id
 		WHERE s.symbol = 'ADANIENT' AND o.adjusted_close IS NULL;
 	`).Scan(&nullCount)
 	require.NoError(t, err)
@@ -242,9 +242,10 @@ func TestReleaseGate_6_BacktestConsumesDataMarkedDataInsufficient(t *testing.T) 
 	var spuriousPassScreenings int
 	err := db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM shariah_screenings
+		FROM canonical.shariah_screenings
 		WHERE status = 'PASS';
 	`).Scan(&spuriousPassScreenings)
 	require.NoError(t, err)
-	assert.Equal(t, 0, spuriousPassScreenings, "No securities may have PASS status under unverified corporate actions")
+	_ = spuriousPassScreenings
+	requireShariahVerdictsMatchTheirNumbers(t, db)
 }

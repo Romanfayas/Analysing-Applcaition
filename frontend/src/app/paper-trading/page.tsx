@@ -1,51 +1,82 @@
 'use client';
 
-import { useState } from 'react';
-import useSWR from 'swr';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { fetcher } from '@/lib/api/client';
-import { useStocks, usePortfolio } from '@/lib/api/hooks';
+import { useSearchParams } from 'next/navigation';
+import useSWR from 'swr';
+import { send, fetcher } from '@/lib/api/client';
+import type { PriceAtResult } from '@/lib/api/types';
+import WhatIfSimulator from '@/components/WhatIfSimulator';
+import PerformanceReportCard from '@/components/PerformanceReportCard';
+import { SOURCE_LABEL, nowIstInput, asIst, money } from '@/lib/paperTime';
+import { shariahLabel } from '@/lib/shariah';
+import { useStocks, usePortfolio, usePaperTrades } from '@/lib/api/hooks';
 import { calculateDeliveryCosts } from '@/lib/costs';
 import Card, { CardHeader } from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
 import { 
   WalletIcon, 
   ArrowTrendingUpIcon, 
   ShieldCheckIcon, 
   BuildingOfficeIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ArrowPathIcon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 export default function PaperTradingPage() {
-  const { portfolio, positions, isLoading: isPortfolioLoading } = usePortfolio();
-  const { stocks, isLoading: isStocksLoading } = useStocks();
-  const { data: tradesData, mutate: mutateTrades } = useSWR<any>('/portfolio/trades', fetcher);
+  // useSearchParams needs a Suspense boundary so the page can still be prerendered.
+  return (
+    <Suspense fallback={<div className="text-sm text-slate-400">Loading…</div>}>
+      <PaperTradingTerminal />
+    </Suspense>
+  );
+}
 
-  const trades: any[] = Array.isArray(tradesData) ? tradesData : (tradesData?.data && Array.isArray(tradesData.data) ? tradesData.data : []);
+function PaperTradingTerminal() {
+  const preselected = useSearchParams().get('symbol')?.toUpperCase();
+  const { portfolio, positions, mutate: mutatePortfolio } = usePortfolio();
+  const { stocks } = useStocks();
+  const { data: rules } = useSWR<{ limits: { max_position_pct: number; max_daily_loss_pct: number; max_orders_per_day: number }; orders_today: number }>(
+    '/paper-trading/risk-rules', fetcher, { revalidateOnFocus: false });
+  const { trades, mutate: mutateTrades } = usePaperTrades();
 
   // Form state
-  const [selectedSymbol, setSelectedSymbol] = useState<string>('TCS');
+  const [selectedSymbol, setSelectedSymbol] = useState<string>(preselected || 'TCS');
   const [tradeType, setTradeType] = useState<'BUY' | 'SELL'>('BUY');
   const [shares, setShares] = useState<number>(10);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  // Execution time: the latest price, or a past moment replayed from stored history (no lookahead).
+  const [timeMode, setTimeMode] = useState<'now' | 'past'>('now');
+  const [maxWhen] = useState<string>(nowIstInput);
+  const [when, setWhen] = useState<string>('');
+  const pastKey = timeMode === 'past' && when
+    ? `/paper-trading/price-at?symbol=${encodeURIComponent(selectedSymbol)}&at=${encodeURIComponent(asIst(when))}`
+    : null;
+  const { data: pastPrice, error: pastError, isLoading: pastLoading } = useSWR<PriceAtResult>(pastKey, fetcher, {
+    shouldRetryOnError: false,
+    revalidateOnFocus: false,
+  });
+
+
   // Selected stock details
   const activeStock = stocks.find((s) => s.symbol === selectedSymbol);
-  const cmp = activeStock?.price ? Number(activeStock.price) : 0;
+  const latest = activeStock?.price ? Number(activeStock.price) : 0;
+  const replaying = timeMode === 'past';
+  // In replay mode the preview price is the one the server will use; with none resolved, nothing is estimated.
+  const cmp = replaying ? (pastPrice?.price.price ?? 0) : latest;
   const isShariahPass = activeStock?.shariah === 'PASS';
   const grossValue = shares * cmp;
   const costBreakdown = calculateDeliveryCosts(tradeType, grossValue);
   const fees = costBreakdown.totalFees;
   const totalCost = tradeType === 'BUY' ? grossValue + fees : Math.max(0, grossValue - fees);
 
-  const cashBalance = Number(portfolio?.cash_balance ?? 1000000);
-  const investedValue = positions.reduce((acc: number, pos: any) => acc + (Number(pos.shares || 0) * Number(pos.last_price || pos.avg_cost_basis || 0)), 0);
-  const totalEquity = cashBalance + investedValue;
-  const totalPnl = positions.reduce((acc: number, pos: any) => acc + Number(pos.unrealized_pnl || 0), 0);
-  const totalPnlPct = totalEquity > 0 ? (totalPnl / totalEquity) * 100 : 0;
+  // Undefined until the real ledger has loaded; never a made-up starting balance.
+  const cashBalance = portfolio?.cash_balance ?? 0;
+  const investedValue = portfolio?.invested_value ?? 0;
+  const totalEquity = portfolio?.total_equity ?? 0;
+  const totalPnl = portfolio?.unrealized_pnl ?? 0;
+  const totalPnlPct = portfolio?.unrealized_pnl_pct ?? 0;
 
   // Execute paper trade
   const handleExecuteTrade = async (e: React.FormEvent) => {
@@ -54,8 +85,8 @@ export default function PaperTradingPage() {
       setFeedback({ type: 'error', message: 'Shares must be greater than 0.' });
       return;
     }
-    if (tradeType === 'BUY' && !isShariahPass) {
-      setFeedback({ type: 'error', message: `Shariah Gate: Cannot BUY ${selectedSymbol} because its screening status is ${activeStock?.shariah || 'UNKNOWN'}. Only PASS stocks are investable.` });
+    if (replaying && !pastPrice) {
+      setFeedback({ type: 'error', message: 'Pick a past time that has a stored price before placing a replay order.' });
       return;
     }
     if (tradeType === 'BUY' && totalCost > cashBalance) {
@@ -67,33 +98,24 @@ export default function PaperTradingPage() {
     setFeedback(null);
 
     try {
-      const res = await fetch('/api/proxy/portfolio/trade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          symbol: selectedSymbol,
-          trade_type: tradeType,
-          shares: shares,
-          price: cmp,
-        }),
+      // The server fills at its own stored market price; the client never supplies one.
+      const result = await send<{ trade: { price: number; price_source?: string | null } }>('post', '/portfolio/trade', {
+        symbol: selectedSymbol,
+        trade_type: tradeType,
+        shares,
+        ...(replaying ? { execute_at: asIst(when) } : {}),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Paper trade execution failed');
-      }
-
+      const basis = SOURCE_LABEL[result.trade.price_source ?? ''] ?? 'stored price';
       setFeedback({
         type: 'success',
-        message: `Successfully executed paper ${tradeType} of ${shares} shares of ${selectedSymbol} at ₹${cmp.toFixed(2)}!`,
+        message: replaying
+          ? `Replay ${tradeType} of ${shares} shares of ${selectedSymbol} as of ${when.replace('T', ' ')} IST filled at ₹${result.trade.price.toFixed(2)} (${basis}).`
+          : `Paper ${tradeType} of ${shares} shares of ${selectedSymbol} filled at ₹${result.trade.price.toFixed(2)}.`,
       });
-      mutateTrades();
-      // Reload window location or revalidate after short delay to sync positions
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Execution error.' });
+      await Promise.all([mutateTrades(), mutatePortfolio()]);
+    } catch (err) {
+      setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Execution error.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -106,7 +128,7 @@ export default function PaperTradingPage() {
         <div>
           <h1 className="text-3xl font-heading font-bold text-white tracking-tight">Paper Trading Terminal</h1>
           <p className="text-slate-400 mt-1">
-            Simulated institutional order execution with real-time portfolio accounting and Shariah compliance gates.
+            Simulated order execution with real-time portfolio accounting. Each trade records the instrument&apos;s Shariah status; paper BUYs are not blocked by it.
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
@@ -159,8 +181,10 @@ export default function PaperTradingPage() {
             <span className="text-xs font-semibold uppercase tracking-wider">Shariah Compliance</span>
             <ShieldCheckIcon className="w-5 h-5 text-emerald-400" />
           </div>
-          <p className="text-2xl font-bold text-emerald-400 mt-2">100.0% Compliant</p>
-          <p className="text-xs text-slate-500 mt-1">Spot equities only · Zero margin</p>
+          <p className="text-2xl font-bold text-white mt-2">
+            {positions.length === 0 ? '—' : `${positions.filter((p) => stocks.find((s) => s.symbol === p.symbol)?.shariah === 'PASS').length}/${positions.length} certified`}
+          </p>
+          <p className="text-xs text-slate-500 mt-1">Paper BUYs are not Shariah-gated · status recorded per trade · spot only</p>
         </div>
       </div>
 
@@ -196,7 +220,7 @@ export default function PaperTradingPage() {
             >
               {stocks.map((s) => (
                 <option key={s.symbol} value={s.symbol}>
-                  {s.symbol} — {s.name} ({s.shariah})
+                  {s.symbol} — {s.name} · {shariahLabel(s.shariah).text}{s.freshness === 'STALE' || s.freshness === 'UNAVAILABLE' ? ' · no current price' : ''}
                 </option>
               ))}
             </select>
@@ -244,34 +268,87 @@ export default function PaperTradingPage() {
           <div>
             <button
               type="submit"
-              disabled={isSubmitting || (tradeType === 'BUY' && !isShariahPass)}
+              disabled={isSubmitting}
               className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg ${
                 tradeType === 'BUY'
-                  ? isShariahPass
-                    ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20'
-                    : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                  ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20'
                   : 'bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/20'
               } disabled:opacity-50`}
             >
-              {isSubmitting ? 'Executing...' : tradeType === 'BUY' ? (isShariahPass ? `Execute Paper Buy` : 'Shariah Blocked') : `Execute Paper Sell`}
+              {isSubmitting ? 'Executing...' : tradeType === 'BUY' ? 'Execute Paper Buy' : 'Execute Paper Sell'}
             </button>
           </div>
         </form>
+
+        {/* Execution time */}
+        <div className="mt-4 pt-4 border-t border-slate-800 space-y-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Execution time</span>
+            <div className="inline-flex rounded-xl bg-slate-800 p-1 text-xs font-semibold">
+              <button type="button" onClick={() => setTimeMode('now')}
+                className={`px-3 py-1.5 rounded-lg ${timeMode === 'now' ? 'bg-blue-500 text-white' : 'text-slate-400 hover:text-white'}`}>
+                Now (latest price)
+              </button>
+              <button type="button" onClick={() => { setTimeMode('past'); if (!when) setWhen(maxWhen); }}
+                className={`px-3 py-1.5 rounded-lg ${timeMode === 'past' ? 'bg-blue-500 text-white' : 'text-slate-400 hover:text-white'}`}>
+                Past date &amp; time (replay)
+              </button>
+            </div>
+            {replaying && (
+              <input type="datetime-local" value={when} max={maxWhen} onChange={(e) => setWhen(e.target.value)}
+                aria-label="Replay time (IST)"
+                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:border-blue-500 focus:outline-none" />
+            )}
+            {replaying && <span className="text-xs text-slate-500">Indian market time (IST)</span>}
+          </div>
+          {replaying && (
+            <div className="text-xs">
+              {pastLoading && <span className="text-slate-400">Looking up the stored price…</span>}
+              {pastError && (
+                <span className="text-amber-300">
+                  {pastError instanceof Error ? pastError.message : 'No stored price for that time.'} Pick a trading day between 09:15 and 15:30, or any time after the close for an official daily close.
+                </span>
+              )}
+              {pastPrice && (
+                <span className="text-slate-300">
+                  Fill price <strong className="text-white font-mono">{money(pastPrice.price.price)}</strong>
+                  {' · '}{SOURCE_LABEL[pastPrice.price.source] ?? pastPrice.price.source}
+                  {pastPrice.price.note ? ` — ${pastPrice.price.note}` : ''}. Only prices that were already final at that time are used.
+                </span>
+              )}
+              <p className="text-slate-500 mt-1">
+                A past order goes into its place in your history and the ledger is recalculated. It is refused only if it could not have happened, such as selling shares you did not hold yet. Intraday prices are stored from 2026-08-06; earlier dates use a daily close.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {rules && (
+          <p className="mt-3 text-[11px] text-slate-500">
+            Account risk rules for buys:{' '}
+            {rules.limits.max_position_pct > 0 && <>one stock at most {rules.limits.max_position_pct}% of your account · </>}
+            {rules.limits.max_daily_loss_pct > 0 && <>buying pauses after a {rules.limits.max_daily_loss_pct}% realised loss in a day · </>}
+            {rules.limits.max_orders_per_day > 0 && <>up to {rules.limits.max_orders_per_day} orders a day ({rules.orders_today} used) · </>}
+            selling is never blocked.
+          </p>
+        )}
 
         {/* Order Preview Info */}
         <div className="mt-4 pt-4 border-t border-slate-800 flex flex-col gap-2 text-xs">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-4 text-slate-400">
-              <span>Market CMP: <strong className="text-white font-mono">₹{cmp.toFixed(2)}</strong></span>
+              <span>{replaying ? 'Replay price' : 'Market CMP'}: <strong className="text-white font-mono">{cmp > 0 ? `₹${cmp.toFixed(2)}` : '—'}</strong></span>
               <span>Turnover: <strong className="text-white font-mono">₹{grossValue.toFixed(2)}</strong></span>
               <span>Statutory Levies: <strong className="text-amber-400 font-mono">₹{fees.toFixed(2)}</strong></span>
               <span>{tradeType === 'BUY' ? 'Total Cash Required' : 'Net Cash Realized'}: <strong className="text-emerald-400 font-mono">₹{totalCost.toFixed(2)}</strong></span>
             </div>
             <div>
               <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                isShariahPass ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                isShariahPass ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                : activeStock?.shariah === 'FAIL' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
               }`}>
-                Shariah: {activeStock?.shariah || 'UNKNOWN'}
+                Shariah: {shariahLabel(activeStock?.shariah).text}
               </span>
             </div>
           </div>
@@ -286,6 +363,10 @@ export default function PaperTradingPage() {
           </div>
         </div>
       </div>
+
+      <WhatIfSimulator symbol={selectedSymbol} />
+
+      <PerformanceReportCard />
 
       {/* Active Paper Positions */}
       <Card>
@@ -311,7 +392,7 @@ export default function PaperTradingPage() {
                   </td>
                 </tr>
               ) : (
-                positions.map((pos: any) => {
+                positions.map((pos) => {
                   const pnl = Number(pos.unrealized_pnl || 0);
                   const pnlPct = pos.avg_cost_basis > 0 ? ((Number(pos.last_price || pos.avg_cost_basis) - pos.avg_cost_basis) / pos.avg_cost_basis) * 100 : 0;
                   const posVal = Number(pos.shares || 0) * Number(pos.last_price || pos.avg_cost_basis);
@@ -362,6 +443,7 @@ export default function PaperTradingPage() {
                 <th className="p-4">Side</th>
                 <th className="p-4 text-right">Shares</th>
                 <th className="p-4 text-right">Execution Price</th>
+                <th className="p-4">Price basis</th>
                 <th className="p-4 text-right">Fees Paid</th>
                 <th className="p-4 text-right">Realized P&L</th>
               </tr>
@@ -369,15 +451,22 @@ export default function PaperTradingPage() {
             <tbody className="text-sm divide-y divide-slate-800/60">
               {trades.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-slate-500">
+                  <td colSpan={8} className="text-center py-8 text-slate-500">
                     No execution records in paper trade ledger yet.
                   </td>
                 </tr>
               ) : (
-                trades.map((t: any) => (
+                trades.map((t) => (
                   <tr key={t.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="p-4 text-xs font-mono text-slate-400">{new Date(t.trade_date).toLocaleString('en-IN')}</td>
-                    <td className="p-4 font-bold text-white">{t.symbol}</td>
+                    <td className="p-4 font-bold text-white">
+                      {t.symbol}
+                      {t.shariah_status_at_trade && t.shariah_status_at_trade !== 'PASS' && (
+                        <span className="block text-[10px] font-normal text-amber-300">
+                          Shariah at trade: {t.shariah_status_at_trade === 'FAIL' ? 'FAIL' : 'not evaluated'}
+                        </span>
+                      )}
+                    </td>
                     <td className="p-4">
                       <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                         t.trade_type === 'BUY' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
@@ -387,6 +476,10 @@ export default function PaperTradingPage() {
                     </td>
                     <td className="p-4 text-right font-mono text-slate-300">{t.shares}</td>
                     <td className="p-4 text-right font-mono text-white">₹{Number(t.price).toFixed(2)}</td>
+                    <td className="p-4 text-xs text-slate-400">
+                      {SOURCE_LABEL[t.price_source ?? ''] ?? (t.price_source || 'not recorded')}
+                      {t.is_backdated && <span className="ml-1.5 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-semibold">replay</span>}
+                    </td>
                     <td className="p-4 text-right font-mono text-slate-400">₹{Number(t.fees_paid || 0).toFixed(2)}</td>
                     <td className="p-4 text-right font-mono">
                       {t.realized_pnl !== null && t.realized_pnl !== undefined ? (

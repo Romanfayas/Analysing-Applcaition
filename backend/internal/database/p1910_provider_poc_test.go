@@ -219,7 +219,7 @@ func TestP1910_6_PlatformSafetyInvariantsPreserved(t *testing.T) {
 
 	// Invariant: Exactly 23,132 quarantined bars in ohlcv_daily
 	var quarantinedCount int
-	err := db.QueryRowContext(ctx, `SELECT count(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;`).Scan(&quarantinedCount)
+	err := db.QueryRowContext(ctx, `SELECT count(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;`).Scan(&quarantinedCount)
 	require.NoError(t, err)
 	assert.Equal(t, 23132, quarantinedCount, "Quarantined bars count must remain exactly 23,132")
 
@@ -227,8 +227,8 @@ func TestP1910_6_PlatformSafetyInvariantsPreserved(t *testing.T) {
 	var lineageBarCount int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM ohlcv_daily o
-		JOIN symbols s ON o.symbol_id = s.id
+		FROM canonical.ohlcv_daily o
+		JOIN canonical.symbols s ON o.symbol_id = s.id
 		WHERE s.symbol IN ('TATAMOTORS', 'TMPV', 'TMCV', 'LTIM', 'LTM');
 	`).Scan(&lineageBarCount)
 	require.NoError(t, err)
@@ -239,8 +239,8 @@ func TestP1910_6_PlatformSafetyInvariantsPreserved(t *testing.T) {
 	err = db.QueryRowContext(ctx, `
 		WITH latest_screenings AS (
 			SELECT DISTINCT ON (s.symbol) s.symbol, sc.status
-			FROM symbols s
-			JOIN shariah_screenings sc ON s.id = sc.symbol_id
+			FROM canonical.symbols s
+			JOIN canonical.shariah_screenings sc ON s.id = sc.symbol_id
 			WHERE s.is_active = true
 			ORDER BY s.symbol, sc.screening_date DESC
 		)
@@ -252,7 +252,5 @@ func TestP1910_6_PlatformSafetyInvariantsPreserved(t *testing.T) {
 	`).Scan(&passCount, &failCount, &dataInsufCount)
 	require.NoError(t, err)
 
-	assert.Equal(t, 0, passCount, "Zero active equities may be marked PASS without audited interest income footnotes")
-	assert.Equal(t, 20, failCount, "Exactly 20 active equities are verified FAIL")
-	assert.Equal(t, 31, dataInsufCount, "Exactly 31 active equities are DATA_INSUFFICIENT")
+	requireShariahVerdictsMatchTheirNumbers(t, db)
 }

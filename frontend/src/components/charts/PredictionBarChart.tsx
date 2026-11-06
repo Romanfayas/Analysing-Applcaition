@@ -50,7 +50,7 @@ export default function PredictionBarChart({ data }: PredictionBarChartProps) {
               boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)'
             }}
             itemStyle={{ color: '#fff' }}
-            formatter={(value: any) => [`₹${value}`, 'Predicted Price']}
+            formatter={(value) => [`₹${value}`, 'Predicted Price']}
           />
           <Bar dataKey="price" radius={[4, 4, 0, 0]}>
             {data.map((entry, index) => (

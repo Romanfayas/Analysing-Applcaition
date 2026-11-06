@@ -14,7 +14,7 @@ import json
 import sys
 
 from src.api.routes import technical, fundamental, candlestick, quantitative, research
-from src.api.routes import shariah, signal, risk, ipo, backtesting, breakout
+from src.api.routes import shariah, signal, risk, ipo, backtesting, breakout, prediction
 
 app = FastAPI(
     title="Halal Equity Quant Engine",
@@ -45,6 +45,7 @@ app.include_router(signal.router, prefix="/api/v1/signal", tags=["Signal Engine"
 app.include_router(risk.router, prefix="/api/v1/risk", tags=["Risk Engine"])
 app.include_router(ipo.router, prefix="/api/v1/ipo", tags=["IPO Analysis"])
 app.include_router(backtesting.router, prefix="/api/v1/backtesting", tags=["Backtesting"])
+app.include_router(prediction.router, prefix="/api/v1/prediction", tags=["Intraday Prediction"])
 
 
 @app.get("/health")

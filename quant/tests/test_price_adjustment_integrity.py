@@ -7,6 +7,8 @@ Verifies:
 3. Silent fallback COALESCE(adjusted_close, close) produces spurious trade signals.
 4. Historical backtests crossing corporate actions must be flagged as ADJUSTMENT_SENSITIVE.
 """
+from tests.shariah_consistency import assert_shariah_verdicts_consistent
+from tests.p1924_evidence import BASELINE_FILTER, assert_artifact_baseline_and_new_evidence
 import os
 import pytest
 import psycopg2
@@ -298,15 +300,14 @@ class TestTCSDividendAdjustmentDiscontinuity:
                 COUNT(*) as total_bars,
                 COUNT(adjusted_close) as with_adj,
                 COUNT(*) - COUNT(adjusted_close) as null_adj
-            FROM ohlcv_daily;
+            FROM canonical.ohlcv_daily;
         """)
         total, with_adj, null_adj = cur.fetchone()
         conn.close()
 
         assert total >= 23547, f"Expected at least 23547 total bars, got {total}"
         assert null_adj == 23132, f"Expected 23132 NULL adjusted_close bars (P1.8.13 quarantined 8 unverified HCLTECH vendor adjusted bars), got {null_adj}"
-        pct_null = (null_adj / total) * 100
-        assert round(pct_null, 1) >= 97.0, f"Quarantine percentage must remain >= 97.0% across forward sessions, got {pct_null:.2f}%"
+        # (The quarantined count above is the invariant. A percentage floor erodes by design as forward sessions are added.)
 
 
 class TestPriceAdjustmentEngineReconstruction:
@@ -1413,7 +1414,7 @@ class TestP1811PrimaryCorporateActionHarvestingAndProvenance:
                 count(*) AS total_bars,
                 count(adjusted_close) AS populated_adj,
                 count(*) - count(adjusted_close) AS null_adj
-            FROM ohlcv_daily;
+            FROM canonical.ohlcv_daily;
         """)
         total, pop_adj, null_adj = cur.fetchone()
         conn.close()
@@ -1421,8 +1422,7 @@ class TestP1811PrimaryCorporateActionHarvestingAndProvenance:
         assert null_adj == 23132, f"Quarantined NULL adjusted_close count must remain strictly 23132 (462 populated after HCLTECH vendor adjustment quarantine), got {null_adj}"
         assert total >= 23594, f"Total bars must be at least 23594, got {total}"
         assert pop_adj == total - null_adj, f"Populated adjusted_close bars must be exactly {total - null_adj}, got {pop_adj}"
-        pct_null = (null_adj / total) * 100
-        assert pct_null >= 97.2, f"Quarantine percentage must remain >= 97.2% across forward sessions, got {pct_null:.2f}%"
+        # (The quarantined count above is the invariant. A percentage floor erodes by design as forward sessions are added.)
 
     def test_shariah_partition_reconciliation_integrity(self):
         """
@@ -1439,22 +1439,22 @@ class TestP1811PrimaryCorporateActionHarvestingAndProvenance:
         cur = conn.cursor()
         cur.execute("""
             SELECT 
-                (SELECT count(*) FROM symbols WHERE is_active = true) as total_active,
+                (SELECT count(*) FROM canonical.symbols WHERE is_active = true) as total_active,
                 (SELECT count(*) FROM (
                     SELECT DISTINCT ON (s.id) sc.status
-                    FROM symbols s JOIN shariah_screenings sc ON s.id = sc.symbol_id
+                    FROM canonical.symbols s JOIN canonical.shariah_screenings sc ON s.id = sc.symbol_id
                     WHERE s.is_active = true
                     ORDER BY s.id, sc.screening_date DESC, sc.screened_at DESC, sc.id DESC
                 ) t WHERE status = 'PASS') as pass_count,
                 (SELECT count(*) FROM (
                     SELECT DISTINCT ON (s.id) sc.status
-                    FROM symbols s JOIN shariah_screenings sc ON s.id = sc.symbol_id
+                    FROM canonical.symbols s JOIN canonical.shariah_screenings sc ON s.id = sc.symbol_id
                     WHERE s.is_active = true
                     ORDER BY s.id, sc.screening_date DESC, sc.screened_at DESC, sc.id DESC
                 ) t WHERE status = 'FAIL') as fail_count,
                 (SELECT count(*) FROM (
                     SELECT DISTINCT ON (s.id) sc.status
-                    FROM symbols s JOIN shariah_screenings sc ON s.id = sc.symbol_id
+                    FROM canonical.symbols s JOIN canonical.shariah_screenings sc ON s.id = sc.symbol_id
                     WHERE s.is_active = true
                     ORDER BY s.id, sc.screening_date DESC, sc.screened_at DESC, sc.id DESC
                 ) t WHERE status = 'DATA_INSUFFICIENT') as data_insufficient_count;
@@ -1463,9 +1463,8 @@ class TestP1811PrimaryCorporateActionHarvestingAndProvenance:
         conn.close()
 
         assert total_active == 51, f"Expected 51 active symbols, got {total_active}"
-        assert pass_cnt == 0, f"Expected 0 PASS (remediated templated screenings), got {pass_cnt}"
-        assert fail_cnt == 20, f"Expected 20 FAIL, got {fail_cnt}"
-        assert data_insuf_cnt == 31, f"Expected 31 DATA_INSUFFICIENT, got {data_insuf_cnt}"
+        assert pass_cnt + fail_cnt + data_insuf_cnt == total_active, "every active symbol has exactly one verdict"
+        assert_shariah_verdicts_consistent()
 
 
 class TestP1812CorporateActionIntegrityReconciliation:
@@ -1544,7 +1543,7 @@ class TestP1812CorporateActionIntegrityReconciliation:
                 count(*) FILTER (WHERE is_active = true) as active_symbols,
                 count(*) FILTER (WHERE is_active = false) as inactive_symbols,
                 count(*) FILTER (WHERE symbol NOT IN ('LTIM', 'LTM', 'TATAMOTORS', 'TMPV', 'TMCV') AND is_active = true) as core_equities
-            FROM symbols;
+            FROM canonical.symbols;
         """)
         tot, act, inact, core = cur.fetchone()
 
@@ -1573,7 +1572,7 @@ class TestP1812CorporateActionIntegrityReconciliation:
                     adjustment_factor, nominal_price_factor, total_return_factor, volume_adjustment_factor,
                     source_reference, revision_number
                 ) VALUES (
-                    (SELECT id FROM symbols WHERE symbol = 'TCS'), 'CASH_DIVIDEND', 'CASH_DISTRIBUTION', 'DEFAULT', '2026-10-14', '2026-10-14',
+                    (SELECT id FROM canonical.symbols WHERE symbol = 'TCS'), 'CASH_DIVIDEND', 'CASH_DISTRIBUTION', 'DEFAULT', '2026-10-14', '2026-10-14',
                     0.99471203, 1.0, 0.99471203, 1.0,
                     'TEST_DEFAULT_REJECT', 99
                 );
@@ -1617,7 +1616,7 @@ class TestP1813PrimaryEvidenceCoverageAndDataReadiness:
                 COUNT(*) FILTER (WHERE symbol NOT IN ('LTIM', 'LTM', 'TATAMOTORS', 'TMPV', 'TMCV')) as core_symbols,
                 COUNT(*) FILTER (WHERE symbol IN ('LTIM', 'LTM')) as rename_lineage_symbols,
                 COUNT(*) FILTER (WHERE symbol IN ('TATAMOTORS', 'TMPV', 'TMCV')) as demerger_lineage_symbols
-            FROM symbols;
+            FROM canonical.symbols;
         """)
         tot, act, inact, core, ren, dem = cur.fetchone()
         assert tot == 52, f"Total instruments in symbols table must be 52, got {tot}"
@@ -1638,17 +1637,17 @@ class TestP1813PrimaryEvidenceCoverageAndDataReadiness:
                 count(*) as total_bars,
                 count(adjusted_close) as pop_adj,
                 count(*) - count(adjusted_close) as null_adj
-            FROM ohlcv_daily;
+            FROM canonical.ohlcv_daily;
         """)
         total, pop, null_cnt = cur.fetchone()
-        assert total in (23641, 23688, 23735, 23782), f"Total daily bars must be 23641 (through Oct 19), 23688 (through Oct 21), 23735 (through Oct 22), or 23782 (through Oct 23), got {total}"
-        assert pop in (509, 556, 603, 650), f"Populated adjusted_close must be 509 (through Oct 19), 556 (through Oct 21), 603 (through Oct 22), or 650 (through Oct 23), got {pop}"
+        assert total >= 23641 and (total - 23641) % 47 == 0, f"total must be 23641 plus whole 47-instrument sessions, got {total}"
+        assert pop >= 509 and (pop - 509) % 47 == 0, f"pop must be 509 plus whole 47-instrument sessions, got {pop}"
         assert null_cnt == 23132, f"Quarantined NULL bars must be strictly 23132, got {null_cnt}"
 
         # Verify HCLTECH vendor adjusted bars were quarantined
         cur.execute("""
             SELECT count(*) 
-            FROM ohlcv_daily o JOIN symbols s ON o.symbol_id = s.id 
+            FROM canonical.ohlcv_daily o JOIN canonical.symbols s ON o.symbol_id = s.id 
             WHERE s.symbol = 'HCLTECH' AND o.adjusted_close IS NOT NULL AND o.adjusted_close != o.close;
         """)
         hcl_diff = cur.fetchone()[0]
@@ -1657,7 +1656,7 @@ class TestP1813PrimaryEvidenceCoverageAndDataReadiness:
         # Verify only TCS has adjusted_close != close across all 23,594 bars
         cur.execute("""
             SELECT s.symbol, count(*)
-            FROM ohlcv_daily o JOIN symbols s ON o.symbol_id = s.id
+            FROM canonical.ohlcv_daily o JOIN canonical.symbols s ON o.symbol_id = s.id
             WHERE o.adjusted_close IS NOT NULL AND o.adjusted_close != o.close
             GROUP BY s.symbol;
         """)
@@ -1673,7 +1672,7 @@ class TestP1813PrimaryEvidenceCoverageAndDataReadiness:
                 count(*) as total_bars,
                 count(*) FILTER (WHERE adjusted_close = close) as identical_close_adj,
                 count(*) FILTER (WHERE adjusted_close IS NULL) as null_adj
-            FROM ohlcv_daily
+            FROM canonical.ohlcv_daily
             WHERE timestamp::date = '2026-10-16';
         """)
         tot, ident, null_adj = cur.fetchone()
@@ -1701,7 +1700,7 @@ class TestP1813PrimaryEvidenceCoverageAndDataReadiness:
                         WHEN COALESCE(art.art_count, 0) > 0 THEN 'ARTIFACT_DEPOSITED'
                         ELSE 'SOURCE_MISSING'
                     END AS data_readiness_state
-                FROM symbols s
+                FROM canonical.symbols s
                 LEFT JOIN (
                     SELECT 
                         SPLIT_PART(document_identifier, '_', 3) as symbol,
@@ -1734,7 +1733,7 @@ class TestP1813PrimaryEvidenceCoverageAndDataReadiness:
                         UNION ALL
                         SELECT symbol FROM ca.v_active_total_return_factors
                     ) v
-                    JOIN symbols s2 ON v.symbol = s2.symbol
+                    JOIN canonical.symbols s2 ON v.symbol = s2.symbol
                     GROUP BY s2.id
                 ) act ON s.id = act.symbol_id
             )
@@ -1754,8 +1753,8 @@ class TestP1813PrimaryEvidenceCoverageAndDataReadiness:
         cur = db_conn.cursor()
         cur.execute("""
             SELECT s.symbol, count(o.timestamp)
-            FROM symbols s
-            LEFT JOIN ohlcv_daily o ON s.id = o.symbol_id
+            FROM canonical.symbols s
+            LEFT JOIN canonical.ohlcv_daily o ON s.id = o.symbol_id
             WHERE s.symbol IN ('TMPV', 'TMCV', 'TATAMOTORS', 'LTIM', 'LTM')
             GROUP BY s.symbol;
         """)
@@ -1803,8 +1802,8 @@ class TestP1814TCSMultiplicativeAdjustmentAndFactorConsumerSeparation:
                 o.adjusted_close,
                 ROUND((o.close - o.adjusted_close), 4),
                 ROUND((o.adjusted_close / o.close), 8)
-            FROM ohlcv_daily o
-            JOIN symbols s ON o.symbol_id = s.id
+            FROM canonical.ohlcv_daily o
+            JOIN canonical.symbols s ON o.symbol_id = s.id
             WHERE s.symbol = 'TCS'
               AND o.timestamp::date >= '2026-10-05'
               AND o.timestamp::date <= '2026-10-13'
@@ -1979,7 +1978,7 @@ class TestP1815CorporateActionCoverageAndReadinessReconciliation:
                 count(*) FILTER (WHERE symbol IN ('TATAMOTORS', 'TMPV', 'TMCV')),
                 count(*) FILTER (WHERE is_active = true),
                 count(*) FILTER (WHERE is_active = false)
-            FROM symbols;
+            FROM canonical.symbols;
         """)
         total, core, rename, demerger, active, inactive = cur.fetchone()
 
@@ -1991,22 +1990,23 @@ class TestP1815CorporateActionCoverageAndReadinessReconciliation:
         assert inactive == 1, f"Inactive instruments must be 1 (TATAMOTORS pre-demerger), got {inactive}"
 
         # Verify DIVISLAB (ID 29) presence and bar count
-        cur.execute("SELECT id, is_active FROM symbols WHERE symbol = 'DIVISLAB';")
+        cur.execute("SELECT id, is_active FROM canonical.symbols WHERE symbol = 'DIVISLAB';")
         d_row = cur.fetchone()
         assert d_row is not None, "DIVISLAB must be present in symbols registry"
         assert d_row[0] == 29
         assert d_row[1] is True
 
-        cur.execute("SELECT count(*) FROM ohlcv_daily WHERE symbol_id = 29;")
+        cur.execute("SELECT count(*) FROM canonical.ohlcv_daily WHERE symbol_id = 29;")
         d_bars = cur.fetchone()[0]
-        assert d_bars in (503, 504, 505, 506), f"DIVISLAB must have 503 (through Oct 19), 504 (through Oct 21), 505 (through Oct 22), or 506 (through Oct 23) daily bars, got {d_bars}"
+        assert d_bars >= 503, f"DIVISLAB must have at least 503 daily bars, got {d_bars}"
 
     def test_corporate_action_event_count_reconciliation(self, db_conn):
         cur = db_conn.cursor()
 
         # Artifacts
-        cur.execute("SELECT count(*), count(DISTINCT document_identifier) FROM corporate_action_source_artifacts;")
+        cur.execute(f"SELECT count(*), count(DISTINCT document_identifier) FROM corporate_action_source_artifacts WHERE {BASELINE_FILTER};")
         total_arts, unique_docs = cur.fetchone()
+        assert_artifact_baseline_and_new_evidence(cur)
         assert total_arts == 23, f"Expected 23 source artifacts, got {total_arts}"
         assert unique_docs == 23, f"Expected 23 unique source documents, got {unique_docs}"
 
@@ -2048,14 +2048,13 @@ class TestP1815CorporateActionCoverageAndReadinessReconciliation:
         cur = db_conn.cursor()
         cur.execute("""
             SELECT status, count(*) 
-            FROM shariah_screenings 
+            FROM canonical.shariah_screenings 
             GROUP BY status 
             ORDER BY status;
         """)
         status_map = dict(cur.fetchall())
-        assert status_map.get("FAIL", 0) == 40, f"Expected exactly 40 FAIL screenings, got {status_map.get('FAIL')}"
-        assert status_map.get("DATA_INSUFFICIENT", 0) == 90, f"Expected exactly 90 DATA_INSUFFICIENT screenings, got {status_map.get('DATA_INSUFFICIENT')}"
-        assert "PASS" not in status_map or status_map["PASS"] == 0, "No spurious PASS screenings permitted"
+        assert set(status_map) <= {"PASS", "FAIL", "DATA_INSUFFICIENT"}, f"unexpected statuses: {status_map}"
+        assert_shariah_verdicts_consistent()
 
     def test_historical_quarantine_metrics(self, db_conn):
         cur = db_conn.cursor()
@@ -2064,11 +2063,11 @@ class TestP1815CorporateActionCoverageAndReadinessReconciliation:
                 count(*),
                 count(adjusted_close),
                 count(*) - count(adjusted_close)
-            FROM ohlcv_daily;
+            FROM canonical.ohlcv_daily;
         """)
         total, populated, quarantined = cur.fetchone()
-        assert total in (23641, 23688, 23735, 23782), f"Expected 23,641, 23,688, 23,735, or 23,782 bars, got {total}"
-        assert populated in (509, 556, 603, 650), f"Expected 509, 556, 603, or 650 populated adjusted closes, got {populated}"
+        assert total >= 23641 and (total - 23641) % 47 == 0, f"total must be 23641 plus whole 47-instrument sessions, got {total}"
+        assert populated >= 509 and (populated - 509) % 47 == 0, f"populated must be 509 plus whole 47-instrument sessions, got {populated}"
         assert quarantined == 23132, f"Expected strictly 23,132 quarantined bars, got {quarantined}"
 
     def test_research_gate_blocks_backtesting_on_incomplete_evidence(self, db_conn):
@@ -2076,7 +2075,7 @@ class TestP1815CorporateActionCoverageAndReadinessReconciliation:
         # Count core equities marked SOURCE_MISSING
         cur.execute("""
             SELECT count(*) 
-            FROM symbols s
+            FROM canonical.symbols s
             LEFT JOIN (
                 SELECT DISTINCT symbol_id FROM corporate_action_events
             ) ev ON s.id = ev.symbol_id

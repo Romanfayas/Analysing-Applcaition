@@ -39,25 +39,25 @@ func NewProvider() *Provider {
 
 // IPOData represents an IPO from NSE.
 type IPOData struct {
-	CompanyName    string `json:"company_name"`
+	CompanyName    string `json:"companyName"`
 	Symbol         string `json:"symbol"`
 	Series         string `json:"series"`
-	OpenDate       string `json:"open_date"`
-	CloseDate      string `json:"close_date"`
-	ListingDate    string `json:"listing_date"`
-	IssuePrice     string `json:"issue_price"`
-	ListingPrice   string `json:"listing_price"`
-	ListingGain    string `json:"listing_gain"`
-	CurrentPrice   string `json:"current_price"`
-	IssueSize      string `json:"issue_size"`
+	Status         string `json:"status"`
+	IssueStartDate string `json:"issueStartDate"`
+	IssueEndDate   string `json:"issueEndDate"`
+	IssuePrice     string `json:"issuePrice"` // e.g. "Rs.78 to Rs.82" or "Rs.100"
+	IssueSize      string `json:"issueSize"`  // number of SHARES offered, not rupees
+	Category       string `json:"category"`
+	NoOfTime       string `json:"noOfTime"`      // total subscription multiple so far
+	NoOfSharesBid  string `json:"noOfsharesBid"` // total shares bid for so far
 }
 
 // MarketStatus represents NSE market status.
 type MarketStatus struct {
-	Status       string `json:"status"`
-	Message      string `json:"message"`
-	TradeDate    string `json:"tradeDate"`
-	MarketState  string `json:"marketState"`
+	Status      string `json:"status"`
+	Message     string `json:"message"`
+	TradeDate   string `json:"tradeDate"`
+	MarketState string `json:"marketState"`
 }
 
 // IndexData represents an index like NIFTY 50.
@@ -236,7 +236,7 @@ func (p *Provider) GetCorporateActions(ctx context.Context, symbol string, excha
 		// Try to parse typical NSE corporate action fields
 		purpose, _ := action["purpose"].(string)
 		exDateStr, _ := action["exDate"].(string) // "15-Sep-2023"
-		
+
 		if exDateStr == "" || purpose == "" {
 			continue
 		}
@@ -245,7 +245,7 @@ func (p *Provider) GetCorporateActions(ctx context.Context, symbol string, excha
 		if err != nil {
 			continue
 		}
-		
+
 		// Filter by timeframe
 		if exDate.Before(from) || exDate.After(to) {
 			continue
@@ -320,7 +320,7 @@ func (p *Provider) GetUpcomingIPOs(ctx context.Context) (*marketdata.DataPoint[[
 			Symbol:      raw.Symbol,
 		})
 	}
-	
+
 	if len(ipos) == 0 {
 		return nil, marketdata.ErrNoData
 	}

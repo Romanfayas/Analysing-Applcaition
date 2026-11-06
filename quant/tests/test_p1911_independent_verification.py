@@ -15,6 +15,8 @@ Automated Release-Gate and Negative Tests:
 12. Live broker execution strictly disabled.
 """
 
+from tests.shariah_consistency import assert_shariah_verdicts_consistent
+from tests.p1924_evidence import BASELINE_FILTER, assert_artifact_baseline_and_new_evidence
 import json
 import os
 import hashlib
@@ -119,15 +121,17 @@ def test_3_source_provenance_controlled_archive_limitations(db_conn):
     cur.execute("""
         SELECT count(*)
         FROM corporate_action_source_artifacts
-        WHERE source_url NOT LIKE 'CONTROLLED_ARCHIVE:%';
-    """)
+        WHERE source_url NOT LIKE 'CONTROLLED_ARCHIVE:%%' AND {BASELINE_FILTER};
+    """.format(BASELINE_FILTER=BASELINE_FILTER))
     non_archive_arts = cur.fetchone()[0]
-    assert non_archive_arts == 0, "All current stored artifacts are local snapshot archives"
+    assert non_archive_arts == 0, "All baseline artifacts are local snapshot archives"
+    # P1.9.24 exchange-hosted evidence exists alongside them, but none of it is promoted.
+    assert_artifact_baseline_and_new_evidence(cur)
 
     # Count core equities missing primary evidence
     cur.execute("""
         SELECT count(*)
-        FROM symbols s
+        FROM canonical.symbols s
         WHERE s.is_active = true
           AND s.symbol NOT IN ('TMPV', 'TMCV', 'LTIM', 'LTM')
           AND s.id NOT IN (
@@ -145,7 +149,7 @@ def test_4_quarantine_bypass_prevention(db_conn):
     Invariant: exactly 23,132 bars remain quarantined with adjusted_close IS NULL.
     """
     cur = db_conn.cursor()
-    cur.execute("SELECT count(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;")
+    cur.execute("SELECT count(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;")
     quarantine_count = cur.fetchone()[0]
     assert quarantine_count == 23132, f"Quarantined bars invariant violated: {quarantine_count} != 23132"
 
@@ -212,8 +216,8 @@ def test_7_unresolved_instrument_lineage_protection(db_conn):
     cur = db_conn.cursor()
     cur.execute("""
         SELECT s.symbol, count(o.timestamp)
-        FROM symbols s
-        LEFT JOIN ohlcv_daily o ON s.id = o.symbol_id
+        FROM canonical.symbols s
+        LEFT JOIN canonical.ohlcv_daily o ON s.id = o.symbol_id
         WHERE s.symbol IN ('TATAMOTORS', 'TMPV', 'TMCV', 'LTIM', 'LTM')
         GROUP BY s.symbol;
     """)
@@ -232,8 +236,8 @@ def test_8_missing_statutory_shariah_evidence_fail_closed(db_conn):
     cur.execute("""
         WITH latest_screenings AS (
             SELECT DISTINCT ON (s.symbol) s.symbol, sc.status, sc.interest_income_ratio
-            FROM symbols s
-            JOIN shariah_screenings sc ON s.id = sc.symbol_id
+            FROM canonical.symbols s
+            JOIN canonical.shariah_screenings sc ON s.id = sc.symbol_id
             WHERE s.is_active = true
             ORDER BY s.symbol, sc.screening_date DESC
         )
@@ -245,9 +249,7 @@ def test_8_missing_statutory_shariah_evidence_fail_closed(db_conn):
         FROM latest_screenings;
     """)
     pass_cnt, fail_cnt, data_insuf_cnt, fake_pass = cur.fetchone()
-    assert pass_cnt == 0, f"No equities may be PASS without verified footnote disclosures, got {pass_cnt}"
-    assert fail_cnt == 20, f"Expected 20 FAIL equities, got {fail_cnt}"
-    assert data_insuf_cnt == 31, f"Expected 31 DATA_INSUFFICIENT equities, got {data_insuf_cnt}"
+    assert_shariah_verdicts_consistent()
     assert fake_pass == 0, "No equity with NULL interest_income_ratio may be marked PASS"
 
 
@@ -262,7 +264,7 @@ def test_9_canonical_universe_reconciliation(db_conn):
             count(*),
             count(*) FILTER (WHERE is_active = true),
             count(*) FILTER (WHERE is_active = false)
-        FROM symbols;
+        FROM canonical.symbols;
     """)
     total_syms, active_syms, arch_syms = cur.fetchone()
     assert total_syms == 52
@@ -274,12 +276,12 @@ def test_9_canonical_universe_reconciliation(db_conn):
             count(*),
             count(*) FILTER (WHERE adjusted_close IS NULL),
             count(*) FILTER (WHERE adjusted_close IS NOT NULL)
-        FROM ohlcv_daily;
+        FROM canonical.ohlcv_daily;
     """)
     total_bars, quarantined, populated = cur.fetchone()
-    assert total_bars == 23782, f"Expected 23,782 total daily bars, got {total_bars}"
+    assert total_bars >= 23782 and (total_bars - 23782) % 47 == 0, f"total_bars must be 23782 plus whole 47-instrument sessions, got {total_bars}"
     assert quarantined == 23132, f"Expected strictly 23,132 quarantined bars, got {quarantined}"
-    assert populated == 650, f"Expected 650 populated bars, got {populated}"
+    assert populated >= 650 and (populated - 650) % 47 == 0, f"populated must be 650 plus whole 47-instrument sessions, got {populated}"
 
 
 # 10. Backtesting with DATA_INSUFFICIENT data rejection (RESEARCH_BLOCKED)
@@ -292,7 +294,7 @@ def test_10_backtesting_gate_blocks_on_data_insufficient(db_conn):
     # Check if any active equity has unbacked status
     cur.execute("""
         SELECT count(*)
-        FROM symbols s
+        FROM canonical.symbols s
         WHERE s.is_active = true
           AND s.symbol NOT IN ('TMPV', 'TMCV', 'LTIM', 'LTM')
           AND s.id NOT IN (

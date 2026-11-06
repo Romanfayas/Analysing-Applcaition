@@ -1,6 +1,7 @@
 package quant
 
 import (
+	"github.com/halal-equity/backend/internal/services/breakouts"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -40,24 +41,24 @@ type OHLCVInput struct {
 
 // FundamentalRequest matches the Python FundamentalRequest schema.
 type FundamentalRequest struct {
-	TotalAssets           *float64 `json:"total_assets,omitempty"`
-	TotalEquity           *float64 `json:"total_equity,omitempty"`
-	TotalDebt             *float64 `json:"total_debt,omitempty"`
-	CurrentAssets         *float64 `json:"current_assets,omitempty"`
-	CurrentLiabilities    *float64 `json:"current_liabilities,omitempty"`
-	CashAndEquivalents    *float64 `json:"cash_and_equivalents,omitempty"`
-	Inventory             *float64 `json:"inventory,omitempty"`
-	Receivables           *float64 `json:"receivables,omitempty"`
-	Revenue               *float64 `json:"revenue,omitempty"`
-	OperatingProfit       *float64 `json:"operating_profit,omitempty"`
-	NetProfit             *float64 `json:"net_profit,omitempty"`
-	Eps                   *float64 `json:"eps,omitempty"`
-	MarketCap             *float64 `json:"market_cap,omitempty"`
-	CurrentPrice          *float64 `json:"current_price,omitempty"`
-	PrevRevenue           *float64 `json:"prev_revenue,omitempty"`
-	PrevNetProfit         *float64 `json:"prev_net_profit,omitempty"`
-	PrevEps               *float64 `json:"prev_eps,omitempty"`
-	PrevTotalAssets       *float64 `json:"prev_total_assets,omitempty"`
+	TotalAssets        *float64 `json:"total_assets,omitempty"`
+	TotalEquity        *float64 `json:"total_equity,omitempty"`
+	TotalDebt          *float64 `json:"total_debt,omitempty"`
+	CurrentAssets      *float64 `json:"current_assets,omitempty"`
+	CurrentLiabilities *float64 `json:"current_liabilities,omitempty"`
+	CashAndEquivalents *float64 `json:"cash_and_equivalents,omitempty"`
+	Inventory          *float64 `json:"inventory,omitempty"`
+	Receivables        *float64 `json:"receivables,omitempty"`
+	Revenue            *float64 `json:"revenue,omitempty"`
+	OperatingProfit    *float64 `json:"operating_profit,omitempty"`
+	NetProfit          *float64 `json:"net_profit,omitempty"`
+	Eps                *float64 `json:"eps,omitempty"`
+	MarketCap          *float64 `json:"market_cap,omitempty"`
+	CurrentPrice       *float64 `json:"current_price,omitempty"`
+	PrevRevenue        *float64 `json:"prev_revenue,omitempty"`
+	PrevNetProfit      *float64 `json:"prev_net_profit,omitempty"`
+	PrevEps            *float64 `json:"prev_eps,omitempty"`
+	PrevTotalAssets    *float64 `json:"prev_total_assets,omitempty"`
 }
 
 // ShariahRequest matches the Python ShariahRequest schema.
@@ -110,7 +111,7 @@ type SignalResponse struct {
 // doReq performs a JSON HTTP request and decodes the response.
 func (c *Client) doReq(ctx context.Context, endpoint string, reqBody interface{}, respObj interface{}) error {
 	url := fmt.Sprintf("%s/api/v1/%s", c.baseURL, endpoint)
-	
+
 	// Start timer for Prometheus
 	start := time.Now()
 
@@ -130,7 +131,7 @@ func (c *Client) doReq(ctx context.Context, endpoint string, reqBody interface{}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.httpClient.Do(req)
-	
+
 	// Record latency
 	duration := time.Since(start).Milliseconds()
 	metrics.QuantEngineLatency.WithLabelValues(endpoint).Observe(float64(duration))
@@ -266,15 +267,15 @@ type AdvancedMetrics struct {
 
 // BacktestResult matches the Python BacktestResult schema.
 type BacktestResult struct {
-	InitialCapital     float64            `json:"initial_capital"`
-	FinalCapital       float64            `json:"final_capital"`
-	TotalReturnPercent float64            `json:"total_return_percent"`
-	MaxDrawdownPercent float64            `json:"max_drawdown_percent"`
-	WinRatePercent     float64            `json:"win_rate_percent"`
-	TotalTrades        int                `json:"total_trades"`
-	Trades             []Trade            `json:"trades"`
-	EquityCurve        []PortfolioEquity  `json:"equity_curve"`
-	AdvancedMetrics    *AdvancedMetrics   `json:"advanced_metrics"`
+	InitialCapital     float64           `json:"initial_capital"`
+	FinalCapital       float64           `json:"final_capital"`
+	TotalReturnPercent float64           `json:"total_return_percent"`
+	MaxDrawdownPercent float64           `json:"max_drawdown_percent"`
+	WinRatePercent     float64           `json:"win_rate_percent"`
+	TotalTrades        int               `json:"total_trades"`
+	Trades             []Trade           `json:"trades"`
+	EquityCurve        []PortfolioEquity `json:"equity_curve"`
+	AdvancedMetrics    *AdvancedMetrics  `json:"advanced_metrics"`
 }
 
 type WalkForwardWindow struct {
@@ -314,18 +315,18 @@ func (c *Client) RunBacktest(ctx context.Context, req BacktestRequest) (map[stri
 
 // HistoricalPoint matches the Python HistoricalPoint schema.
 type HistoricalPoint struct {
-	Timestamp         string   `json:"timestamp"`
-	Open              float64  `json:"open"`
-	High              float64  `json:"high"`
-	Low               float64  `json:"low"`
-	Close             float64  `json:"close"`
-	Volume            int64    `json:"volume"`
-	TechnicalScore    *float64 `json:"technical_score,omitempty"`
-	FundamentalScore  *float64 `json:"fundamental_score,omitempty"`
-	Revenue           *float64 `json:"revenue,omitempty"`
-	PAT               *float64 `json:"pat,omitempty"`
-	TotalDebt         *float64 `json:"total_debt,omitempty"`
-	TotalEquity       *float64 `json:"total_equity,omitempty"`
+	Timestamp                string   `json:"timestamp"`
+	Open                     float64  `json:"open"`
+	High                     float64  `json:"high"`
+	Low                      float64  `json:"low"`
+	Close                    float64  `json:"close"`
+	Volume                   int64    `json:"volume"`
+	TechnicalScore           *float64 `json:"technical_score,omitempty"`
+	FundamentalScore         *float64 `json:"fundamental_score,omitempty"`
+	Revenue                  *float64 `json:"revenue,omitempty"`
+	PAT                      *float64 `json:"pat,omitempty"`
+	TotalDebt                *float64 `json:"total_debt,omitempty"`
+	TotalEquity              *float64 `json:"total_equity,omitempty"`
 	OperatingCashFlow        *float64 `json:"operating_cash_flow,omitempty"`
 	FundamentalDataAvailable bool     `json:"fundamental_data_available"`
 	FundamentalPITMode       string   `json:"fundamental_pit_mode"`
@@ -395,31 +396,39 @@ type BreakoutAnalyzeRequest struct {
 
 // BreakoutResult represents the complete analysis of a stock's breakout setup.
 type BreakoutResult struct {
-	Symbol                  string             `json:"symbol"`
-	Stage                   string             `json:"stage"`
-	CurrentPrice            float64            `json:"current_price"`
-	ResistanceLevel         float64            `json:"resistance_level"`
-	SupportLevel            float64            `json:"support_level"`
-	DistanceToResistancePct float64            `json:"distance_to_resistance_pct"`
-	RVOL                    float64            `json:"rvol"`
-	ATR                     float64            `json:"atr"`
-	BollingerBandWidth      float64            `json:"bollinger_band_width"`
-	ConsolidationBars       int                `json:"consolidation_bars"`
-	VolumeDemandProxy       float64            `json:"volume_demand_proxy"`
-	OrderBookDepthStatus    string             `json:"order_book_depth_status"`
-	EntryZone               []float64          `json:"entry_zone"`
-	InvalidationLevel       float64            `json:"invalidation_level"`
-	Target1                 float64            `json:"target_1"`
-	Target2                 float64            `json:"target_2"`
-	RiskRewardRatio         float64            `json:"risk_reward_ratio"`
-	OverallScore            float64            `json:"overall_score"`
-	ScoreBreakdown          map[string]float64 `json:"score_breakdown"`
-	ShariahStatus           string             `json:"shariah_status"`
-	IsShariahEligible       bool               `json:"is_shariah_eligible"`
-	Reasons                 []string           `json:"reasons"`
-	InvalidationConditions  []string           `json:"invalidation_conditions"`
-	DataQuality             string             `json:"data_quality"`
-	Sector                  string             `json:"sector,omitempty"`
+	Symbol                  string    `json:"symbol"`
+	Stage                   string    `json:"stage"`
+	CurrentPrice            float64   `json:"current_price"`
+	ResistanceLevel         float64   `json:"resistance_level"`
+	SupportLevel            float64   `json:"support_level"`
+	DistanceToResistancePct float64   `json:"distance_to_resistance_pct"`
+	RVOL                    float64   `json:"rvol"`
+	ATR                     float64   `json:"atr"`
+	BollingerBandWidth      float64   `json:"bollinger_band_width"`
+	ConsolidationBars       int       `json:"consolidation_bars"`
+	VolumeDemandProxy       float64   `json:"volume_demand_proxy"`
+	OrderBookDepthStatus    string    `json:"order_book_depth_status"`
+	EntryZone               []float64 `json:"entry_zone"`
+	InvalidationLevel       float64   `json:"invalidation_level"`
+	Target1                 float64   `json:"target_1"`
+	Target2                 float64   `json:"target_2"`
+	RiskRewardRatio         float64   `json:"risk_reward_ratio"`
+	OverallScore            float64   `json:"overall_score"`
+	// StructureScore is the price-structure score before the Shariah gate zeroes OverallScore; nil when there is too
+	// little history to score at all.
+	StructureScore         *float64           `json:"structure_score"`
+	SetupType              string             `json:"setup_type,omitempty"`
+	MarketRegime           string             `json:"market_regime,omitempty"`
+	LiquidityADTCr         float64            `json:"liquidity_adt_cr,omitempty"`
+	ScoreBreakdown         map[string]float64 `json:"score_breakdown"`
+	ShariahStatus          string             `json:"shariah_status"`
+	IsShariahEligible      bool               `json:"is_shariah_eligible"`
+	Reasons                []string           `json:"reasons"`
+	InvalidationConditions []string           `json:"invalidation_conditions"`
+	DataQuality            string             `json:"data_quality"`
+	Sector                 string             `json:"sector,omitempty"`
+	// Live says where the latest price stands against these levels. The levels themselves come from daily bars.
+	Live *breakouts.Position `json:"live,omitempty"`
 }
 
 // StockScanItem represents a stock item in a universe scan.
@@ -503,4 +512,149 @@ func (c *Client) CalculatePositionSize(ctx context.Context, req PositionSizeRequ
 	return &resp, nil
 }
 
+// IndicatorResult is one calculated technical indicator series.
+type IndicatorResult struct {
+	Indicator  string                 `json:"indicator"`
+	Parameters map[string]interface{} `json:"parameters"`
+	Values     interface{}            `json:"values"`
+	Signal     *string                `json:"signal"`
+}
 
+// IndicatorsResponse is the technical indicators response.
+type IndicatorsResponse struct {
+	Indicators []IndicatorResult `json:"indicators"`
+}
+
+// CalculateIndicators calls the technical indicators endpoint.
+func (c *Client) CalculateIndicators(ctx context.Context, ohlcv OHLCVInput, indicators []string) (*IndicatorsResponse, error) {
+	req := struct {
+		OHLCV      OHLCVInput `json:"ohlcv"`
+		Indicators []string   `json:"indicators"`
+	}{ohlcv, indicators}
+	var resp IndicatorsResponse
+	if err := c.doReq(ctx, "technical/indicators", req, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// RiskMetricsResponse mirrors the Python risk metrics response.
+type RiskMetricsResponse struct {
+	VolatilityDaily  *float64 `json:"volatility_daily"`
+	VolatilityAnnual *float64 `json:"volatility_annual"`
+	MaxDrawdown      *float64 `json:"max_drawdown"`
+	VaR95            *float64 `json:"var_95"`
+	SharpeRatio      *float64 `json:"sharpe_ratio"`
+}
+
+// CalculateRiskMetrics calls the risk metrics endpoint with a series of periodic returns.
+func (c *Client) CalculateRiskMetrics(ctx context.Context, returns []float64) (*RiskMetricsResponse, error) {
+	var resp RiskMetricsResponse
+	if err := c.doReq(ctx, "risk/metrics", struct {
+		Returns []float64 `json:"returns"`
+	}{returns}, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// StrategyGovernance is the quant engine's runtime-introspected frozen-strategy attestation.
+type StrategyGovernance struct {
+	RuntimeHash   string   `json:"runtime_hash"`
+	PinnedHash    string   `json:"pinned_hash"`
+	MatchesPinned bool     `json:"matches_pinned"`
+	Problems      []string `json:"problems"`
+}
+
+// GetStrategyGovernance fetches the frozen-strategy attestation from the quant engine.
+func (c *Client) GetStrategyGovernance(ctx context.Context) (*StrategyGovernance, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/api/v1/governance/strategy", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("quant engine request failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("quant engine returned error status %d", resp.StatusCode)
+	}
+	var g StrategyGovernance
+	if err := json.NewDecoder(resp.Body).Decode(&g); err != nil {
+		return nil, fmt.Errorf("failed to decode strategy governance: %w", err)
+	}
+	return &g, nil
+}
+
+// predictionHTTP has a long timeout: walk-forward training re-fits the model once per test day.
+var predictionHTTP = &http.Client{Timeout: 10 * time.Minute}
+
+// PredictionCall invokes a prediction-engine operation ("train", "generate" or "resolve") and returns its summary.
+func (c *Client) PredictionCall(ctx context.Context, op string) (map[string]interface{}, error) {
+	switch op {
+	case "train", "generate", "resolve":
+	default:
+		return nil, fmt.Errorf("unknown prediction operation %q", op)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/api/v1/prediction/"+op, bytes.NewReader([]byte("{}")))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := predictionHTTP.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("prediction %s failed: %w", op, err)
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("prediction %s returned %d: %s", op, resp.StatusCode, string(body))
+	}
+	var out map[string]interface{}
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, fmt.Errorf("prediction %s: bad response: %w", op, err)
+	}
+	return out, nil
+}
+
+// ScreenSymbol asks the quant engine to fetch reported financials for a stored symbol and store a fresh Shariah
+// screening. It returns the resulting status (PASS, FAIL or DATA_INSUFFICIENT).
+func (c *Client) ScreenSymbol(ctx context.Context, ticker string) (string, error) {
+	var out struct {
+		Status string `json:"status"`
+	}
+	if err := c.doReq(ctx, "shariah/screen-symbol/"+ticker, nil, &out); err != nil {
+		return "", err
+	}
+	return out.Status, nil
+}
+
+// PerformanceReport asks the quant engine for bootstrap-backed statistics over closed trades.
+func (c *Client) PerformanceReport(ctx context.Context, body any) (map[string]interface{}, error) {
+	var out map[string]interface{}
+	if err := c.doReq(ctx, "risk/performance", body, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+
+// RefreshBreakoutEvidence re-runs the breakout study on the exchange series. It takes about a minute.
+func (c *Client) RefreshBreakoutEvidence(ctx context.Context) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/api/v1/research/breakout-evidence", bytes.NewReader([]byte("{}")))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := predictionHTTP.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("breakout evidence returned %d: %s", resp.StatusCode, string(body))
+	}
+	return nil
+}

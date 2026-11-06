@@ -6,8 +6,10 @@ import Card, { CardHeader } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import CandlestickChart, { CandleData } from '@/components/charts/CandlestickChart';
 import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
-import { ArrowTrendingUpIcon, ArrowTrendingDownIcon, CurrencyRupeeIcon, BeakerIcon, CheckCircleIcon, ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { BeakerIcon, CheckCircleIcon, ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useStock } from '@/lib/api/hooks';
+import { send } from '@/lib/api/client';
+import ResearchDepthCard from '@/components/stock/ResearchDepthCard';
 import { calculateDeliveryCosts } from '@/lib/costs';
 
 export default function StockResearchPage({ params }: { params: Promise<{ symbol: string }> }) {
@@ -45,41 +47,28 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
       setTradeFeedback({ type: 'error', message: 'Shares must be greater than 0.' });
       return;
     }
-    if (tradeSide === 'BUY' && !isShariahPass) {
-      setTradeFeedback({ type: 'error', message: 'Shariah Gate: Only PASS stocks can be purchased.' });
-      return;
-    }
 
     setTradeLoading(true);
     setTradeFeedback(null);
 
     try {
-      const res = await fetch('/api/proxy/portfolio/trade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          symbol: stock.symbol,
-          trade_type: tradeSide,
-          shares: Number(tradeShares),
-          price: stock.current_price || 0,
-        }),
+      // The server fills at its own stored market price; the client never supplies one.
+      const result = await send<{ trade: { price: number } }>('post', '/portfolio/trade', {
+        symbol: stock.symbol,
+        trade_type: tradeSide,
+        shares: Number(tradeShares),
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Paper trade execution failed');
-      }
 
       setTradeFeedback({
         type: 'success',
-        message: `Paper ${tradeSide} executed successfully for ${tradeShares} shares of ${stock.symbol}!`,
+        message: `Paper ${tradeSide} of ${tradeShares} shares of ${stock.symbol} filled at ₹${result.trade.price.toFixed(2)}.`,
       });
       setTimeout(() => {
         setTradeModalOpen(false);
         setTradeFeedback(null);
       }, 1800);
-    } catch (err: any) {
-      setTradeFeedback({ type: 'error', message: err.message || 'Execution error.' });
+    } catch (err) {
+      setTradeFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Execution error.' });
     } finally {
       setTradeLoading(false);
     }
@@ -153,22 +142,15 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
           >
             Sell
           </button>
-          <button 
-            disabled={!isShariahPass}
+          <button
             onClick={() => {
-              if (isShariahPass) {
-                setTradeSide('BUY');
-                setTradeFeedback(null);
-                setTradeModalOpen(true);
-              }
+              setTradeSide('BUY');
+              setTradeFeedback(null);
+              setTradeModalOpen(true);
             }}
-            className={`px-6 py-2.5 rounded-xl font-medium transition-colors ${
-              isShariahPass 
-                ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:bg-blue-400' 
-                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-            }`}
+            className="px-6 py-2.5 rounded-xl font-medium transition-colors bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:bg-blue-400"
           >
-            {isShariahPass ? 'Paper Buy' : 'Shariah Blocked'}
+            Paper Buy
           </button>
         </div>
       </div>
@@ -209,7 +191,7 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
             <div className="mt-3 pt-3 border-t border-amber-500/20">
               <span className="text-[11px] font-medium text-amber-400 block mb-1">Successor Securities on NSE:</span>
               <div className="flex flex-wrap gap-2">
-                {stock.corporate_action.successors.map((s: any) => (
+                {stock.corporate_action.successors.map((s) => (
                   <Link
                     key={s.symbol}
                     href={`/stocks/${s.symbol}`}
@@ -254,19 +236,12 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
       {/* Quant Gauges */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card gradientHover>
-          <CardHeader title="Technical Score" subtitle="Momentum & Trends" action={<Badge variant={stock.signal?.action.includes('BUY') ? 'pass' : 'neutral'}>{stock.signal?.action.replace('_', ' ') || 'NEUTRAL'}</Badge>} />
+          <CardHeader title="Composite Signal" subtitle="Strategy V2 score (indicators: see Technicals & Risk)" action={<Badge variant={stock.signal?.action.includes('BUY') ? 'pass' : 'neutral'}>{stock.signal?.action.replace('_', ' ') || 'NEUTRAL'}</Badge>} />
           <div className="space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-              <span className="text-slate-400">RSI (14)</span>
-              <span className="text-slate-500 font-medium">DATA_UNAVAILABLE</span>
-            </div>
-            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-              <span className="text-slate-400">MACD</span>
-              <span className="text-slate-500 font-medium">DATA_UNAVAILABLE</span>
-            </div>
+            <p className="text-sm text-slate-400 border-b border-slate-800 pb-2">{stock.signal?.explanation ?? 'No signal generated'}</p>
             <div className="flex justify-between items-center">
               <span className="text-slate-400">Composite Score</span>
-              <span className="text-white font-medium">{stock.signal?.overall_score?.toFixed(1) || '0.0'}</span>
+              <span className="text-white font-medium">{stock.signal?.overall_score != null ? stock.signal.overall_score.toFixed(1) : '—'}</span>
             </div>
           </div>
         </Card>
@@ -286,15 +261,15 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
               <div className="space-y-2 text-left px-4">
                 <div className="flex justify-between items-center border-b border-slate-800 pb-2">
                   <span className="text-slate-400">Revenue</span>
-                  <span className="text-white font-medium">₹{stock.fundamentals.revenue ? (stock.fundamentals.revenue / 1e7).toFixed(2) + ' Cr' : 'N/A'}</span>
+                  <span className="text-white font-medium">{stock.fundamentals.revenue != null ? `₹${(stock.fundamentals.revenue / 1e7).toFixed(2)} Cr` : 'N/A'}</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-800 pb-2">
                   <span className="text-slate-400">PAT</span>
-                  <span className="text-white font-medium">₹{stock.fundamentals.pat ? (stock.fundamentals.pat / 1e7).toFixed(2) + ' Cr' : 'N/A'}</span>
+                  <span className="text-white font-medium">{stock.fundamentals.pat != null ? `₹${(stock.fundamentals.pat / 1e7).toFixed(2)} Cr` : 'N/A'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">EPS</span>
-                  <span className="text-white font-medium">₹{stock.fundamentals.eps !== undefined ? stock.fundamentals.eps.toFixed(2) : 'N/A'}</span>
+                  <span className="text-white font-medium">{stock.fundamentals.eps != null ? `₹${stock.fundamentals.eps.toFixed(2)}` : 'N/A'}</span>
                 </div>
               </div>
             ) : (
@@ -305,16 +280,21 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
             )}
           </div>
         </Card>
+        <ResearchDepthCard symbol={stock.symbol} />
 
         <Card gradientHover className={isShariahPass ? "border-emerald-500/20 bg-emerald-500/5" : "border-red-500/20 bg-red-500/5"}>
-          <CardHeader title="Shariah Checklist" subtitle="AAOIFI Standards" action={<Badge variant={isShariahPass ? 'pass' : 'fail'}>{stock.shariah?.status || 'UNKNOWN'}</Badge>} />
+          <CardHeader title="Shariah Checklist" subtitle="AAOIFI Standards" action={<Badge variant={isShariahPass ? 'pass' : stock.shariah?.status === 'FAIL' ? 'fail' : 'neutral'}>{stock.shariah?.status || 'UNKNOWN'}</Badge>} />
           <div className="space-y-4 text-center py-4">
-            {stock.shariah?.status === 'DATA_UNAVAILABLE' ? (
-              <span className="text-amber-500/80 font-medium">DATA_UNAVAILABLE</span>
-            ) : stock.shariah?.status === 'DATA_INSUFFICIENT' ? (
-              <span className="text-amber-500/80 font-medium">DATA_INSUFFICIENT</span>
+            {stock.shariah?.status === 'PASS' ? (
+              <p className="text-sm text-slate-300">
+                Screening passed. Screening date: {stock.shariah.screening_date ? new Date(stock.shariah.screening_date).toLocaleDateString() : 'N/A'}
+              </p>
+            ) : stock.shariah?.status === 'FAIL' ? (
+              <p className="text-sm text-rose-300">Failed Shariah screening. Not eligible for purchase.</p>
             ) : (
-              <p className="text-sm text-slate-300">Screening passed internal checks. Screening Date: {stock.shariah?.screening_date !== "DATA_UNAVAILABLE" ? new Date(stock.shariah?.screening_date).toLocaleDateString() : 'N/A'}</p>
+              <p className="text-sm text-amber-300/90">
+                Not evaluated ({stock.shariah?.status ?? 'UNKNOWN'}). Do not treat this instrument as compliant.
+              </p>
             )}
           </div>
         </Card>
@@ -426,16 +406,13 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
                   <button
                     type="button"
                     onClick={() => setTradeSide('BUY')}
-                    disabled={!isShariahPass}
                     className={`py-2 text-sm font-semibold rounded-xl border transition ${
                       tradeSide === 'BUY'
                         ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500'
-                        : isShariahPass
-                        ? 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
-                        : 'bg-slate-800/50 text-slate-600 border-slate-800 cursor-not-allowed'
+                        : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
                     }`}
                   >
-                    BUY {isShariahPass ? '' : '(Blocked)'}
+                    BUY
                   </button>
                   <button
                     type="button"
@@ -544,14 +521,19 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
                 >
                   Cancel
                 </button>
+                {tradeSide === 'BUY' && !isShariahPass && (
+                  <p role="status" className="basis-full text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                    Shariah status: {stock.shariah?.status === 'FAIL' ? 'FAIL (not compliant)' : 'not evaluated'}. Paper trades are allowed and the status is recorded on the trade.
+                  </p>
+                )}
                 <button
                   type="submit"
-                  disabled={tradeLoading || (tradeSide === 'BUY' && !isShariahPass)}
+                  disabled={tradeLoading}
                   className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition shadow-lg ${
                     tradeSide === 'BUY'
                       ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20'
                       : 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-500/20'
-                  } ${(tradeLoading || (tradeSide === 'BUY' && !isShariahPass)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${tradeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {tradeLoading ? 'Executing...' : `Confirm ${tradeSide}`}
                 </button>

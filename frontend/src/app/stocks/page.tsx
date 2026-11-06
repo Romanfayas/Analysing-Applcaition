@@ -3,11 +3,12 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useStocks, useMarketDataHealth } from "@/lib/api/hooks";
-import { StockListItem } from "@/lib/api/types";
+import AddStockPanel from "@/components/AddStockPanel";
+import { shariahLabel } from "@/lib/shariah";
 
 export default function StocksPage() {
-  const { stocks, meta, isLoading, isError, mutate } = useStocks();
-  const { health, isLoading: isHealthLoading } = useMarketDataHealth();
+  const { stocks, isLoading, isError, mutate } = useStocks();
+  const { health } = useMarketDataHealth();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSector, setSelectedSector] = useState("ALL");
@@ -43,7 +44,8 @@ export default function StocksPage() {
 
       // Shariah filter
       if (selectedShariah !== "ALL") {
-        if (stock.shariah !== selectedShariah) return false;
+        const isEvaluated = stock.shariah === "PASS" || stock.shariah === "FAIL";
+        if (selectedShariah === "NOT_EVALUATED" ? isEvaluated : stock.shariah !== selectedShariah) return false;
       }
 
       // Freshness filter
@@ -110,6 +112,8 @@ export default function StocksPage() {
           Refresh Feed
         </button>
       </div>
+
+      <AddStockPanel onAdded={() => mutate()} />
 
       {/* Telemetry / Market Data Health Banner */}
       <div className="glass-card p-4 border border-slate-800/80 bg-slate-900/60 rounded-2xl">
@@ -213,9 +217,9 @@ export default function StocksPage() {
           className="px-3.5 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
         >
           <option value="ALL">All Shariah Statuses</option>
-          <option value="PASS">Compliant (PASS)</option>
-          <option value="FAIL">Non-Compliant (FAIL)</option>
-          <option value="UNKNOWN">Pending / Unknown</option>
+          <option value="PASS">Compliant</option>
+          <option value="FAIL">Not compliant</option>
+          <option value="NOT_EVALUATED">Not evaluated</option>
         </select>
 
         {/* Freshness Filter */}
@@ -241,13 +245,13 @@ export default function StocksPage() {
                 <th className="px-5 py-3.5">Security</th>
                 <th className="px-4 py-3.5">Sector</th>
                 <th className="px-4 py-3.5 text-right">Price</th>
-                <th className="px-4 py-3.5 text-right">24h Change</th>
+                <th className="px-4 py-3.5 text-right">Change vs prev. close</th>
                 <th className="px-4 py-3.5">Market Timestamp (IST)</th>
                 <th className="px-4 py-3.5">Ingested (IST)</th>
                 <th className="px-4 py-3.5 text-center">Freshness</th>
                 <th className="px-4 py-3.5 text-center">Shariah</th>
-                <th className="px-4 py-3.5 text-center">Signal</th>
-                <th className="px-5 py-3.5 text-center">Score</th>
+                <th className="px-4 py-3.5 text-center" title="Breakout-engine stage from daily bars. A description of price structure, not a buy or sell instruction.">Setup</th>
+                <th className="px-5 py-3.5 text-center" title="Price-structure score 0-100 from the breakout engine (daily bars). Not a probability of profit and not a Shariah view.">Setup score</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/40 text-sm">
@@ -372,39 +376,43 @@ export default function StocksPage() {
                               : "bg-slate-800 text-slate-400 border-slate-700"
                           }`}
                         >
-                          {stock.shariah}
+                          {shariahLabel(stock.shariah).text}
                         </span>
                       </td>
 
-                      {/* Signal */}
+                      {/* Setup (breakout-engine stage) */}
                       <td className="px-4 py-3.5 text-center whitespace-nowrap">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border tracking-wide uppercase ${
-                            stock.signal === "STRONG_BUY" || stock.signal === "BUY"
-                              ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                              : stock.signal === "WATCH"
-                              ? "bg-blue-500/15 text-blue-400 border-blue-500/30"
-                              : stock.signal === "AVOID" || stock.signal === "STRONG_AVOID"
-                              ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
-                              : "bg-slate-800/80 text-slate-400 border-slate-700/60"
-                          }`}
-                        >
-                          {stock.signal.replace(/_/g, " ")}
-                        </span>
+                        {stock.setup ? (
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border tracking-wide uppercase ${
+                              stock.setup === "CONFIRMED_BREAKOUT"
+                                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                                : stock.setup === "BREAKOUT_CANDIDATE"
+                                ? "bg-blue-500/15 text-blue-400 border-blue-500/30"
+                                : stock.setup === "FAILED_BREAKOUT"
+                                ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+                                : "bg-slate-800/80 text-slate-400 border-slate-700/60"
+                            }`}
+                          >
+                            {stock.setup.replace(/_/g, " ")}
+                          </span>
+                        ) : (
+                          <span className="text-slate-600 text-xs" title="Not enough verified daily history to score this instrument">—</span>
+                        )}
                       </td>
 
                       {/* Score */}
                       <td className="px-5 py-3.5 text-center whitespace-nowrap">
-                        {stock.score !== null ? (
+                        {stock.score != null ? (
                           <div className="flex items-center justify-center gap-2">
                             <div className="w-14 h-1.5 rounded-full bg-slate-800 overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
-                                  stock.score >= 80
+                                  stock.score >= 70
                                     ? "bg-emerald-400"
-                                    : stock.score >= 60
+                                    : stock.score >= 50
                                     ? "bg-amber-400"
-                                    : "bg-rose-400"
+                                    : "bg-slate-500"
                                 }`}
                                 style={{ width: `${Math.min(100, Math.max(0, stock.score))}%` }}
                               />
@@ -429,19 +437,25 @@ export default function StocksPage() {
         <div className="px-5 py-3 border-t border-slate-800/80 bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
           <div>
             Showing <span className="font-semibold text-slate-200">{filteredStocks.length}</span> of{" "}
-            <span className="font-semibold text-slate-200">{meta?.total ?? stocks.length}</span> securities
+            <span className="font-semibold text-slate-200">{stocks.length}</span> securities
           </div>
           <div className="text-[11px] text-slate-500">
-            Compliant: {stocks.filter((s) => s.shariah === "PASS").length} | Pending Review:{" "}
-            {stocks.filter((s) => s.shariah === "UNKNOWN" || s.shariah === "PENDING").length}
+            Compliant: {stocks.filter((s) => s.shariah === "PASS").length} | Not compliant:{" "}
+            {stocks.filter((s) => s.shariah === "FAIL").length} | Not evaluated:{" "}
+            {stocks.filter((s) => s.shariah !== "PASS" && s.shariah !== "FAIL").length}
           </div>
         </div>
       </div>
 
+      <p className="text-[11px] text-slate-500 -mt-3">
+        Shariah status is screened from reported annual figures supplied by a data vendor (debt, cash, interest income and receivables against the
+        AAOIFI-based limits, plus business activity). It is not an audited ruling: confirm with the company&apos;s filings and your own scholar before relying on it.
+      </p>
+
       {/* Quantitative & Legal Disclaimers */}
       <div className="p-4 rounded-xl border border-slate-800/60 bg-slate-900/30 text-[11px] text-slate-500 leading-relaxed space-y-1">
         <p>
-          <strong className="text-slate-400">Data Integrity Notice:</strong> Daily change and percentage calculations require an authoritative prior trading-session closing price. If prior-close data is unavailable, change is marked unavailable rather than assumed zero. Signals require verified market data and Shariah screening prior to being actionable.
+          <strong className="text-slate-400">Data Integrity Notice:</strong> Daily change and percentage calculations require an authoritative prior trading-session closing price. If prior-close data is unavailable, change is marked unavailable rather than assumed zero. The setup score and stage describe daily-bar price structure only (updated after each EOD ingestion); they are not buy or sell instructions and say nothing about Shariah status.
         </p>
         <p>
           <strong className="text-slate-400">Provider Disclaimer:</strong> Intraday feeds from Yahoo Finance are delayed and not exchange-certified. No live order execution is active (paper trading mode enabled).

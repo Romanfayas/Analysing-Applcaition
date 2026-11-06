@@ -4,6 +4,11 @@
 **Phase:** P1.9.13 Independent Evidence Authentication and Research Readiness Audit  
 **Authority:** Multi-Tier Live Runtime Verification (`halal_equity_backend`, `halal_equity_quant`, `halal_equity_frontend`, `halal_equity_postgres`)  
 
+> **Update — P1.9.20 (2026-10-31):** this document predates the application-completion pass. Current verified state,
+> defects fixed and open items are in
+> [`reports/audits/HALALEQUITY_P1_9_20_APPLICATION_COMPLETION_REPORT.md`](reports/audits/HALALEQUITY_P1_9_20_APPLICATION_COMPLETION_REPORT.md).
+> Figures below (bar counts, test counts, "unauthenticated proxy") are historical.
+
 ---
 
 ## 1. Executive Release Decision Matrix (6 Distinct Verdicts)

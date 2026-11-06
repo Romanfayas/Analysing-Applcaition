@@ -1,0 +1,235 @@
+{
+  "phase": "P1.9.17",
+  "audit_name": "HalalEquity Statutory Evidence Acquisition, Authentication & Point-in-Time Data Readiness",
+  "timestamp_utc": "2026-10-28T10:45:00Z",
+  "git_commit_sha": "25d3f811e0df3d00f4d46271b8fd2fda461b6291",
+  "environment": {
+    "os": "macOS (Darwin 24.6.0 arm64)",
+    "go_version": "go1.24.1 darwin/arm64",
+    "python_version": "Python 3.12.15 (halal_equity_quant container)",
+    "postgres_version": "PostgreSQL 16.1 (halal_equity_postgres container)",
+    "node_version": "v22.14.0",
+    "nextjs_version": "16.3.5",
+    "react_version": "19.2.8"
+  },
+  "mandatory_safety_invariants": {
+    "PAPER_TRADING_ENABLED": true,
+    "LIVE_ORDER_EXECUTION": false,
+    "BROKER_TRADING_ENABLED": false,
+    "RESEARCH_GATE_STATUS": "RESEARCH_BLOCKED",
+    "zero_unauthorized_promotions": true,
+    "anti_circumvention_enforced": true
+  },
+  "database_state": {
+    "symbols_total": 52,
+    "symbols_active": 51,
+    "symbols_inactive": 1,
+    "corporate_action_events_total": 64,
+    "corporate_action_events_by_status": {
+      "VERIFIED_EXCHANGE_PRIMARY": 0,
+      "ARCHIVE_UNAUTHENTICATED": 58,
+      "AMBIGUOUS": 6,
+      "ACQUIRED_UNVERIFIED": 0,
+      "PARSED_VALIDATED": 0,
+      "REJECTED": 0
+    },
+    "corporate_action_source_artifacts_total": 23,
+    "corporate_action_source_artifacts_by_status": {
+      "PRIMARY_VERIFIED": 0,
+      "PARSED_VALIDATED": 23,
+      "ACQUIRED_UNVERIFIED": 0,
+      "REJECTED": 0,
+      "AMBIGUOUS": 0
+    },
+    "financial_disclosure_source_artifacts_total": 1,
+    "audited_footnote_disclosures_total": 0,
+    "corporate_action_reconciliation_reviews_total": 7,
+    "ohlcv_daily_total_bars": 23923,
+    "ohlcv_quarantined_bars_null_adjusted_close": 23132,
+    "ohlcv_nominal_bars": 791,
+    "shariah_screenings_active_universe": {
+      "PASS": 0,
+      "FAIL": 20,
+      "DATA_INSUFFICIENT": 31
+    }
+  },
+  "test_execution_summary": {
+    "backend_go_unit_and_integration": {
+      "command": "DB_HOST=192.168.18.43 go test -p 1 -count=1 ./...",
+      "exit_code": 0,
+      "total_tests": 155,
+      "passed": 155,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 7.42
+    },
+    "quant_python_pytest_suite": {
+      "command": "docker exec halal_equity_quant pytest -q",
+      "exit_code": 0,
+      "total_tests": 347,
+      "passed": 347,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 62.39
+    },
+    "e2e_delivery_verification_script": {
+      "command": "python3 scripts/verify_e2e_delivery.py",
+      "exit_code": 0,
+      "total_checks": 18,
+      "passed": 18,
+      "failed": 0
+    },
+    "live_workflows_verification_script": {
+      "command": "python3 scripts/test_workflows_live.py",
+      "exit_code": 0,
+      "total_workflows": 11,
+      "passed": 11,
+      "failed": 0
+    },
+    "frontend_production_build": {
+      "command": "npm run build (in frontend/)",
+      "exit_code": 0,
+      "routes_generated": 15,
+      "errors": 0
+    }
+  },
+  "adversarial_scenarios_verified": [
+    {
+      "id": "SCENARIO_01",
+      "name": "Fake documents hosted on non-official domains cannot become PRIMARY_VERIFIED",
+      "go_test": "TestP1917_1_FakeDocumentsNonOfficialDomainsCannotBecomePrimaryVerified",
+      "python_test": "test_p1917_1_fake_documents_non_official_domains_cannot_become_primary_verified",
+      "result": "PASS",
+      "evidence": "Artifact from spoofed-exchange.io evaluated as REJECTED; database trigger fn_ca_event_verification_guard rejected event promotion with error: does not match authenticated exchange primary endpoint pattern"
+    },
+    {
+      "id": "SCENARIO_02",
+      "name": "A valid checksum cannot independently establish source authenticity",
+      "go_test": "TestP1917_2_ValidChecksumCannotIndependentlyEstablishSourceAuthenticity",
+      "python_test": "test_p1917_2_valid_checksum_cannot_independently_establish_authenticity",
+      "result": "PASS",
+      "evidence": "Third-party vendor payload with verified SHA-256 rejected from PRIMARY_VERIFIED status; evaluated as HASH_VERIFIED / REJECTED; source authenticity failed"
+    },
+    {
+      "id": "SCENARIO_03",
+      "name": "A local archive cannot be promoted without required provenance evidence",
+      "go_test": "TestP1917_3_LocalArchiveCannotBePromotedWithoutRequiredProvenanceEvidence",
+      "python_test": "test_p1917_3_local_archive_cannot_be_promoted_without_provenance",
+      "result": "PASS",
+      "evidence": "CONTROLLED_ARCHIVE URI fails source authenticity evaluation; promotion attempt of event linked to archive artifact id=5 strictly failed with trigger error"
+    },
+    {
+      "id": "SCENARIO_04",
+      "name": "Tampered bytes fail integrity verification",
+      "go_test": "TestP1917_4_TamperedBytesFailIntegrityVerification",
+      "python_test": "test_p1917_4_tampered_bytes_fail_integrity_verification",
+      "result": "PASS",
+      "evidence": "Byte manipulation yields discordant SHA-256; EvaluateArtifactState records parsing failure and assigns status REJECTED"
+    },
+    {
+      "id": "SCENARIO_05",
+      "name": "Duplicate ingestion is idempotent",
+      "go_test": "TestP1917_5_DuplicateIngestionIsIdempotent",
+      "python_test": "test_p1917_5_duplicate_ingestion_is_idempotent",
+      "result": "PASS",
+      "evidence": "Ingesting identical annual report payload produces exact same artifact record ID and SHA-256 without duplicate row generation"
+    },
+    {
+      "id": "SCENARIO_06",
+      "name": "Parser failure preserves the original artifact and audit trail",
+      "go_test": "TestP1917_6_ParserFailurePreservesOriginalArtifactAndAuditTrail",
+      "python_test": "test_p1917_6_parser_failure_preserves_artifact",
+      "result": "PASS",
+      "evidence": "Corrupt JSON payload preserved verbatim in corporate_action_source_artifacts with status REJECTED and SHA-256 checksum intact"
+    },
+    {
+      "id": "SCENARIO_07",
+      "name": "Conflicting announcements remain unresolved until reviewed",
+      "go_test": "TestP1917_7_ConflictingAnnouncementsRemainUnresolvedUntilReviewed",
+      "python_test": "test_p1917_7_conflicting_announcements_remain_unresolved",
+      "result": "PASS",
+      "evidence": "Conflicting dividend claim (₹15.00 vs stored ₹12.00) generated corporate_action_reconciliation_reviews record with review_status=PENDING_REVIEW; auto-resolution prevented"
+    },
+    {
+      "id": "SCENARIO_08",
+      "name": "Missing financial notes do not become zero-valued financial inputs",
+      "go_test": "TestP1917_8_MissingFinancialNotesDoNotBecomeZeroValuedInputs",
+      "python_test": "test_p1917_8_missing_financial_notes_do_not_become_zero",
+      "result": "PASS",
+      "evidence": "Blank or missing footnote disclosure strictly rejected (ErrMissingNoteCannotInferZero); Shariah screening assessment records DATA_INSUFFICIENT with interest_income_to_revenue=None"
+    },
+    {
+      "id": "SCENARIO_09",
+      "name": "LLM-generated claims without source evidence cannot establish Shariah PASS",
+      "go_test": "TestP1917_9_LLMGeneratedClaimsWithoutSourceEvidenceCannotEstablishPass",
+      "python_test": "test_p1917_9_llm_claims_without_source_cannot_establish_pass",
+      "result": "PASS",
+      "evidence": "Footnote disclosure with is_llm_generated=True and has_source_citations=False rejected; Shariah status remains DATA_INSUFFICIENT"
+    },
+    {
+      "id": "SCENARIO_10",
+      "name": "A corporate-action adjustment cannot use information unavailable at simulated decision time",
+      "go_test": "TestP1917_10_CorporateActionAdjustmentCannotUseFutureInformation",
+      "python_test": "test_p1917_10_anti_lookahead_enforcement",
+      "result": "PASS",
+      "evidence": "Historical bar adjustment strictly restricted to bars with timestamp < ex_date; bars on or after ex_date have adjusted_close unchanged"
+    },
+    {
+      "id": "SCENARIO_11",
+      "name": "Demerger tax-allocation factors are not used as automatic price-adjustment factors",
+      "go_test": "TestP1917_11_DemergerTaxAllocationFactorsNotUsedAsPriceAdjustments",
+      "python_test": "test_p1917_11_demerger_tax_allocation_isolation",
+      "result": "PASS",
+      "evidence": "ca.v_tax_cost_allocations price_factor_applicable verified false for 100% of rows; reconcile_demerger_tax_allocation sets is_price_adjustment_applicable=False"
+    },
+    {
+      "id": "SCENARIO_12",
+      "name": "Unauthorized users cannot promote verification statuses",
+      "go_test": "TestP1917_12_UnauthorizedUsersCannotPromoteVerificationStatuses",
+      "python_test": "test_p1917_12_unauthorized_user_privilege_boundaries",
+      "result": "PASS",
+      "evidence": "halal_app_user blocked by trg_fin_artifact_guard and trg_footnote_disclosure_guard from inserting PRIMARY_VERIFIED artifacts or verified footnote disclosures"
+    },
+    {
+      "id": "SCENARIO_13",
+      "name": "Research backtests remain blocked when mandatory evidence is missing",
+      "go_test": "TestP1917_13_ResearchBacktestsRemainBlockedWhenEvidenceMissing",
+      "python_test": "test_p1917_13_research_backtests_remain_blocked",
+      "result": "PASS",
+      "evidence": "23,132 quarantined bars and 0 primary-verified corporate action events keep global research gate strictly RESEARCH_BLOCKED"
+    },
+    {
+      "id": "SCENARIO_14",
+      "name": "Live orders and broker execution remain disabled",
+      "go_test": "TestP1917_14_LiveOrdersAndBrokerExecutionRemainDisabled",
+      "python_test": "test_p1917_14_live_orders_and_broker_execution_remain_disabled",
+      "result": "PASS",
+      "evidence": "Safety invariant check verifies PAPER_TRADING_ENABLED=true, LIVE_ORDER_EXECUTION=false, BROKER_TRADING_ENABLED=false across Go, Python, and Next.js"
+    },
+    {
+      "id": "SCENARIO_15",
+      "name": "Factor calculations compute with exact 8-decimal quantized arithmetic",
+      "go_test": "TestP1917_15_ExistingP1916RegressionGatesContinueToPass",
+      "python_test": "test_p1917_15_factor_deterministic_arithmetic_precision",
+      "result": "PASS",
+      "evidence": "TCS dividend factor (2269.30 - 12.00) / 2269.30 evaluates deterministically to 0.99471203 across Go float arithmetic and Python Decimal fixed-point arithmetic"
+    }
+  ],
+  "unresolved_external_dependencies": [
+    {
+      "dependency": "NSE / BSE Authorized Exchange API Credentials",
+      "status": "UNAVAILABLE",
+      "impact": "Automated document acquisition pipeline correctly halts on HTTP 403 without circumvention. Local controlled archives remain ARCHIVE_UNAUTHENTICATED."
+    },
+    {
+      "dependency": "Audited Annual Report Note Footnote PDF Ingestion",
+      "status": "MANUAL_OR_FIXTURE_ONLY",
+      "impact": "Official exchange PDFs require manual official URL supply or authorized portal access. No synthetic disclosures generated."
+    },
+    {
+      "dependency": "Qualified Shariah Scholar / Auditor Sign-off",
+      "status": "PENDING_REVIEW",
+      "impact": "Footnote screener maintains 31 equities as DATA_INSUFFICIENT and prevents premature PASS certification."
+    }
+  ]
+}

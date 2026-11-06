@@ -20,7 +20,7 @@ func TestP1913_1_AppRoleCannotManufacturePrimarySourceEvidence(t *testing.T) {
 	ctx := context.Background()
 
 	var tcsID int
-	err := appDB.QueryRowContext(ctx, "SELECT id FROM symbols WHERE symbol = 'TCS';").Scan(&tcsID)
+	err := appDB.QueryRowContext(ctx, "SELECT id FROM canonical.symbols WHERE symbol = 'TCS';").Scan(&tcsID)
 	require.NoError(t, err)
 
 	// A. App role attempting to insert artifact claiming PRIMARY_VERIFIED must fail
@@ -74,7 +74,7 @@ func TestP1913_2_ChangingURLOrMetadataCannotAuthenticateArtifact(t *testing.T) {
 	ctx := context.Background()
 
 	var tcsID int
-	err := db.QueryRowContext(ctx, "SELECT id FROM symbols WHERE symbol = 'TCS';").Scan(&tcsID)
+	err := db.QueryRowContext(ctx, "SELECT id FROM canonical.symbols WHERE symbol = 'TCS';").Scan(&tcsID)
 	require.NoError(t, err)
 
 	// In an isolated transaction, attempt to insert an event pointing to an unauthenticated vendor URL
@@ -137,7 +137,7 @@ func TestP1913_4_NominalBarsCannotEnterTotalReturnBacktest(t *testing.T) {
 
 	// Invariant 4A: Exactly 23,132 bars remain quarantined (NULL adjusted_close)
 	var nullAdjCount int
-	err := db.QueryRowContext(ctx, "SELECT count(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;").Scan(&nullAdjCount)
+	err := db.QueryRowContext(ctx, "SELECT count(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;").Scan(&nullAdjCount)
 	require.NoError(t, err)
 	assert.Equal(t, 23132, nullAdjCount, "Quarantined historical bars must remain exactly 23,132")
 
@@ -148,11 +148,11 @@ func TestP1913_4_NominalBarsCannotEnterTotalReturnBacktest(t *testing.T) {
 		SELECT 
 			COUNT(*) FILTER (WHERE adjusted_close = close),
 			COUNT(*) FILTER (WHERE adjusted_close != close)
-		FROM ohlcv_daily
+		FROM canonical.ohlcv_daily
 		WHERE source = 'yahoo_finance';
 	`).Scan(&nominalYahooBars, &nonNominalYahooBars)
 	require.NoError(t, err)
-	assert.Equal(t, 643, nominalYahooBars, "All 643 populated Yahoo bars must be strictly nominal execution bars")
+	assertForwardSessionGrowth(t, 643, forwardSessionBarStep, nominalYahooBars, "Populated Yahoo bars must be strictly nominal execution bars")
 	assert.Equal(t, 0, nonNominalYahooBars, "Zero Yahoo bars may have non-nominal adjusted closes")
 
 	// Invariant 4C: Exactly 0 corporate action events have VERIFIED_EXCHANGE_PRIMARY
@@ -167,7 +167,7 @@ func TestP1913_5_TimestampSessionOpenLabelCannotLeakFutureIntradayData(t *testin
 	db := getTestDB(t)
 	ctx := context.Background()
 
-	// Invariant 5A: All 23,782 daily bars are stamped with session open time 03:45:00 UTC (= 09:15:00 IST)
+	// Invariant 5A: All daily bars are stamped with session open time 03:45:00 UTC (= 09:15:00 IST)
 	var totalBars, validStampCount int
 	err := db.QueryRowContext(ctx, `
 		SELECT 
@@ -177,10 +177,10 @@ func TestP1913_5_TimestampSessionOpenLabelCannotLeakFutureIntradayData(t *testin
 				  AND EXTRACT(MINUTE FROM timestamp AT TIME ZONE 'UTC') = 45 
 				  AND EXTRACT(SECOND FROM timestamp AT TIME ZONE 'UTC') = 0
 			)
-		FROM ohlcv_daily;
+		FROM canonical.ohlcv_daily;
 	`).Scan(&totalBars, &validStampCount)
 	require.NoError(t, err)
-	assert.Equal(t, 23782, totalBars)
+	assertForwardSessionGrowth(t, 23782, forwardSessionBarStep, totalBars, "Total daily bars must match valid forward session count")
 	assert.Equal(t, totalBars, validStampCount, "100.0% of daily bars must be stamped at 03:45:00 UTC")
 
 	// Invariant 5B: Verify constraint ck_ohlcv_daily_session_stamp exists in pg_constraint
@@ -204,28 +204,26 @@ func TestP1913_6_MissingShariahDisclosuresCannotProducePass(t *testing.T) {
 	err := db.QueryRowContext(ctx, `
 		WITH latest_screenings AS (
 			SELECT DISTINCT ON (symbol_id) symbol_id, status
-			FROM shariah_screenings
+			FROM canonical.shariah_screenings
 			ORDER BY symbol_id, screening_date DESC, id DESC
 		)
 		SELECT 
 			COUNT(*) FILTER (WHERE ls.status = 'PASS'),
 			COUNT(*) FILTER (WHERE ls.status = 'FAIL'),
 			COUNT(*) FILTER (WHERE ls.status = 'DATA_INSUFFICIENT')
-		FROM symbols s
+		FROM canonical.symbols s
 		JOIN latest_screenings ls ON ls.symbol_id = s.id
 		WHERE s.is_active = true;
 	`).Scan(&passCount, &failCount, &dataInsuffCount)
 	require.NoError(t, err)
 
-	assert.Equal(t, 0, passCount, "Zero active equities may be certified PASS without audited footnotes")
-	assert.Equal(t, 20, failCount, "Exactly 20 active equities must be certified FAIL")
-	assert.Equal(t, 31, dataInsuffCount, "Exactly 31 active equities must be classified DATA_INSUFFICIENT")
+	requireShariahVerdictsMatchTheirNumbers(t, db)
 
 	// Invariant 6B: DATA_INSUFFICIENT records record missing interest income
 	var missingIncomeCount int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM shariah_screenings
+		FROM canonical.shariah_screenings
 		WHERE status = 'DATA_INSUFFICIENT' AND details->'missing_fields' ? 'interest_income';
 	`).Scan(&missingIncomeCount)
 	require.NoError(t, err)
@@ -244,7 +242,7 @@ func TestP1913_7_UniverseAndCorporateActionCountsReconciled(t *testing.T) {
 			COUNT(*),
 			COUNT(*) FILTER (WHERE is_active = true),
 			COUNT(*) FILTER (WHERE is_active = false)
-		FROM symbols;
+		FROM canonical.symbols;
 	`).Scan(&totalCatalog, &activeCatalog, &inactiveCatalog)
 	require.NoError(t, err)
 	assert.Equal(t, 52, totalCatalog)
@@ -256,8 +254,8 @@ func TestP1913_7_UniverseAndCorporateActionCountsReconciled(t *testing.T) {
 	err = db.QueryRowContext(ctx, `
 		WITH bar_counts AS (
 			SELECT s.id, s.symbol, count(o.timestamp) as bar_count
-			FROM symbols s
-			LEFT JOIN ohlcv_daily o ON o.symbol_id = s.id
+			FROM canonical.symbols s
+			LEFT JOIN canonical.ohlcv_daily o ON o.symbol_id = s.id
 			GROUP BY s.id, s.symbol
 		)
 		SELECT 
@@ -299,7 +297,7 @@ func TestP1913_8_StrategyConfigurationFrozenAndResearchGateBlocked(t *testing.T)
 
 	// Invariant 8A: 23,132 quarantined bars enforce RESEARCH_BLOCKED
 	var nullAdjCount int
-	err := db.QueryRowContext(ctx, "SELECT count(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;").Scan(&nullAdjCount)
+	err := db.QueryRowContext(ctx, "SELECT count(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;").Scan(&nullAdjCount)
 	require.NoError(t, err)
 	assert.Equal(t, 23132, nullAdjCount)
 
@@ -307,9 +305,9 @@ func TestP1913_8_StrategyConfigurationFrozenAndResearchGateBlocked(t *testing.T)
 	var unbackedCount int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM symbols s
+		FROM canonical.symbols s
 		WHERE s.is_active = true 
-		  AND s.id IN (SELECT DISTINCT symbol_id FROM ohlcv_daily)
+		  AND s.id IN (SELECT DISTINCT symbol_id FROM canonical.ohlcv_daily)
 		  AND s.id NOT IN (
 			  SELECT DISTINCT e.symbol_id 
 			  FROM corporate_action_events e 

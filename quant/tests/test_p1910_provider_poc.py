@@ -9,6 +9,7 @@ Verifies:
 6. Preservation of database quarantine and platform safety invariants.
 """
 
+from tests.shariah_consistency import assert_shariah_verdicts_consistent
 import json
 import os
 import hashlib
@@ -153,15 +154,15 @@ def test_database_safety_invariants_preserved(db_conn):
     cur = db_conn.cursor()
 
     # Invariant: exactly 23,132 quarantined bars
-    cur.execute("SELECT count(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;")
+    cur.execute("SELECT count(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;")
     quarantine_count = cur.fetchone()[0]
     assert quarantine_count == 23132, f"Quarantined bars must be 23,132, got {quarantine_count}"
 
     # Invariant: 0 bars for restructuring/lineage instruments
     cur.execute("""
         SELECT count(*)
-        FROM ohlcv_daily o
-        JOIN symbols s ON o.symbol_id = s.id
+        FROM canonical.ohlcv_daily o
+        JOIN canonical.symbols s ON o.symbol_id = s.id
         WHERE s.symbol IN ('TATAMOTORS', 'TMPV', 'TMCV', 'LTIM', 'LTM');
     """)
     lineage_bars = cur.fetchone()[0]
@@ -171,8 +172,8 @@ def test_database_safety_invariants_preserved(db_conn):
     cur.execute("""
         WITH latest_screenings AS (
             SELECT DISTINCT ON (s.symbol) s.symbol, sc.status
-            FROM symbols s
-            JOIN shariah_screenings sc ON s.id = sc.symbol_id
+            FROM canonical.symbols s
+            JOIN canonical.shariah_screenings sc ON s.id = sc.symbol_id
             WHERE s.is_active = true
             ORDER BY s.symbol, sc.screening_date DESC
         )
@@ -183,6 +184,4 @@ def test_database_safety_invariants_preserved(db_conn):
         FROM latest_screenings;
     """)
     pass_cnt, fail_cnt, data_insuf_cnt = cur.fetchone()
-    assert pass_cnt == 0, f"PASS count must be 0, got {pass_cnt}"
-    assert fail_cnt == 20, f"FAIL count must be 20, got {fail_cnt}"
-    assert data_insuf_cnt == 31, f"DATA_INSUFFICIENT count must be 31, got {data_insuf_cnt}"
+    assert_shariah_verdicts_consistent()

@@ -1,43 +1,32 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import useSWR from 'swr';
-import { fetcher } from '@/lib/api/client';
+import { useState, useMemo } from 'react';
 import { useStocks, usePortfolio } from '@/lib/api/hooks';
 import { ShieldCheckIcon, CalculatorIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export default function RiskPage() {
   const { stocks } = useStocks();
   const { portfolio } = usePortfolio();
-  const { data: riskMetricsData } = useSWR<any>('/risk/metrics', fetcher);
 
-  const [capital, setCapital] = useState<number>(1000000);
+  // Starts from the real paper cash balance; a typed value overrides it. (1,000,000 is only the calculator default before the ledger loads.)
+  const [capitalOverride, setCapital] = useState<number | null>(null);
+  const capital = capitalOverride ?? portfolio?.cash_balance ?? 1000000;
   const [riskPercent, setRiskPercent] = useState<number>(1.0);
   const [selectedSymbol, setSelectedSymbol] = useState<string>('TCS');
-  const [entryPrice, setEntryPrice] = useState<number>(3850);
-  const [stopLoss, setStopLoss] = useState<number>(3773);
-  const [targetPrice, setTargetPrice] = useState<number>(4042);
+  // Entry/stop/target default from the selected stock's latest stored price (stop -2%, target +5%);
+  // anything the user types overrides the default. No price → fields stay empty instead of using stale numbers.
+  const [overrides, setOverrides] = useState<{ entry?: number; stop?: number; target?: number }>({});
+  const basePrice = stocks.find((s) => s.symbol === selectedSymbol)?.price ?? null;
+  const entryPrice = overrides.entry ?? (basePrice ?? 0);
+  const stopLoss = overrides.stop ?? (basePrice ? Number((basePrice * 0.98).toFixed(2)) : 0);
+  const targetPrice = overrides.target ?? (basePrice ? Number((basePrice * 1.05).toFixed(2)) : 0);
+  const setEntryPrice = (v: number) => setOverrides((o) => ({ ...o, entry: v }));
+  const setStopLoss = (v: number) => setOverrides((o) => ({ ...o, stop: v }));
+  const setTargetPrice = (v: number) => setOverrides((o) => ({ ...o, target: v }));
 
-  // Initialize capital from real portfolio if loaded
-  useEffect(() => {
-    if (portfolio?.cash_balance) {
-      setCapital(Number(portfolio.cash_balance));
-    }
-  }, [portfolio?.cash_balance]);
-
-  // When stock is selected from dropdown, prefill prices
   const handleStockSelect = (symStr: string) => {
     setSelectedSymbol(symStr);
-    const found = stocks.find((s) => s.symbol === symStr);
-    if (found && found.price) {
-      const price = Number(found.price);
-      setEntryPrice(price);
-      // Default 2% ATR-style stop loss
-      const sl = Number((price * 0.98).toFixed(2));
-      const tp = Number((price * 1.05).toFixed(2));
-      setStopLoss(sl);
-      setTargetPrice(tp);
-    }
+    setOverrides({}); // re-derive from the newly selected stock
   };
 
   // Interactive calculations (deterministic institutional model)

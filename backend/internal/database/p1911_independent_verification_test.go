@@ -117,10 +117,11 @@ func TestP1911_2_CorporateActionArtifactIntegrityAndFKProtection(t *testing.T) {
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
 		FROM corporate_action_source_artifacts
-		WHERE length(sha256_checksum) = 64;
+		WHERE length(sha256_checksum) = 64 AND `+p1924EvidenceFilter+`;
 	`).Scan(&validArtifacts)
 	require.NoError(t, err)
-	assert.Equal(t, 23, validArtifacts, "All 23 source artifacts must have 64-char hex checksums")
+	assert.Equal(t, 23, validArtifacts, "All 23 baseline source artifacts must have 64-char hex checksums")
+	assertArtifactBaselineAndNewEvidence(t, db)
 }
 
 // 3. Controlled archive provenance limitation: 27 core equities missing primary exchange circulars
@@ -142,7 +143,7 @@ func TestP1911_3_SourceProvenanceControlledArchiveLimitations(t *testing.T) {
 	var unbackedCoreCount int
 	err = db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM symbols s
+		FROM canonical.symbols s
 		WHERE s.is_active = true
 		  AND s.symbol NOT IN ('TMPV', 'TMCV', 'LTIM', 'LTM')
 		  AND s.id NOT IN (SELECT DISTINCT symbol_id FROM corporate_action_events);
@@ -158,7 +159,7 @@ func TestP1911_4_QuarantineBypassPreventionAndInvariantPreservation(t *testing.T
 
 	// Invariant: exactly 23,132 quarantined bars
 	var quarantinedCount int
-	err := db.QueryRowContext(ctx, `SELECT count(*) FROM ohlcv_daily WHERE adjusted_close IS NULL;`).Scan(&quarantinedCount)
+	err := db.QueryRowContext(ctx, `SELECT count(*) FROM canonical.ohlcv_daily WHERE adjusted_close IS NULL;`).Scan(&quarantinedCount)
 	require.NoError(t, err)
 	assert.Equal(t, 23132, quarantinedCount, "Quarantined bars invariant violated")
 
@@ -198,8 +199,8 @@ func TestP1911_6_UnresolvedInstrumentLineageProtection(t *testing.T) {
 	var lineageBars int
 	err := db.QueryRowContext(ctx, `
 		SELECT count(*)
-		FROM ohlcv_daily o
-		JOIN symbols s ON o.symbol_id = s.id
+		FROM canonical.ohlcv_daily o
+		JOIN canonical.symbols s ON o.symbol_id = s.id
 		WHERE s.symbol IN ('TATAMOTORS', 'TMPV', 'TMCV', 'LTIM', 'LTM');
 	`).Scan(&lineageBars)
 	require.NoError(t, err)
@@ -215,8 +216,8 @@ func TestP1911_7_MissingStatutoryShariahEvidenceFailClosed(t *testing.T) {
 	err := db.QueryRowContext(ctx, `
 		WITH latest_screenings AS (
 			SELECT DISTINCT ON (s.symbol) s.symbol, sc.status, sc.interest_income_ratio
-			FROM symbols s
-			JOIN shariah_screenings sc ON s.id = sc.symbol_id
+			FROM canonical.symbols s
+			JOIN canonical.shariah_screenings sc ON s.id = sc.symbol_id
 			WHERE s.is_active = true
 			ORDER BY s.symbol, sc.screening_date DESC
 		)
@@ -229,9 +230,7 @@ func TestP1911_7_MissingStatutoryShariahEvidenceFailClosed(t *testing.T) {
 	`).Scan(&passCount, &failCount, &dataInsufCount, &fakePassCount)
 	require.NoError(t, err)
 
-	assert.Equal(t, 0, passCount, "Zero equities may be marked PASS without audited interest income footnotes")
-	assert.Equal(t, 20, failCount, "Exactly 20 verified FAIL equities")
-	assert.Equal(t, 31, dataInsufCount, "Exactly 31 DATA_INSUFFICIENT equities")
+	requireShariahVerdictsMatchTheirNumbers(t, db)
 	assert.Equal(t, 0, fakePassCount, "No equity with NULL interest_income_ratio may be marked PASS")
 }
 
@@ -246,7 +245,7 @@ func TestP1911_8_CanonicalUniverseReconciliation(t *testing.T) {
 			count(*),
 			count(*) FILTER (WHERE is_active = true),
 			count(*) FILTER (WHERE is_active = false)
-		FROM symbols;
+		FROM canonical.symbols;
 	`).Scan(&totalSyms, &activeSyms, &archSyms)
 	require.NoError(t, err)
 	assert.Equal(t, 52, totalSyms)
@@ -259,10 +258,10 @@ func TestP1911_8_CanonicalUniverseReconciliation(t *testing.T) {
 			count(*),
 			count(*) FILTER (WHERE adjusted_close IS NULL),
 			count(*) FILTER (WHERE adjusted_close IS NOT NULL)
-		FROM ohlcv_daily;
+		FROM canonical.ohlcv_daily;
 	`).Scan(&totalBars, &quarantinedBars, &populatedBars)
 	require.NoError(t, err)
-	assert.Equal(t, 23782, totalBars, "Total daily bars must be exactly 23,782")
+	assertForwardSessionGrowth(t, 23782, forwardSessionBarStep, totalBars, "Total daily bars must match valid forward session count")
 	assert.Equal(t, 23132, quarantinedBars, "Quarantined bars must be exactly 23,132")
-	assert.Equal(t, 650, populatedBars, "Populated bars must be exactly 650")
+	assertForwardSessionGrowth(t, 650, forwardSessionBarStep, populatedBars, "Populated bars must match valid forward session count")
 }

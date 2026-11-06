@@ -24,6 +24,7 @@ import (
 type Pipeline struct {
 	db               *database.DB
 	marketProvider   marketdata.MarketDataProvider
+	yahoo            *yahoofinance.Provider
 	truedataProvider marketdata.MarketDataProvider
 	fallbackProvider marketdata.MarketDataProvider
 	fundProvider     marketdata.FundamentalDataProvider
@@ -42,6 +43,7 @@ func NewPipeline(db *database.DB, notifier *notifications.TelegramNotifier) *Pip
 	return &Pipeline{
 		db:               db,
 		marketProvider:   yf,
+		yahoo:            yf,
 		truedataProvider: td,
 		fallbackProvider: nil, // nse doesn't implement GetDailyCandles yet, but we will add it or stub it. Actually let's just make nse implement it or use a mock if we have to. Wait, we can't use nse as MarketDataProvider if it doesn't implement it. Let's cast it if we can. Or we can just set it to nil for now and see. Wait, I must add GetDailyCandles to nsedata.
 		fundProvider:     yf,
@@ -87,7 +89,7 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 
 	// 2. Determine fetch range (incremental)
 	var from time.Time
-	latestTS, err := p.db.GetLatestIntradayOHLCVTimestamp(ctx, symbolID)
+	latestTS, err := p.db.IntradayResumePoint(ctx, symbolID)
 	if err != nil || latestTS == nil {
 		// No existing data — fetch last 1 day for intraday
 		from = time.Now().AddDate(0, 0, -1)
@@ -99,6 +101,14 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 		}
 	}
 	to := time.Now()
+
+	// Recover earlier holes (e.g. an ingestion outage) while the provider can still serve them.
+	if start, rerr := recoveryStart(ctx, symbolID, to, p.db.CountValidIntradayBars); rerr != nil {
+		log.Printf("[PIPELINE] %s: gap check failed: %v", symbol, rerr)
+	} else if start != nil && start.Before(from) {
+		log.Printf("[PIPELINE] %s: incomplete session found, recovering from %s", symbol, start.Format(time.RFC3339))
+		from = *start
+	}
 
 	if from.After(to) {
 		report.Duration = time.Since(start)
@@ -149,7 +159,7 @@ func (p *Pipeline) IngestSymbol(ctx context.Context, symbol, name string) (*Inge
 		report.Duration = time.Since(start)
 		return report, nil
 	}
-	candles := dataPoint.Data
+	candles := finishedMinutes(dataPoint.Data, time.Now())
 	report.CandlesFetched = len(candles)
 
 	if len(candles) == 0 {
@@ -336,4 +346,30 @@ func (p *Pipeline) IngestNIFTY50(ctx context.Context) []IngestReport {
 
 	log.Printf("[PIPELINE] Starting NIFTY 50 ingestion (%d symbols)", len(nifty50))
 	return p.IngestBatch(ctx, nifty50)
+}
+
+// IngestUserAdded ingests the instruments the owner added through the UI, alongside the NIFTY 50.
+func (p *Pipeline) IngestUserAdded(ctx context.Context) []IngestReport {
+	added, err := p.db.UserAddedSymbols(ctx)
+	if err != nil || len(added) == 0 {
+		if err != nil {
+			log.Printf("[PIPELINE] cannot list user-added symbols: %v", err)
+		}
+		return nil
+	}
+	log.Printf("[PIPELINE] Ingesting %d user-added symbols", len(added))
+	return p.IngestBatch(ctx, added)
+}
+
+// finishedMinutes keeps only minutes that have ended. The provider's last entry is the minute still forming (often a
+// zero-volume tick with a seconds timestamp); stored, it would read as a bad bar and leave a hole in the record.
+func finishedMinutes(candles []models.OHLCV, now time.Time) []models.OHLCV {
+	out := make([]models.OHLCV, 0, len(candles))
+	for _, c := range candles {
+		if c.Timestamp.Second() != 0 || c.Timestamp.Add(time.Minute).After(now) {
+			continue
+		}
+		out = append(out, c)
+	}
+	return out
 }

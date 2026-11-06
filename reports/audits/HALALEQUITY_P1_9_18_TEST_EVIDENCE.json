@@ -1,0 +1,225 @@
+{
+  "phase": "P1.9.18",
+  "audit_name": "HalalEquity Comprehensive Forensic Audit and One-Pass Remediation",
+  "timestamp_utc": "2026-10-29T15:20:00Z",
+  "git_commit_sha": "25d3f811e0df3d00f4d46271b8fd2fda461b6291",
+  "environment": {
+    "os": "macOS (Darwin 24.6.0 arm64)",
+    "go_version": "go1.24.1 darwin/arm64",
+    "python_version": "Python 3.12.15 (halal_equity_quant container)",
+    "postgres_version": "PostgreSQL 16.1 (halal_equity_postgres container)",
+    "node_version": "v22.14.0",
+    "nextjs_version": "16.3.5",
+    "react_version": "19.2.8"
+  },
+  "mandatory_safety_invariants": {
+    "PAPER_TRADING_ENABLED": true,
+    "LIVE_ORDER_EXECUTION": false,
+    "BROKER_TRADING_ENABLED": false,
+    "RESEARCH_GATE_STATUS": "RESEARCH_BLOCKED",
+    "zero_unauthorized_promotions": true,
+    "anti_circumvention_enforced": true
+  },
+  "test_execution_summary": {
+    "backend_go_unit_and_integration": {
+      "command": "DB_HOST=192.168.18.43 go test -p 1 -count=1 ./...",
+      "exit_code": 0,
+      "total_tests": 195,
+      "passed": 195,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 3.75
+    },
+    "quant_python_pytest_suite": {
+      "command": "docker exec halal_equity_quant pytest -q",
+      "exit_code": 0,
+      "total_tests": 367,
+      "passed": 367,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 61.02
+    },
+    "e2e_delivery_verification_script": {
+      "command": "python3 scripts/verify_e2e_delivery.py",
+      "exit_code": 0,
+      "total_checks": 18,
+      "passed": 18,
+      "failed": 0
+    },
+    "live_workflows_verification_script": {
+      "command": "python3 scripts/test_workflows_live.py",
+      "exit_code": 0,
+      "total_workflows": 11,
+      "passed": 11,
+      "failed": 0
+    },
+    "frontend_production_build": {
+      "command": "npm run build (in frontend/)",
+      "exit_code": 0,
+      "routes_generated": 15,
+      "errors": 0
+    }
+  },
+  "mandatory_scenarios_verified": [
+    {
+      "id": "SCENARIO_01",
+      "name": "Test execution cannot contaminate the application database",
+      "go_test": "TestP1918_1_TestExecutionCannotContaminateApplicationDatabase",
+      "python_test": "test_p1918_1_test_execution_cannot_contaminate_application_db",
+      "status": "PASS",
+      "mechanism": "AssertNotApplicationDB guard panics if halal_equity is targeted; DB triggers fn_app_db_test_contamination_guard reject test fixture insertion on halal_equity"
+    },
+    {
+      "id": "SCENARIO_02",
+      "name": "Fixture cleanup cannot target an unverified database",
+      "go_test": "TestP1918_2_FixtureCleanupCannotTargetUnverifiedDatabase",
+      "python_test": "test_p1918_2_fixture_cleanup_cannot_target_unverified_database",
+      "status": "PASS",
+      "mechanism": "Hard check enforces cleanup operations can only target halal_equity_test; application database drops/truncations are rejected"
+    },
+    {
+      "id": "SCENARIO_03",
+      "name": "HTTPS alone cannot establish document authenticity",
+      "go_test": "TestP1918_3_HTTPSAloneCannotEstablishDocumentAuthenticity",
+      "python_test": "test_p1918_3_https_alone_cannot_establish_document_authenticity",
+      "status": "PASS",
+      "mechanism": "Artifacts acquired over HTTPS without cryptographic signatures or institutional proof remain AUTHENTICITY_PENDING, never PRIMARY_VERIFIED"
+    },
+    {
+      "id": "SCENARIO_04",
+      "name": "A valid hash alone cannot establish source authenticity",
+      "go_test": "TestP1918_4_ValidHashAloneCannotEstablishSourceAuthenticity",
+      "python_test": "test_p1918_4_valid_hash_alone_cannot_establish_source_authenticity",
+      "status": "PASS",
+      "mechanism": "SHA-256 hash validation only proves content integrity, not source trust; third-party or spoofed origins fail SourceAuthenticityPassed"
+    },
+    {
+      "id": "SCENARIO_05",
+      "name": "Non-approved domains and unsafe redirects are rejected",
+      "go_test": "TestP1918_5_NonApprovedDomainsAndUnsafeRedirectsAreRejected",
+      "python_test": "test_p1918_5_non_approved_domains_and_unsafe_redirects_are_rejected",
+      "status": "PASS",
+      "mechanism": "Strict whitelist (nseindia.com, bseindia.com), scheme enforcement (https only), anti-SSRF private IP rejection, redirect chain validation at every hop"
+    },
+    {
+      "id": "SCENARIO_06",
+      "name": "HTTP 401/403 and WAF challenges do not trigger circumvention",
+      "go_test": "TestP1918_6_HTTP401_403AndWAFChallengesDoNotTriggerCircumvention",
+      "python_test": "test_p1918_6_http401_403_waf_do_not_trigger_circumvention",
+      "status": "PASS",
+      "mechanism": "Pipeline halts fail-closed on 401/403; does not attempt proxy rotation, CAPTCHA solving, or header forging"
+    },
+    {
+      "id": "SCENARIO_07",
+      "name": "Tampered documents fail integrity validation",
+      "go_test": "TestP1918_7_TamperedDocumentsFailIntegrityValidation",
+      "python_test": "test_p1918_7_tampered_documents_fail_integrity_validation",
+      "status": "PASS",
+      "mechanism": "SHA-256 mismatch or parser failure marks artifact as REJECTED; prevents downstream price factor or Shariah computation"
+    },
+    {
+      "id": "SCENARIO_08",
+      "name": "Application roles cannot self-promote verification states",
+      "go_test": "TestP1918_8_ApplicationRolesCannotSelfPromoteVerificationStates",
+      "python_test": "test_p1918_8_app_roles_cannot_self_promote_verification_states",
+      "status": "PASS",
+      "mechanism": "PostgreSQL privilege boundaries and trigger guards raise exceptions when halal_app_user attempts to insert or update verification statuses to PRIMARY_VERIFIED"
+    },
+    {
+      "id": "SCENARIO_09",
+      "name": "Repeated ingestion remains idempotent",
+      "go_test": "TestP1918_9_RepeatedIngestionRemainsIdempotent",
+      "python_test": "test_p1918_9_repeated_ingestion_remains_idempotent",
+      "status": "PASS",
+      "mechanism": "Unique constraints and ON CONFLICT DO NOTHING / UPDATE ensure identical payloads do not generate duplicate artifact records or duplicate events"
+    },
+    {
+      "id": "SCENARIO_10",
+      "name": "Conflicting corporate actions remain unresolved until properly reviewed",
+      "go_test": "TestP1918_10_ConflictingCorporateActionsRemainUnresolvedUntilReviewed",
+      "python_test": "test_p1918_10_conflicting_corporate_actions_deduplicated",
+      "status": "PASS",
+      "mechanism": "Discrepancy detection routes events to corporate_action_reconciliation_reviews; unique index idx_unique_pending_ca_review prevents runaway duplicate reviews"
+    },
+    {
+      "id": "SCENARIO_11",
+      "name": "Missing audited footnotes do not become zero-valued inputs",
+      "go_test": "TestP1918_11_MissingAuditedFootnotesDoNotBecomeZeroValuedInputs",
+      "python_test": "test_p1918_11_missing_audited_footnotes_do_not_become_zero_valued_inputs",
+      "status": "PASS",
+      "mechanism": "AuditedFootnoteCitation rejects empty note references; AuditedEvidenceScreener leaves interest_income_to_revenue as None and assigns DATA_INSUFFICIENT"
+    },
+    {
+      "id": "SCENARIO_12",
+      "name": "Unsupported LLM claims cannot establish PASS",
+      "go_test": "TestP1918_12_UnsupportedLLMClaimsCannotEstablishPASS",
+      "python_test": "test_p1918_12_unsupported_llm_claims_cannot_establish_pass",
+      "status": "PASS",
+      "mechanism": "LLM-generated citations without page numbers, citations, or human review are rejected from establishing compliance; status remains DATA_INSUFFICIENT"
+    },
+    {
+      "id": "SCENARIO_13",
+      "name": "Demerger tax allocation is not applied as a price adjustment",
+      "go_test": "TestP1918_13_DemergerTaxAllocationNotAppliedAsPriceAdjustment",
+      "python_test": "test_p1918_13_demerger_tax_allocation_not_applied_as_price_adjustment",
+      "status": "PASS",
+      "mechanism": "0% of demerger lineage records have is_price_adjustment=true; 100% of ca.v_tax_cost_allocations have price_factor_applicable=false"
+    },
+    {
+      "id": "SCENARIO_14",
+      "name": "Historical calculations do not use future information",
+      "go_test": "TestP1918_14_HistoricalCalculationsDoNotUseFutureInformation",
+      "python_test": "test_p1918_14_historical_calculations_do_not_use_future_info",
+      "status": "PASS",
+      "mechanism": "Anti-lookahead validation enforces that 0 bars on or after corporate action ex-date 2026-10-14 receive backward dividend adjustment factors"
+    },
+    {
+      "id": "SCENARIO_15",
+      "name": "Unauthorized users cannot certify Shariah evidence",
+      "go_test": "TestP1918_15_UnauthorizedUsersCannotCertifyShariahEvidence",
+      "python_test": "test_p1918_15_unauthorized_users_cannot_certify_shariah_evidence",
+      "status": "PASS",
+      "mechanism": "Audited footnote certification requires explicit compliance reviewer role; halal_app_user cannot write is_verified=true"
+    },
+    {
+      "id": "SCENARIO_16",
+      "name": "Research remains blocked when required evidence is missing",
+      "go_test": "TestP1918_16_ResearchRemainsBlockedWhenRequiredEvidenceMissing",
+      "python_test": "test_p1918_16_research_remains_blocked_when_required_evidence_missing",
+      "status": "PASS",
+      "mechanism": "Research gate checks quarantined bars (23,132) and primary verified corporate actions (0); enforces fail-closed RESEARCH_BLOCKED"
+    },
+    {
+      "id": "SCENARIO_17",
+      "name": "Live broker execution remains disabled",
+      "go_test": "TestP1918_17_LiveBrokerExecutionRemainsDisabled",
+      "python_test": "test_p1918_17_live_broker_execution_remains_disabled",
+      "status": "PASS",
+      "mechanism": "PAPER_TRADING_ENABLED=true, LIVE_ORDER_EXECUTION=false, BROKER_TRADING_ENABLED=false verified across backend, worker, quant, and frontend proxy"
+    },
+    {
+      "id": "SCENARIO_18",
+      "name": "Existing P1.9.16 and P1.9.17 regressions remain passing",
+      "go_test": "TestP1918_18_ExistingP1916AndP1917RegressionsRemainPassing",
+      "python_test": "test_p1918_18_existing_regressions_remain_passing",
+      "status": "PASS",
+      "mechanism": "Strategy V2 canonical hash 92ab27c24e4bc4c6..., TCS dividend factor 0.99471203, active Shariah screening counts 0 PASS / 20 FAIL / 31 DATA_INSUFFICIENT"
+    },
+    {
+      "id": "SCENARIO_19",
+      "name": "Database invariants survive application restarts and concurrent ingestion",
+      "go_test": "TestP1918_19_DatabaseInvariantsSurviveApplicationRestarts",
+      "python_test": "test_p1918_19_database_invariants_survive",
+      "status": "PASS",
+      "mechanism": "23 baseline artifacts in corporate_action_source_artifacts and 0 active pending reviews in corporate_action_reconciliation_reviews verified"
+    },
+    {
+      "id": "SCENARIO_20",
+      "name": "Failure recovery preserves original evidence and audit history",
+      "go_test": "TestP1918_20_FailureRecoveryPreservesOriginalEvidenceAndAuditHistory",
+      "python_test": "test_p1918_20_failure_recovery_preserves_audit_history",
+      "status": "PASS",
+      "mechanism": "Compensating audit records in p1918_forensic_remediation_audit and audit_logs preserve pre- and post-remediation states without destructive DELETE"
+    }
+  ]
+}

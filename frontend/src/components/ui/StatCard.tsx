@@ -5,11 +5,14 @@ interface StatCardProps {
   title: string;
   value: string;
   change?: string;
+  /** What `change` is measured against, e.g. "since inception". Omitted when it is not a comparison. */
+  changeLabel?: string;
+  /** true/false colours and points the change; leave undefined for a neutral, non-directional note. */
   isPositive?: boolean;
   icon: ReactNode;
 }
 
-export default function StatCard({ title, value, change, isPositive, icon }: StatCardProps) {
+export default function StatCard({ title, value, change, changeLabel, isPositive, icon }: StatCardProps) {
   return (
     <Card gradientHover>
       <div className="flex items-start justify-between">
@@ -18,10 +21,10 @@ export default function StatCard({ title, value, change, isPositive, icon }: Sta
           <h3 className="text-3xl font-heading font-bold text-white mt-2 tracking-tight">{value}</h3>
           
           {change && (
-            <div className={`flex items-center gap-1 mt-2 text-sm font-medium ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
-              <span>{isPositive ? '↑' : '↓'}</span>
+            <div className={`flex items-center gap-1 mt-2 text-sm font-medium ${isPositive === undefined ? 'text-slate-400' : isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {isPositive !== undefined && <span>{isPositive ? '↑' : '↓'}</span>}
               <span>{change}</span>
-              <span className="text-slate-500 ml-1">vs last month</span>
+              {changeLabel && <span className="text-slate-500 ml-1">{changeLabel}</span>}
             </div>
           )}
         </div>

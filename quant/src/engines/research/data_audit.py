@@ -48,7 +48,7 @@ def audit_daily(conn, symbol_filter: Optional[List[str]] = None) -> Dict[str, An
     cur.execute(f"""
         SELECT s.symbol, (o.timestamp AT TIME ZONE 'Asia/Kolkata')::date, o.volume, o.open, o.high, o.low, o.close,
                o.quality_status::text, (o.timestamp AT TIME ZONE 'UTC')::time::text, o.adjusted_close
-        FROM ohlcv_daily o JOIN symbols s ON s.id = o.symbol_id WHERE true {where}""", params)
+        FROM ohlcv_daily o JOIN symbols s ON s.id = o.symbol_id WHERE COALESCE(s.metadata->>'user_added', 'false') <> 'true' {where}""", params)
     rows = cur.fetchall()
     if not rows:
         raise RuntimeError("ohlcv_daily returned no rows; refusing to report coverage")

@@ -6,6 +6,7 @@ universe lineage reconciliation, historical bar classification, look-ahead safet
 Shariah fail-closed screening, and platform research gate lock.
 """
 
+from tests.shariah_consistency import assert_shariah_verdicts_consistent
 import os
 import pytest
 import psycopg2
@@ -88,7 +89,7 @@ class TestComprehensiveRemediationReleaseGate:
                 count(*) FILTER (WHERE is_active = true),
                 count(*) FILTER (WHERE is_active = false),
                 count(*) FILTER (WHERE sector IS NULL OR TRIM(sector) = '')
-            FROM symbols;
+            FROM canonical.symbols;
         """)
         total, active, archived, empty_sectors = cur.fetchone()
 
@@ -127,13 +128,16 @@ class TestComprehensiveRemediationReleaseGate:
                 count(*) FILTER (WHERE adjusted_close IS NULL),
                 count(*) FILTER (WHERE adjusted_close IS NOT NULL AND source = 'yahoo_finance'),
                 count(*) FILTER (WHERE adjusted_close IS NOT NULL AND source = 'NSE_CORPORATE_ACTION')
-            FROM ohlcv_daily;
+            FROM canonical.ohlcv_daily;
         """)
         total, quarantined, yahoo_nominal, tcs_adjusted = cur.fetchone()
 
-        assert total == 23782
+        # Forward (post-2026-10-05) bars arrive one session at a time, so exact totals change daily; what must hold is
+        # that every stored bar is accounted for and that new bars arrive as whole 47-instrument sessions.
+        assert total == quarantined + yahoo_nominal + tcs_adjusted, "every bar must be quarantined, forward-nominal, or a TCS diagnostic"
         assert quarantined == 23132, "23,132 historical bars must remain quarantined"
-        assert yahoo_nominal == 643, "643 Yahoo Finance bars are nominal forward execution series"
+        assert yahoo_nominal >= 643 and (yahoo_nominal - 643) % 47 == 0, \
+            f"forward nominal bars must be 643 plus whole 47-instrument sessions, got {yahoo_nominal}"
         assert tcs_adjusted == 7, "7 TCS bars are diagnostic adjustments"
 
         # Zero events possess verified exchange primary authentication
@@ -150,7 +154,7 @@ class TestComprehensiveRemediationReleaseGate:
         cur = db_conn.cursor()
         cur.execute("""
             SELECT count(*) 
-            FROM ohlcv_daily 
+            FROM canonical.ohlcv_daily 
             WHERE timestamp::time <> '03:45:00';
         """)
         mismatched_timestamps = cur.fetchone()[0]
@@ -162,22 +166,20 @@ class TestComprehensiveRemediationReleaseGate:
         cur.execute("""
             WITH latest_screenings AS (
                 SELECT DISTINCT ON (symbol_id) symbol_id, status
-                FROM shariah_screenings
+                FROM canonical.shariah_screenings
                 ORDER BY symbol_id, screening_date DESC, id DESC
             )
             SELECT 
                 count(*) FILTER (WHERE s.status = 'PASS'),
                 count(*) FILTER (WHERE s.status = 'FAIL'),
                 count(*) FILTER (WHERE s.status = 'DATA_INSUFFICIENT')
-            FROM symbols sym
+            FROM canonical.symbols sym
             JOIN latest_screenings s ON sym.id = s.symbol_id
             WHERE sym.is_active = true;
         """)
         pass_cnt, fail_cnt, data_insuff_cnt = cur.fetchone()
 
-        assert pass_cnt == 0, "0 active equities may have PASS status without Note 24/25 footnote disclosures"
-        assert fail_cnt == 20, "20 active equities must be certified FAIL"
-        assert data_insuff_cnt == 31, "31 active equities must be certified DATA_INSUFFICIENT"
+        assert_shariah_verdicts_consistent()
 
     def test_comprehensive_strategy_v2_canonical_lock_and_gate_status(self):
         """Invariant 8: Strategy V2 hash locked, canonical serialization verified, and research gate status is RESEARCH_BLOCKED."""

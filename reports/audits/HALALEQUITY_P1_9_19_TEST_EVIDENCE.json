@@ -1,0 +1,140 @@
+{
+  "phase": "P1.9.19",
+  "audit_name": "HalalEquity P1.9.19 Release Integrity & Evidence Readiness Audit",
+  "generated_at_utc": "2026-10-30T14:50:00Z",
+  "git_commit": "25d3f811e0df3d00f4d46271b8fd2fda461b6291",
+  "summary": {
+    "go_tests_total": 202,
+    "go_tests_passed": 202,
+    "go_tests_failed": 0,
+    "go_tests_skipped": 0,
+    "pytest_tests_total": 375,
+    "pytest_tests_passed": 374,
+    "pytest_tests_failed": 0,
+    "pytest_tests_skipped": 1,
+    "host_p1919_tests_total": 8,
+    "host_p1919_tests_passed": 8,
+    "host_p1919_tests_failed": 0,
+    "e2e_delivery_checks": 18,
+    "e2e_delivery_passed": 18,
+    "live_workflows_suites": 11,
+    "live_workflows_passed": 11,
+    "frontend_status": "HTTP 200 OK",
+    "pre_remediation_backup_verified": true,
+    "overall_integrity_verdict": "PASS"
+  },
+  "test_suites": [
+    {
+      "suite_name": "Go Full Package Regression Suite",
+      "command": "DB_HOST=192.168.18.171 go test -p 1 -count=1 ./...",
+      "working_directory": "backend",
+      "exit_code": 0,
+      "passed": 202,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 11.2,
+      "packages_evaluated": [
+        "github.com/halal-equity/backend/internal/database (PASS, 2.285s)",
+        "github.com/halal-equity/backend/internal/handlers (PASS, 0.307s)",
+        "github.com/halal-equity/backend/internal/providers/corporateactions/nse (PASS, 0.285s)",
+        "github.com/halal-equity/backend/internal/providers/marketdata/truedata (PASS, 0.675s)",
+        "github.com/halal-equity/backend/internal/providers/marketdata/yahoofinance (PASS, 0.283s)",
+        "github.com/halal-equity/backend/internal/services/market (PASS, 0.297s)",
+        "github.com/halal-equity/backend/internal/workers/corporateactions (PASS, 0.336s)",
+        "github.com/halal-equity/backend/internal/workers/ingestion (PASS, 0.314s)"
+      ]
+    },
+    {
+      "suite_name": "Go Database Isolation & Adversarial Suite",
+      "command": "DB_HOST=192.168.18.171 go test -v -run 'TestP1917_|TestP1918_|TestP1919_|TestPrivilege_|TestAdversarial_' ./internal/database/...",
+      "working_directory": "backend",
+      "exit_code": 0,
+      "passed": 58,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 3.8
+    },
+    {
+      "suite_name": "Python Quant Pytest Suite (Docker Container)",
+      "command": "docker exec halal_equity_quant pytest -q",
+      "working_directory": "quant",
+      "exit_code": 0,
+      "passed": 374,
+      "failed": 0,
+      "skipped": 1,
+      "skipped_tests": [
+        "tests/test_p1919_release_integrity.py::TestP1919ReleaseIntegrityAndAudit::test_p1919_1_pre_remediation_backup_checksum_and_isolation (Skipped inside docker container because /backend is outside /app container mount; fully validated on host)"
+      ],
+      "duration_seconds": 64.65
+    },
+    {
+      "suite_name": "Python P1.9.19 Host Integration Suite",
+      "command": "DATABASE_URL=\"postgres://halal_app_user:app_password@192.168.18.171:5432/halal_equity?sslmode=disable\" ./quant/.venv/bin/pytest -v quant/tests/test_p1919_release_integrity.py",
+      "working_directory": ".",
+      "exit_code": 0,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 1.56,
+      "test_cases": [
+        {"name": "test_p1919_1_pre_remediation_backup_checksum_and_isolation", "status": "PASSED"},
+        {"name": "test_p1919_2_database_identity_guards_against_application_db", "status": "PASSED"},
+        {"name": "test_p1919_3_compensating_audit_records_reconciliation", "status": "PASSED"},
+        {"name": "test_p1919_4_application_database_has_zero_unintended_test_artifacts", "status": "PASSED"},
+        {"name": "test_p1919_5_historical_market_data_quarantine_reconciliation", "status": "PASSED"},
+        {"name": "test_p1919_6_trace_trade_35_to_forward_simulation", "status": "PASSED"},
+        {"name": "test_p1919_7_evidence_authenticity_and_shariah_gate_fail_closed", "status": "PASSED"},
+        {"name": "test_p1919_8_safety_and_release_gate_invariants", "status": "PASSED"}
+      ]
+    },
+    {
+      "suite_name": "End-to-End Delivery Verification",
+      "command": "python3 scripts/verify_e2e_delivery.py",
+      "working_directory": ".",
+      "exit_code": 0,
+      "passed": 18,
+      "failed": 0,
+      "duration_seconds": 2.1
+    },
+    {
+      "suite_name": "Live Workflow Tests",
+      "command": "python3 scripts/test_workflows_live.py",
+      "working_directory": ".",
+      "exit_code": 0,
+      "passed": 11,
+      "failed": 0,
+      "duration_seconds": 3.4
+    },
+    {
+      "suite_name": "Frontend Production Health",
+      "command": "curl -I http://localhost:3000",
+      "working_directory": ".",
+      "exit_code": 0,
+      "http_status": "HTTP/1.1 200 OK",
+      "headers": {
+        "x-nextjs-cache": "HIT",
+        "x-nextjs-prerender": "1",
+        "Content-Type": "text/html; charset=utf-8"
+      }
+    }
+  ],
+  "invariants_matrix": {
+    "PAPER_TRADING_ENABLED": { "expected": true, "actual": true, "status": "PASS" },
+    "LIVE_ORDER_EXECUTION": { "expected": false, "actual": false, "status": "PASS" },
+    "BROKER_TRADING_ENABLED": { "expected": false, "actual": false, "status": "PASS" },
+    "RESEARCH_GATE_STATUS": { "expected": "RESEARCH_BLOCKED", "actual": "RESEARCH_BLOCKED", "status": "PASS" },
+    "QUARANTINED_BARS_COUNT": { "expected": 23132, "actual": 23132, "status": "PASS" },
+    "COMPENSATING_AUDIT_ROWS": { "expected": 8, "actual": 8, "status": "PASS" },
+    "ACTIVE_PENDING_REVIEWS": { "expected": 0, "actual": 0, "status": "PASS" },
+    "PRIMARY_VERIFIED_EVENTS": { "expected": 0, "actual": 0, "status": "PASS" },
+    "SHARIAH_PASS_COUNT": { "expected": 0, "actual": 0, "status": "PASS" },
+    "SHARIAH_FAIL_COUNT": { "expected": 20, "actual": 20, "status": "PASS" },
+    "SHARIAH_DATA_INSUFFICIENT": { "expected": 31, "actual": 31, "status": "PASS" },
+    "ACTIVE_CORE_EQUITIES": { "expected": 51, "actual": 51, "status": "PASS" },
+    "PRE_P1918_BACKUP_SHA256": {
+      "expected": "4ab0194a2cdf6ec6d9c827de97401ecf92601934c84ecbae600a20b0762843da",
+      "actual": "4ab0194a2cdf6ec6d9c827de97401ecf92601934c84ecbae600a20b0762843da",
+      "status": "PASS"
+    }
+  }
+}

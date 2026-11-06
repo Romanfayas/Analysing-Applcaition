@@ -6,7 +6,6 @@ import Badge from '@/components/ui/Badge';
 import { 
   ShieldCheckIcon, 
   ShieldExclamationIcon, 
-  ExclamationTriangleIcon, 
   QuestionMarkCircleIcon,
   InformationCircleIcon 
 } from '@heroicons/react/24/outline';
@@ -14,13 +13,15 @@ import { useShariahScreenings } from '@/lib/api/hooks';
 
 export default function ShariahPage() {
   const { screenings, isLoading } = useShariahScreenings();
-  const [filter, setFilter] = useState<'ALL' | 'PASS' | 'FAIL' | 'REVIEW'>('ALL');
+  type Filter = 'ALL' | 'PASS' | 'FAIL' | 'REVIEW';
+  const FILTERS: Filter[] = ['ALL', 'PASS', 'FAIL', 'REVIEW'];
+  const [filter, setFilter] = useState<Filter>('ALL');
 
-  const passCount = screenings.filter((s: any) => s.status === 'PASS').length;
-  const failCount = screenings.filter((s: any) => s.status === 'FAIL').length;
-  const reviewCount = screenings.filter((s: any) => ['REVIEW_REQUIRED', 'DATA_INSUFFICIENT', 'UNKNOWN'].includes(s.status)).length;
+  const passCount = screenings.filter((s) => s.status === 'PASS').length;
+  const failCount = screenings.filter((s) => s.status === 'FAIL').length;
+  const reviewCount = screenings.filter((s) => ['REVIEW_REQUIRED', 'DATA_INSUFFICIENT', 'UNKNOWN'].includes(s.status)).length;
 
-  const filteredScreenings = screenings.filter((s: any) => {
+  const filteredScreenings = screenings.filter((s) => {
     if (filter === 'ALL') return true;
     if (filter === 'PASS') return s.status === 'PASS';
     if (filter === 'FAIL') return s.status === 'FAIL';
@@ -126,13 +127,13 @@ export default function ShariahPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
           <div>
             <h3 className="text-lg font-bold text-white">Evaluated Equity Universe</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Verified database records with point-in-time financial ratios</p>
+            <p className="text-xs text-slate-400 mt-0.5">Stored screening records. DATA_INSUFFICIENT means unevaluated, never compliant.</p>
           </div>
           <div className="flex items-center gap-1.5 text-xs">
-            {['ALL', 'PASS', 'FAIL', 'REVIEW'].map((f) => (
+            {FILTERS.map((f) => (
               <button
                 key={f}
-                onClick={() => setFilter(f as any)}
+                onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
                   filter === f ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'
                 }`}
@@ -163,7 +164,7 @@ export default function ShariahPage() {
                   <td colSpan={8} className="py-8 text-center text-slate-500">Loading screening database...</td>
                 </tr>
               ) : filteredScreenings.length > 0 ? (
-                filteredScreenings.map((s: any) => (
+                filteredScreenings.map((s) => (
                   <tr key={s.id || s.symbol} className="hover:bg-slate-800/20 transition-colors">
                     <td className="py-3 pl-2 font-bold text-white">{s.symbol}</td>
                     <td className="py-3 text-slate-400">{s.sector || 'NSE Cash'}</td>
@@ -172,20 +173,20 @@ export default function ShariahPage() {
                         {s.status}
                       </Badge>
                     </td>
-                    <td className={`py-3 text-right ${s.debt_ratio > 0.33 ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>
+                    <td className={`py-3 text-right ${(s.debt_ratio ?? 0) > 0.33 ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>
                       {s.debt_ratio != null ? `${(s.debt_ratio * 100).toFixed(1)}%` : 'N/A'}
                     </td>
-                    <td className={`py-3 text-right ${s.interest_income_ratio > 0.05 ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>
+                    <td className={`py-3 text-right ${(s.interest_income_ratio ?? 0) > 0.05 ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>
                       {s.interest_income_ratio != null ? `${(s.interest_income_ratio * 100).toFixed(2)}%` : 'N/A'}
                     </td>
-                    <td className={`py-3 text-right ${s.cash_deposit_ratio > 0.33 ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>
+                    <td className={`py-3 text-right ${(s.cash_deposit_ratio ?? 0) > 0.33 ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>
                       {s.cash_deposit_ratio != null ? `${(s.cash_deposit_ratio * 100).toFixed(1)}%` : 'N/A'}
                     </td>
-                    <td className={`py-3 text-right ${s.receivables_ratio > 0.49 ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>
+                    <td className={`py-3 text-right ${(s.receivables_ratio ?? 0) > 0.49 ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>
                       {s.receivables_ratio != null ? `${(s.receivables_ratio * 100).toFixed(1)}%` : 'N/A'}
                     </td>
                     <td className="py-3 text-right pr-2 text-slate-500 font-mono text-[11px]">
-                      {s.screening_date ? new Date(s.screening_date).toLocaleDateString() : 'Active'}
+                      {s.screening_date ? new Date(s.screening_date).toLocaleDateString() : '—'}
                     </td>
                   </tr>
                 ))

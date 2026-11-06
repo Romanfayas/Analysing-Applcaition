@@ -1,14 +1,7 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/api/v1/:path*',
-        destination: `${process.env.BACKEND_API_URL || 'http://backend:8080/api/v1'}/:path*`,
-      },
-    ];
-  },
-};
+// All browser -> backend traffic goes through the authenticated server-side proxy (src/app/api/proxy).
+// There is deliberately no rewrite exposing the backend directly.
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

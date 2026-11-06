@@ -1,0 +1,207 @@
+HALALEQUITY - HOW TO START AND RUN THE APPLICATION
+==================================================
+Run every command in the Terminal app on your Mac.
+Lines starting with # are notes. You do not type those.
+
+
+------------------------------------------------------------
+PART 1: START THE APPLICATION (do this every day)
+------------------------------------------------------------
+
+STEP 1. Start Docker Desktop
+
+    open -a Docker
+
+    Wait about 30 seconds until the whale icon in the top menu bar stops moving.
+
+
+STEP 2. Go to the project folder
+
+    cd "/Users/fayas/Downloads/ICO-Application/analysis application"
+
+
+STEP 3. Start everything (database, backend, worker, quant engine, frontend)
+
+    docker compose up -d
+
+
+STEP 4. Check that it is running
+
+    docker compose ps
+
+    You should see 8 services, all "Up":
+    backend, frontend, grafana, postgres, prometheus, quant, redis, worker
+
+
+STEP 5. Open the application
+
+    open http://localhost:3000
+
+
+STEP 6. On market days, keep the Mac awake from 09:15 to 15:30 IST
+
+    caffeinate -dims
+
+    Leave this Terminal window open. Press Control + C to stop it after 15:30.
+
+    Why: the app fetches prices and makes forecasts only while the Mac is awake.
+    Keep the Mac plugged in. Missed forecasts cannot be created later.
+
+
+------------------------------------------------------------
+PART 2: WEB ADDRESSES
+------------------------------------------------------------
+
+    Application (use this one)    http://localhost:3000
+    Backend API health check      http://localhost:8081/health
+    Quant engine health check     http://localhost:8000/health
+    Grafana dashboards            http://localhost:3001
+    Prometheus metrics            http://localhost:9090
+
+    Quick health check of the backend and quant engine (each should say 200):
+
+    curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081/health
+    curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000/health
+
+
+------------------------------------------------------------
+PART 3: STOP THE APPLICATION
+------------------------------------------------------------
+
+    cd "/Users/fayas/Downloads/ICO-Application/analysis application"
+    docker compose stop
+
+    Your data is kept. Start again with:  docker compose up -d
+
+
+------------------------------------------------------------
+PART 4: START OR RESTART ONE PART ONLY (Docker)
+------------------------------------------------------------
+
+Run these from the project folder.
+
+    Backend API        docker compose up -d backend
+    Frontend           docker compose up -d frontend
+    Worker             docker compose up -d worker
+    Quant engine       docker compose up -d quant
+    Database           docker compose up -d postgres
+
+    Restart one part   docker compose restart backend
+                       (replace backend with frontend, worker or quant)
+
+
+------------------------------------------------------------
+PART 5: AFTER CHANGING CODE (rebuild)
+------------------------------------------------------------
+
+Backend and worker (Go code):
+
+    docker compose up -d --no-deps --build backend worker
+
+Frontend (Next.js code):
+
+    docker compose up -d --no-deps --build --renew-anon-volumes frontend
+
+Quant engine (Python code):
+
+    Nothing to do. It reloads by itself when a file is saved.
+
+After any rebuild, free the disk space it used:
+
+    docker builder prune -af
+
+
+------------------------------------------------------------
+PART 6: RUN BACKEND OR FRONTEND DIRECTLY, WITHOUT THEIR CONTAINERS
+------------------------------------------------------------
+
+This is only for development. Normal use is Part 1.
+The database and redis must still be running in Docker:
+
+    docker compose up -d postgres redis quant
+
+Backend (Terminal window 1), on port 8091:
+
+    cd "/Users/fayas/Downloads/ICO-Application/analysis application/backend"
+    set -a; source ../.env; set +a
+    APP_PORT=8091 APP_ENV=development REDIS_URL="redis://localhost:6379/0" QUANT_ENGINE_URL="http://localhost:8000" DATABASE_URL="postgres://halal_app_user:app_password@$(ipconfig getifaddr en0):5432/halal_equity?sslmode=disable" go run ./cmd/api
+
+    Note: this uses your Wi-Fi address, not localhost, because a Homebrew
+    Postgres on this Mac takes over localhost:5432. On a wired network,
+    replace en0 with en1.
+
+    Check it:  curl http://localhost:8091/health
+
+Frontend (Terminal window 2), on port 3002:
+
+    cd "/Users/fayas/Downloads/ICO-Application/analysis application/frontend"
+    BACKEND_API_URL=http://localhost:8081/api/v1 npx next dev -p 3002
+
+    Then open:  http://localhost:3002
+    To use the direct backend above, change 8081 to 8091.
+
+Press Control + C in each window to stop them.
+
+
+------------------------------------------------------------
+PART 7: SEE WHAT IS HAPPENING (logs)
+------------------------------------------------------------
+
+    docker compose logs -f backend
+    docker compose logs -f worker
+    docker compose logs -f quant
+    docker compose logs -f frontend
+
+    Press Control + C to stop watching. The service keeps running.
+
+
+------------------------------------------------------------
+PART 8: BACK UP YOUR DATA (do this regularly)
+------------------------------------------------------------
+
+The Docker database is the only complete copy of your data.
+A new empty database cannot be rebuilt from the project files alone.
+
+    cd "/Users/fayas/Downloads/ICO-Application/analysis application"
+    docker exec halal_equity_postgres pg_dump -U halal_user -d halal_equity | gzip > ~/Desktop/halalequity_backup_$(date +%Y%m%d).sql.gz
+
+    This saves a backup file to your Desktop. Copy it somewhere safe.
+
+
+------------------------------------------------------------
+PART 9: IF SOMETHING GOES WRONG
+------------------------------------------------------------
+
+"Cannot connect to the Docker daemon"
+    Docker is not running. Do Part 1, Step 1, wait 30 seconds, and try again.
+
+"command not found: docker" or "go" or "npx"
+    export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+The page shows old prices, or no forecasts appear today
+    The Mac was probably asleep. Check the worker:
+    docker compose ps
+    docker compose logs --tail 20 worker
+
+The database shows I/O errors, or the app stops working
+    The disk may be full. Keep at least 5 GB free. Check with:
+    df -h /
+    docker builder prune -af
+    Then quit and reopen Docker Desktop.
+
+The frontend page will not load after a rebuild
+    docker compose up -d --no-deps --force-recreate --renew-anon-volumes frontend
+
+
+------------------------------------------------------------
+DO NOT RUN THESE (they can erase your data)
+------------------------------------------------------------
+
+    docker compose down -v
+    docker volume prune
+    docker system prune --volumes
+
+Your prices, paper trades, accounts and research results live in the database
+volume. The first command deletes it. The other two delete it if the containers are
+removed. It cannot be rebuilt from the project files.
+Use "docker compose stop" (Part 3) to stop the app safely.

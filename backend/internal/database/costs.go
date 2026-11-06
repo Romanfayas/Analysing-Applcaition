@@ -80,3 +80,28 @@ func CalculateDeliveryTransactionCosts(tradeType string, turnover float64) Trans
 
 	return b
 }
+
+// IntradayFeeModelVersion identifies the same-day (MIS) equity schedule; it mirrors the quant engine's schedule.
+const IntradayFeeModelVersion = "INDIA_EQ_INTRADAY_FEES_2026Q4_V1"
+
+// CalculateIntradayTransactionCosts is the same-day equity schedule: STT 0.025% on the sell leg only, stamp duty
+// 0.003% on the buy leg, exchange and SEBI charges as for delivery, a discount-broker brokerage of min(Rs 20, 0.03%)
+// per executed order, GST on brokerage + exchange + SEBI, and no depository charge. Re-verify the brokerage against
+// your own contract note.
+func CalculateIntradayTransactionCosts(tradeType string, turnover float64) TransactionCostBreakdown {
+	if turnover <= 0 {
+		return TransactionCostBreakdown{FeeModelVersion: IntradayFeeModelVersion}
+	}
+	b := TransactionCostBreakdown{Turnover: roundPaisa(turnover), FeeModelVersion: IntradayFeeModelVersion}
+	if tradeType == "SELL" {
+		b.STT = roundPaisa(turnover * 0.00025)
+	} else {
+		b.StampDuty = roundPaisa(turnover * 0.00003)
+	}
+	b.ExchangeCharges = roundPaisa(turnover * 0.0000297)
+	b.SEBICharges = roundPaisa(turnover * 0.000001)
+	b.Brokerage = roundPaisa(math.Min(20, turnover*0.0003))
+	b.GST = roundPaisa((b.ExchangeCharges + b.SEBICharges + b.Brokerage) * 0.18)
+	b.TotalFees = roundPaisa(b.STT + b.StampDuty + b.ExchangeCharges + b.SEBICharges + b.Brokerage + b.GST)
+	return b
+}

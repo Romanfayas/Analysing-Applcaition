@@ -91,14 +91,14 @@ func (p *Provider) Capabilities() marketdata.ProviderCapabilities {
 	return marketdata.ProviderCapabilities{
 		Symbols:          true,
 		DailyOHLCV:       true,
-		IntradayOHLCV:    true,
+		IntradayOHLCV:    false, // not implemented: TrueData intraday/real-time needs its streaming API (P1.9.24)
 		CorporateActions: true,
 		Indices:          false,
 		Financials:       false,
 		Shareholding:     false,
 		IPOData:          false,
 		GMPData:          false,
-		RealTimeQuotes:   true,
+		RealTimeQuotes:   false,
 	}
 }
 
@@ -159,13 +159,13 @@ func (p *Provider) GetSymbolInfo(ctx context.Context, symbol string, exchange st
 
 // TrueDataHistoricalResponse represents raw response structure.
 type TrueDataHistoricalResponse struct {
-	Status     string                   `json:"status"`
-	Symbol     string                   `json:"symbol"`
-	Duration   string                   `json:"duration"`
-	BarSize    string                   `json:"bar_size"`
-	Data       [][]interface{}          `json:"data"`
-	SampleBars []TrueDataSampleBarItem  `json:"sample_bars"`
-	Message    string                   `json:"message,omitempty"`
+	Status     string                  `json:"status"`
+	Symbol     string                  `json:"symbol"`
+	Duration   string                  `json:"duration"`
+	BarSize    string                  `json:"bar_size"`
+	Data       [][]interface{}         `json:"data"`
+	SampleBars []TrueDataSampleBarItem `json:"sample_bars"`
+	Message    string                  `json:"message,omitempty"`
 }
 
 type TrueDataSampleBarItem struct {
@@ -240,12 +240,9 @@ func (p *Provider) GetIntradayCandles(ctx context.Context, symbol string, exchan
 	if !p.HasActiveCredentials() && !p.config.FixtureMode {
 		return nil, fmt.Errorf("%w: commercial subscription authorization required", ErrSubscriptionUnauthorized)
 	}
-	return &marketdata.DataPoint[[]models.OHLCV]{
-		Data:          []models.OHLCV{},
-		Source:        "truedata_intraday_stub",
-		RetrievedAt:   time.Now().UTC(),
-		QualityStatus: models.DataQualityValid,
-	}, nil
+	// Not implemented. Previously this returned an empty series labelled VALID, which reads as
+	// "provider answered, nothing traded" rather than "not built".
+	return nil, fmt.Errorf("%w: TrueData intraday is not implemented in this adapter", marketdata.ErrNoData)
 }
 
 // GetIndexConstituents retrieves index constituents.
@@ -258,12 +255,8 @@ func (p *Provider) GetCurrentPrice(ctx context.Context, symbol string, exchange 
 	if !p.HasActiveCredentials() && !p.config.FixtureMode {
 		return nil, fmt.Errorf("%w: live credentials not configured", ErrSubscriptionUnauthorized)
 	}
-	return &marketdata.DataPoint[float64]{
-		Data:          0.0,
-		Source:        "truedata",
-		RetrievedAt:   time.Now().UTC(),
-		QualityStatus: models.DataQualityValid,
-	}, nil
+	// Not implemented. Previously this returned a price of 0.0 labelled VALID: a fabricated quote.
+	return nil, fmt.Errorf("%w: TrueData real-time quotes are not implemented in this adapter", marketdata.ErrNoData)
 }
 
 func (p *Provider) loadFixture(symbol string, start, end time.Time) (*marketdata.DataPoint[[]models.OHLCV], error) {

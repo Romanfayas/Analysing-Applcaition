@@ -1,0 +1,818 @@
+{
+  "coverage": {
+    "exchange_files": {
+      "n": "1196",
+      "first": "2022-01-03",
+      "last": "2026-10-30"
+    },
+    "exchange_files_by_year": [
+      {
+        "y": "2022",
+        "files": "248"
+      },
+      {
+        "y": "2023",
+        "files": "246"
+      },
+      {
+        "y": "2024",
+        "files": "249"
+      },
+      {
+        "y": "2025",
+        "files": "249"
+      },
+      {
+        "y": "2026",
+        "files": "204"
+      }
+    ],
+    "exchange_bars": {
+      "n": "58615",
+      "symbols": "52"
+    },
+    "vendor_bars": {
+      "n": "24017",
+      "symbols": "47",
+      "first": "2024-10-07",
+      "last": "2026-10-30"
+    },
+    "missing_weekday_files": []
+  },
+  "classification_overlap": [
+    {
+      "classification": "NOMINAL_MATCH",
+      "n": "22928"
+    },
+    {
+      "classification": "MISSING_VENDOR_BAR",
+      "n": "1310"
+    },
+    {
+      "classification": "VENDOR_ADJUSTED",
+      "n": "1049"
+    },
+    {
+      "classification": "MISMATCH",
+      "n": "40"
+    }
+  ],
+  "classification_pre_vendor": [
+    {
+      "classification": "MISSING_VENDOR_BAR",
+      "n": "33288"
+    }
+  ],
+  "matched": {
+    "nominal_match_within_5bps": "22928",
+    "exact_close": "20335"
+  },
+  "duplicates": {
+    "vendor_same_symbol_same_ist_date": [],
+    "exchange": "0 by construction: (symbol_id, trade_date) is the primary key of exchange_daily_bars"
+  },
+  "timestamps": {
+    "vendor_not_session_open_label": [
+      {
+        "utc_time": "03:45:00",
+        "n": "24017"
+      }
+    ],
+    "vendor_bars_on_dates_without_exchange_session": [],
+    "vendor_bars_matching_an_adjacent_session": [
+      {
+        "symbol": "JSWSTEEL",
+        "vendor_date": "2025-05-02",
+        "exchange_date": "2025-05-06"
+      }
+    ]
+  },
+  "ohlcv_differences": {
+    "on_nominal_matches_max_abs_pct": {
+      "pairs": "22928",
+      "open_max_pct": "0.00000",
+      "high_max_pct": "0.00000",
+      "low_max_pct": "0.00000",
+      "close_max_pct": "0.04598",
+      "any_price_not_exact": "4328",
+      "volume_ratio_p05": "1.0000",
+      "volume_ratio_median": "1.0000",
+      "volume_ratio_p95": "1.0000",
+      "volume_diff_over_1pct": "9"
+    },
+    "close_difference_buckets": [
+      {
+        "bucket": "exact",
+        "n": "20335",
+        "dates_with_real_differences": ""
+      },
+      {
+        "bucket": "float storage noise (<0.0001%)",
+        "n": "2588",
+        "dates_with_real_differences": ""
+      },
+      {
+        "bucket": "<0.01%",
+        "n": "3",
+        "dates_with_real_differences": "2025-05-02"
+      },
+      {
+        "bucket": ">=0.01%",
+        "n": "2",
+        "dates_with_real_differences": "2025-05-02"
+      }
+    ],
+    "vendor_adjusted_series": [
+      {
+        "symbol": "ADANIENT",
+        "first": "2025-11-10",
+        "last": "2025-11-14",
+        "bars": "5",
+        "min_ratio": "0.969485",
+        "max_ratio": "0.969485"
+      },
+      {
+        "symbol": "BAJFINANCE",
+        "first": "2024-10-07",
+        "last": "2025-06-13",
+        "bars": "170",
+        "min_ratio": "0.100000",
+        "max_ratio": "0.100068"
+      },
+      {
+        "symbol": "DRREDDY",
+        "first": "2024-10-07",
+        "last": "2024-10-25",
+        "bars": "15",
+        "min_ratio": "0.200000",
+        "max_ratio": "0.200000"
+      },
+      {
+        "symbol": "HDFCBANK",
+        "first": "2024-10-07",
+        "last": "2025-08-25",
+        "bars": "219",
+        "min_ratio": "0.500000",
+        "max_ratio": "0.500000"
+      },
+      {
+        "symbol": "ITC",
+        "first": "2024-10-07",
+        "last": "2025-01-03",
+        "bars": "62",
+        "min_ratio": "0.962915",
+        "max_ratio": "0.962915"
+      },
+      {
+        "symbol": "KOTAKBANK",
+        "first": "2024-10-07",
+        "last": "2026-01-13",
+        "bars": "316",
+        "min_ratio": "0.199680",
+        "max_ratio": "0.200000"
+      },
+      {
+        "symbol": "NESTLEIND",
+        "first": "2024-10-07",
+        "last": "2025-08-07",
+        "bars": "208",
+        "min_ratio": "0.500000",
+        "max_ratio": "0.500000"
+      },
+      {
+        "symbol": "RELIANCE",
+        "first": "2024-10-07",
+        "last": "2024-10-25",
+        "bars": "15",
+        "min_ratio": "0.500000",
+        "max_ratio": "0.500000"
+      },
+      {
+        "symbol": "WIPRO",
+        "first": "2024-10-07",
+        "last": "2024-12-02",
+        "bars": "39",
+        "min_ratio": "0.500000",
+        "max_ratio": "0.500000"
+      }
+    ]
+  },
+  "unresolved": {
+    "mismatch": [
+      {
+        "symbol": "ADANIENT",
+        "trade_date": "2025-05-02",
+        "vendor_close": "2299.1001",
+        "exchange_close": "2294.2000",
+        "close_ratio": "1.002136"
+      },
+      {
+        "symbol": "ADANIPORTS",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1263.1000",
+        "exchange_close": "1267.1000",
+        "close_ratio": "0.996843"
+      },
+      {
+        "symbol": "APOLLOHOSP",
+        "trade_date": "2025-05-02",
+        "vendor_close": "6928.0000",
+        "exchange_close": "6954.5000",
+        "close_ratio": "0.996190"
+      },
+      {
+        "symbol": "AXISBANK",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1183.4000",
+        "exchange_close": "1182.2000",
+        "close_ratio": "1.001015"
+      },
+      {
+        "symbol": "BAJAJ-AUTO",
+        "trade_date": "2025-05-02",
+        "vendor_close": "7820.5000",
+        "exchange_close": "7836.5000",
+        "close_ratio": "0.997958"
+      },
+      {
+        "symbol": "BAJAJFINSV",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1966.7000",
+        "exchange_close": "1958.0000",
+        "close_ratio": "1.004443"
+      },
+      {
+        "symbol": "BHARTIARTL",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1848.2000",
+        "exchange_close": "1851.9000",
+        "close_ratio": "0.998002"
+      },
+      {
+        "symbol": "BPCL",
+        "trade_date": "2025-05-02",
+        "vendor_close": "311.4000",
+        "exchange_close": "311.1500",
+        "close_ratio": "1.000803"
+      },
+      {
+        "symbol": "BRITANNIA",
+        "trade_date": "2025-05-02",
+        "vendor_close": "5301.0000",
+        "exchange_close": "5307.5000",
+        "close_ratio": "0.998775"
+      },
+      {
+        "symbol": "CIPLA",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1514.5000",
+        "exchange_close": "1525.6000",
+        "close_ratio": "0.992724"
+      },
+      {
+        "symbol": "COALINDIA",
+        "trade_date": "2025-05-02",
+        "vendor_close": "383.5000",
+        "exchange_close": "384.4000",
+        "close_ratio": "0.997659"
+      },
+      {
+        "symbol": "DIVISLAB",
+        "trade_date": "2025-05-02",
+        "vendor_close": "6079.5000",
+        "exchange_close": "6104.0000",
+        "close_ratio": "0.995986"
+      },
+      {
+        "symbol": "DRREDDY",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1177.9000",
+        "exchange_close": "1182.9000",
+        "close_ratio": "0.995773"
+      },
+      {
+        "symbol": "GRASIM",
+        "trade_date": "2025-05-02",
+        "vendor_close": "2724.0000",
+        "exchange_close": "2718.3000",
+        "close_ratio": "1.002097"
+      },
+      {
+        "symbol": "HCLTECH",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1572.4000",
+        "exchange_close": "1576.5000",
+        "close_ratio": "0.997399"
+      },
+      {
+        "symbol": "HDFCBANK",
+        "trade_date": "2025-05-02",
+        "vendor_close": "960.9500",
+        "exchange_close": "1925.0000",
+        "close_ratio": "0.499195"
+      },
+      {
+        "symbol": "HDFCLIFE",
+        "trade_date": "2025-05-02",
+        "vendor_close": "729.1500",
+        "exchange_close": "727.7500",
+        "close_ratio": "1.001924"
+      },
+      {
+        "symbol": "HEROMOTOCO",
+        "trade_date": "2025-05-02",
+        "vendor_close": "3737.3999",
+        "exchange_close": "3740.5000",
+        "close_ratio": "0.999171"
+      },
+      {
+        "symbol": "HINDALCO",
+        "trade_date": "2025-05-02",
+        "vendor_close": "630.5000",
+        "exchange_close": "632.1000",
+        "close_ratio": "0.997469"
+      },
+      {
+        "symbol": "HINDUNILVR",
+        "trade_date": "2025-05-02",
+        "vendor_close": "2318.6001",
+        "exchange_close": "2323.9000",
+        "close_ratio": "0.997719"
+      },
+      {
+        "symbol": "ICICIBANK",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1430.1000",
+        "exchange_close": "1432.4000",
+        "close_ratio": "0.998394"
+      },
+      {
+        "symbol": "INDUSINDBK",
+        "trade_date": "2025-05-02",
+        "vendor_close": "856.4500",
+        "exchange_close": "853.0000",
+        "close_ratio": "1.004045"
+      },
+      {
+        "symbol": "ITC",
+        "trade_date": "2025-05-02",
+        "vendor_close": "429.5000",
+        "exchange_close": "430.2500",
+        "close_ratio": "0.998257"
+      },
+      {
+        "symbol": "JSWSTEEL",
+        "trade_date": "2025-05-02",
+        "vendor_close": "967.5000",
+        "exchange_close": "973.2000",
+        "close_ratio": "0.994143"
+      },
+      {
+        "symbol": "LT",
+        "trade_date": "2025-05-02",
+        "vendor_close": "3334.8999",
+        "exchange_close": "3329.8000",
+        "close_ratio": "1.001532"
+      },
+      {
+        "symbol": "M&M",
+        "trade_date": "2025-05-02",
+        "vendor_close": "2917.2000",
+        "exchange_close": "2926.2000",
+        "close_ratio": "0.996924"
+      },
+      {
+        "symbol": "NESTLEIND",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1165.9000",
+        "exchange_close": "2337.7000",
+        "close_ratio": "0.498738"
+      },
+      {
+        "symbol": "NTPC",
+        "trade_date": "2025-05-02",
+        "vendor_close": "348.7000",
+        "exchange_close": "348.4500",
+        "close_ratio": "1.000717"
+      },
+      {
+        "symbol": "ONGC",
+        "trade_date": "2025-05-02",
+        "vendor_close": "242.7400",
+        "exchange_close": "243.4200",
+        "close_ratio": "0.997206"
+      },
+      {
+        "symbol": "POWERGRID",
+        "trade_date": "2025-05-02",
+        "vendor_close": "303.0500",
+        "exchange_close": "303.9500",
+        "close_ratio": "0.997039"
+      },
+      {
+        "symbol": "RELIANCE",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1419.8000",
+        "exchange_close": "1422.4000",
+        "close_ratio": "0.998172"
+      },
+      {
+        "symbol": "SBILIFE",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1762.2000",
+        "exchange_close": "1764.7000",
+        "close_ratio": "0.998583"
+      },
+      {
+        "symbol": "SBIN",
+        "trade_date": "2025-05-02",
+        "vendor_close": "796.7000",
+        "exchange_close": "800.0000",
+        "close_ratio": "0.995875"
+      },
+      {
+        "symbol": "SUNPHARMA",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1824.6000",
+        "exchange_close": "1829.4000",
+        "close_ratio": "0.997376"
+      },
+      {
+        "symbol": "TATACONSUM",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1154.7000",
+        "exchange_close": "1156.8000",
+        "close_ratio": "0.998185"
+      },
+      {
+        "symbol": "TATASTEEL",
+        "trade_date": "2025-05-02",
+        "vendor_close": "141.4000",
+        "exchange_close": "141.1800",
+        "close_ratio": "1.001558"
+      },
+      {
+        "symbol": "TCS",
+        "trade_date": "2025-05-02",
+        "vendor_close": "3431.0000",
+        "exchange_close": "3444.7000",
+        "close_ratio": "0.996023"
+      },
+      {
+        "symbol": "TECHM",
+        "trade_date": "2025-05-02",
+        "vendor_close": "1494.1000",
+        "exchange_close": "1496.3000",
+        "close_ratio": "0.998530"
+      },
+      {
+        "symbol": "ULTRACEMCO",
+        "trade_date": "2025-05-02",
+        "vendor_close": "11613.0000",
+        "exchange_close": "11644.0000",
+        "close_ratio": "0.997338"
+      },
+      {
+        "symbol": "WIPRO",
+        "trade_date": "2025-05-02",
+        "vendor_close": "241.6800",
+        "exchange_close": "242.8700",
+        "close_ratio": "0.995100"
+      }
+    ],
+    "missing_vendor_bar_in_overlap": [
+      {
+        "symbol": "LTIM",
+        "n": "347",
+        "first": "2024-10-07",
+        "last": "2026-02-26"
+      },
+      {
+        "symbol": "TATAMOTORS",
+        "n": "261",
+        "first": "2024-10-07",
+        "last": "2025-10-23"
+      },
+      {
+        "symbol": "TMPV",
+        "n": "251",
+        "first": "2025-10-24",
+        "last": "2026-10-30"
+      },
+      {
+        "symbol": "TMCV",
+        "n": "239",
+        "first": "2025-11-12",
+        "last": "2026-10-30"
+      },
+      {
+        "symbol": "LTM",
+        "n": "165",
+        "first": "2026-02-27",
+        "last": "2026-10-30"
+      },
+      {
+        "symbol": "M&M",
+        "n": "2",
+        "first": "2025-03-18",
+        "last": "2025-09-08"
+      },
+      {
+        "symbol": "BAJAJFINSV",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "BAJFINANCE",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "BHARTIARTL",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "BPCL",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "BRITANNIA",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "CIPLA",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "COALINDIA",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "DIVISLAB",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "DRREDDY",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "EICHERMOT",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "GRASIM",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "HCLTECH",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "HDFCBANK",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "HDFCLIFE",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "HEROMOTOCO",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "HINDALCO",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "HINDUNILVR",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "ICICIBANK",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "INDUSINDBK",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "INFY",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "JSWSTEEL",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "KOTAKBANK",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "LT",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "MARUTI",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "NESTLEIND",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "NTPC",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "ONGC",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "POWERGRID",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "RELIANCE",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "SBILIFE",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "SBIN",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "SUNPHARMA",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "TATACONSUM",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "TATASTEEL",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "TCS",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "TECHM",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "TITAN",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "ULTRACEMCO",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "ADANIENT",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "WIPRO",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "ADANIPORTS",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "APOLLOHOSP",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "ASIANPAINT",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "AXISBANK",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      },
+      {
+        "symbol": "BAJAJ-AUTO",
+        "n": "1",
+        "first": "2025-03-18",
+        "last": "2025-03-18"
+      }
+    ],
+    "missing_exchange_bar": []
+  },
+  "eligibility": {
+    "eligible_vs_exchange": [
+      {
+        "source": "NSE_CORPORATE_ACTION",
+        "eligible_bars": "7",
+        "exchange_nominal_match": "7",
+        "exchange_disagree": "0",
+        "adjusted_equals_close": "0",
+        "first_date": "2026-10-05"
+      },
+      {
+        "source": "yahoo_finance",
+        "eligible_bars": "878",
+        "exchange_nominal_match": "878",
+        "exchange_disagree": "0",
+        "adjusted_equals_close": "878",
+        "first_date": "2026-10-05"
+      }
+    ],
+    "quarantined": {
+      "n": "23132"
+    }
+  },
+  "generated_at": "2026-11-02T09:25:58.841049+00:00",
+  "vendor_history_starts": "2024-10-07"
+}

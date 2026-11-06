@@ -24,6 +24,10 @@ func getAppTestDB(t *testing.T) *database.DB {
 	db, err := database.NewDB(connStr)
 	require.NoError(t, err)
 
+	db.SetMaxOpenConns(5)
+	db.SetMaxIdleConns(2)
+	t.Cleanup(func() { _ = db.Close() })
+
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 

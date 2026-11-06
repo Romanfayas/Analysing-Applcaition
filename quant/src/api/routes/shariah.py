@@ -80,3 +80,18 @@ async def screen_stock(request: ShariahRequest):
         return resp
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/screen-symbol/{symbol}")
+async def screen_symbol(symbol: str):
+    """Fetch reported figures for one stored symbol and store a fresh screening (used when a stock is added)."""
+    from src.engines.fundamental.ingest_verified_fundamentals import screen_symbols
+
+    ticker = symbol.strip().upper()
+    try:
+        result = await __import__("asyncio").get_running_loop().run_in_executor(None, screen_symbols, [ticker])
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"screening failed: {e}")
+    if ticker not in result:
+        raise HTTPException(status_code=404, detail=f"{ticker} is not an active stored symbol")
+    return {"symbol": ticker, "status": result[ticker]}

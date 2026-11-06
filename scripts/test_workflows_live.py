@@ -2,12 +2,17 @@
 import urllib.request
 import json
 
+from _auth import sign_in
+
 BASE_PROXY = "http://localhost:3000/api/proxy"
 BASE_DIRECT = "http://localhost:8081/api/v1"
+SESSION = sign_in()
 
 def req(url, method="GET", payload=None, headers=None):
     if headers is None: 
         headers = {}
+    if url.startswith(BASE_PROXY):
+        headers.setdefault("Cookie", f"he_session={SESSION}")  # direct-backend calls stay anonymous unless a test adds a header
     data = json.dumps(payload).encode() if payload else None
     if payload: 
         headers["Content-Type"] = "application/json"
@@ -68,13 +73,13 @@ risk = d.get("data", {})
 print(f"Risk Calculate: Code {s}, SuggestedShares={risk.get('suggested_shares')}, RiskPerShare=₹{risk.get('risk_per_share')}, R:R={risk.get('risk_reward_ratio')}, CapitalExposure={risk.get('capital_exposure_pct')}%")
 
 print("\n=== 6. Paper BUY Gating (Fail-Closed Rejections) ===")
-s, d = req(f"{BASE_PROXY}/portfolio/trade", method="POST", payload={"symbol": "TCS", "trade_type": "BUY", "shares": 5, "price": 2460})
+s, d = req(f"{BASE_PROXY}/portfolio/trade", method="POST", payload={"symbol": "TCS", "trade_type": "BUY", "shares": 5})
 print(f"BUY TCS (DATA_INSUFFICIENT): Code {s}, Error={d.get('error')}")
-s, d = req(f"{BASE_PROXY}/portfolio/trade", method="POST", payload={"symbol": "TATASTEEL", "trade_type": "BUY", "shares": 5, "price": 150})
+s, d = req(f"{BASE_PROXY}/portfolio/trade", method="POST", payload={"symbol": "TATASTEEL", "trade_type": "BUY", "shares": 5})
 print(f"BUY TATASTEEL (FAIL): Code {s}, Error={d.get('error')}")
 
 print("\n=== 7. Paper SELL Gating (Short-Selling Restriction) ===")
-s, d = req(f"{BASE_PROXY}/portfolio/trade", method="POST", payload={"symbol": "TCS", "trade_type": "SELL", "shares": 5, "price": 2460})
+s, d = req(f"{BASE_PROXY}/portfolio/trade", method="POST", payload={"symbol": "TCS", "trade_type": "SELL", "shares": 5})
 print(f"SELL TCS (0 Owned Shares): Code {s}, Error={d.get('error')}")
 
 print("\n=== 8. Portfolio Balances & Ledger State ===")
@@ -88,7 +93,7 @@ bt = d.get("data", {})
 print(f"Backtesting Gate: Code {s}, Status={bt.get('status')}")
 print(f"Reason: {bt.get('reason')}")
 print(f"Quarantined Bars Invariant: {bt.get('quarantined_bars')}")
-print(f"Frozen Strategy SHA256: {bt.get('frozen_strategy', {}).get('canonical_sha256')}")
+print(f"Frozen Strategy SHA256: {bt.get('gate', {}).get('canonical_strategy_hash')}")
 
 print("\n=== 10. Data Quality Dashboard & Quarantine Counts ===")
 s, d = req(f"{BASE_PROXY}/data-quality")

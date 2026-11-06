@@ -72,3 +72,90 @@ func (db *DB) SaveBacktestRun(ctx context.Context, run *BacktestRun) (int, error
 	}
 	return id, nil
 }
+
+// ListBacktestRuns returns the most recent persisted backtest run summaries.
+func (db *DB) ListBacktestRuns(ctx context.Context, limit int) ([]BacktestRun, error) {
+	rows, err := db.QueryContext(ctx, `
+		SELECT id, COALESCE(symbol_id, 0), COALESCE(configuration_id, 0), start_date, end_date,
+		       initial_capital, final_capital, cagr, max_drawdown, sharpe_ratio, sortino_ratio,
+		       win_rate, COALESCE(total_trades, 0), COALESCE(survivorship_bias_warning, true),
+		       COALESCE(created_at, now())
+		FROM backtest_runs ORDER BY id DESC LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	runs := make([]BacktestRun, 0, limit)
+	for rows.Next() {
+		var r BacktestRun
+		if err := rows.Scan(&r.ID, &r.SymbolID, &r.ConfigurationID, &r.StartDate, &r.EndDate,
+			&r.InitialCapital, &r.FinalCapital, &r.CAGR, &r.MaxDrawdown, &r.SharpeRatio, &r.SortinoRatio,
+			&r.WinRate, &r.TotalTrades, &r.SurvivorshipBiasWarning, &r.CreatedAt); err != nil {
+			return nil, err
+		}
+		runs = append(runs, r)
+	}
+	return runs, rows.Err()
+}
+
+// GetBacktestRun returns one persisted run, or sql.ErrNoRows.
+func (db *DB) GetBacktestRun(ctx context.Context, id int) (*BacktestRun, error) {
+	var r BacktestRun
+	err := db.QueryRowContext(ctx, `
+		SELECT id, COALESCE(symbol_id, 0), COALESCE(configuration_id, 0), start_date, end_date,
+		       initial_capital, final_capital, cagr, max_drawdown, sharpe_ratio, sortino_ratio,
+		       win_rate, COALESCE(total_trades, 0), COALESCE(survivorship_bias_warning, true),
+		       COALESCE(created_at, now())
+		FROM backtest_runs WHERE id = $1`, id).Scan(&r.ID, &r.SymbolID, &r.ConfigurationID, &r.StartDate,
+		&r.EndDate, &r.InitialCapital, &r.FinalCapital, &r.CAGR, &r.MaxDrawdown, &r.SharpeRatio,
+		&r.SortinoRatio, &r.WinRate, &r.TotalTrades, &r.SurvivorshipBiasWarning, &r.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &r, nil
+}
+
+// BacktestStrategy is a named, versioned strategy definition.
+type BacktestStrategy struct {
+	ID          int             `json:"id"`
+	Name        string          `json:"name"`
+	Version     int             `json:"version"`
+	Description string          `json:"description"`
+	Config      json.RawMessage `json:"config"`
+	CreatedAt   time.Time       `json:"created_at"`
+}
+
+// ListBacktestStrategies returns all stored strategy definitions, newest first.
+func (db *DB) ListBacktestStrategies(ctx context.Context) ([]BacktestStrategy, error) {
+	rows, err := db.QueryContext(ctx, `
+		SELECT id, name, version, COALESCE(description, ''), config, created_at
+		FROM backtest_strategies ORDER BY created_at DESC, id DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []BacktestStrategy{}
+	for rows.Next() {
+		var s BacktestStrategy
+		if err := rows.Scan(&s.ID, &s.Name, &s.Version, &s.Description, &s.Config, &s.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, s)
+	}
+	return out, rows.Err()
+}
+
+// CreateBacktestStrategy stores a new strategy definition. Versions auto-increment per name and
+// existing versions are never modified, so earlier results stay attributable.
+func (db *DB) CreateBacktestStrategy(ctx context.Context, name, description string, config json.RawMessage, createdBy *string) (*BacktestStrategy, error) {
+	var s BacktestStrategy
+	err := db.QueryRowContext(ctx, `
+		INSERT INTO backtest_strategies (name, version, description, config, created_by)
+		VALUES ($1, COALESCE((SELECT max(version) FROM backtest_strategies WHERE name = $1), 0) + 1, $2, $3, (SELECT id FROM users WHERE id = $4::uuid))
+		RETURNING id, name, version, COALESCE(description, ''), config, created_at`,
+		name, description, config, createdBy).Scan(&s.ID, &s.Name, &s.Version, &s.Description, &s.Config, &s.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &s, nil
+}

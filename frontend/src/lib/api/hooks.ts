@@ -1,153 +1,219 @@
 import useSWR from 'swr';
 import { fetcher } from './client';
-import { StockDetail, StockListItem, MarketHealthResponse, IPO, SignalOverview, PortfolioPosition } from './types';
+import type {
+  AlertEvent,
+  BreakoutScan,
+  DataQualityDataset,
+  DataQualityIssue,
+  HistoricalReadiness,
+  IntradayFeedHealth,
+  IpoHealth,
+  IpoRun,
+  IpoView,
+  LedgerPosition,
+  MarketHealthResponse,
+  MarketOverview,
+  PaperTrade,
+  BreakoutMonitor,
+  ResearchRun,
+  Prediction,
+  PredictionModel,
+  PredictionTracking,
+  PortfolioRiskMetrics,
+  PortfolioSummary,
+  SettingsResponse,
+  ShariahScreeningRow,
+  SignalOverview,
+  StockDetail,
+  StockListItem,
+  UserAlert,
+} from './types';
 
-// ==========================================
-// Stocks
-// ==========================================
+// Every hook returns `isError` so pages can distinguish "empty" from "failed to load".
+
+// ---- Stocks ----
 
 export function useStock(symbol: string) {
-  const { data, error, isLoading } = useSWR<any>(
-    symbol ? `/stocks/${symbol}` : null,
-    fetcher
-  );
-
-  const stock: StockDetail | undefined = data?.data || data;
-
-  return {
-    stock,
-    isLoading,
-    isError: error,
-  };
+  const { data, error, isLoading } = useSWR<StockDetail>(symbol ? `/stocks/${symbol}` : null, fetcher);
+  return { stock: data, isLoading, isError: error };
 }
 
 export function useStocks() {
-  const { data, error, isLoading, mutate } = useSWR<{ data: StockListItem[], meta: { page: number; per_page: number; total: number } }>('/stocks', fetcher);
-  return {
-    stocks: data?.data || [],
-    meta: data?.meta,
-    isLoading,
-    isError: error,
-    mutate,
-  };
+  const { data, error, isLoading, mutate } = useSWR<StockListItem[]>('/stocks', fetcher);
+  return { stocks: data ?? [], isLoading, isError: error, mutate };
 }
 
 export function useMarketDataHealth() {
-  const { data, error, isLoading } = useSWR<any>('/market-data/health', fetcher);
-  const health: MarketHealthResponse | undefined = data?.data || data;
-  return {
-    health,
-    isLoading,
-    isError: error,
-  };
+  const { data, error, isLoading } = useSWR<MarketHealthResponse>('/market-data/health', fetcher);
+  return { health: data, isLoading, isError: error };
 }
 
 export function useMarketOverview() {
-  const { data, error, isLoading } = useSWR<{ indices: any[] }>('/stocks/market/overview', fetcher);
+  const { data, error, isLoading } = useSWR<MarketOverview>('/stocks/market/overview', fetcher);
   return { data, isLoading, isError: error };
 }
 
-// ==========================================
-// IPOs
-// ==========================================
+// ---- IPOs ----
 
 export function useIPOs(status: string = 'all') {
-  const { data, error, isLoading, mutate } = useSWR<any>(`/ipos?status=${status}`, fetcher);
-  const ipos: any[] = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
-  return {
-    ipos,
-    isLoading,
-    isError: error,
-    mutate,
-  };
+  const { data, error, isLoading, mutate } = useSWR<IpoView[]>(`/ipos?status=${status}`, fetcher);
+  return { ipos: data ?? [], isLoading, isError: error, mutate };
 }
 
 export function useIPOHealth() {
-  const { data, error, isLoading, mutate } = useSWR<any>('/ipos/health', fetcher);
-  return {
-    health: data?.data || data,
-    isLoading,
-    isError: error,
-    mutate,
-  };
+  const { data, error, isLoading, mutate } = useSWR<IpoHealth>('/ipos/health', fetcher);
+  return { health: data, isLoading, isError: error, mutate };
 }
 
 export function useIPOIngestionRuns() {
-  const { data, error, isLoading, mutate } = useSWR<any>('/ipos/ingestion-runs', fetcher);
-  const runs: any[] = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
-  return {
-    runs,
-    isLoading,
-    isError: error,
-    mutate,
-  };
+  const { data, error, isLoading, mutate } = useSWR<IpoRun[]>('/ipos/ingestion-runs', fetcher);
+  return { runs: data ?? [], isLoading, isError: error, mutate };
 }
 
-// ==========================================
-// Signals & Breakout Research
-// ==========================================
+// ---- Signals & breakout research ----
 
 export function useRecentSignals() {
-  const { data, error, isLoading } = useSWR<any>('/signals', fetcher);
-  const signals: SignalOverview[] = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
-  return {
-    signals,
-    isLoading,
-    isError: error,
-  };
+  const { data, error, isLoading } = useSWR<SignalOverview[]>('/signals', fetcher);
+  return { signals: data ?? [], isLoading, isError: error };
 }
 
 export function useBreakouts() {
-  const { data, error, isLoading, mutate } = useSWR<any>('/signals/breakouts', fetcher, {
-    revalidateOnFocus: false,
+  const { data, error, isLoading, mutate, isValidating } = useSWR<BreakoutScan>('/signals/breakouts', fetcher, {
+    revalidateOnFocus: true,
     dedupingInterval: 10000,
+    refreshInterval: 5 * 60 * 1000, // the server recomputes at most once a minute; poll every 5 minutes
   });
-  const res = data?.data || data;
   return {
-    scan: res,
-    candidates: res?.candidates || [],
-    stageCounts: res?.stage_counts || {
+    scan: data,
+    candidates: data?.candidates ?? [],
+    stageCounts: data?.stage_counts ?? {
       CONFIRMED_BREAKOUT: 0,
       BREAKOUT_CANDIDATE: 0,
       WATCHLIST: 0,
       FAILED_BREAKOUT: 0,
       UNAVAILABLE: 0,
     },
-    bullishBreadth: res?.bullish_breadth_percent ?? 0,
-    sectorHeatmap: res?.sector_heatmap || [],
-    totalScreened: res?.total_screened ?? 0,
+    bullishBreadth: data?.bullish_breadth_percent ?? 0,
+    sectorHeatmap: data?.sector_heatmap ?? [],
+    totalScreened: data?.total_screened ?? 0,
+    dataAsOf: data?.data_as_of ?? null,
+    computedAt: data?.computed_at ?? null,
+    staleSessions: data?.stale_sessions ?? 0,
+    dataQuality: data?.data_quality,
+    basis: data?.basis,
+    excluded: data?.excluded ?? [],
+    isLoading,
+    isValidating,
+    isError: error,
+    mutate,
+  };
+}
+
+// ---- Shariah ----
+
+export function useShariahScreenings() {
+  const { data, error, isLoading } = useSWR<ShariahScreeningRow[]>('/shariah/screenings', fetcher);
+  return { screenings: data ?? [], isLoading, isError: error };
+}
+
+// ---- Portfolio & paper ledger ----
+
+interface PortfolioPayload {
+  portfolio: PortfolioSummary;
+  positions: LedgerPosition[];
+}
+
+export function usePortfolio() {
+  const { data, error, isLoading, mutate } = useSWR<PortfolioPayload>('/portfolio', fetcher);
+  return {
+    // undefined (not a made-up balance) until the real one has loaded
+    portfolio: data?.portfolio,
+    positions: data?.positions ?? [],
     isLoading,
     isError: error,
     mutate,
   };
 }
 
-// ==========================================
-// Shariah Screenings
-// ==========================================
+export function usePaperTrades() {
+  const { data, error, isLoading, mutate } = useSWR<PaperTrade[]>('/portfolio/trades', fetcher);
+  return { trades: data ?? [], isLoading, isError: error, mutate };
+}
 
-export function useShariahScreenings() {
-  const { data, error, isLoading } = useSWR<any>('/shariah/screenings', fetcher);
-  const screenings: any[] = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
+export function usePortfolioRisk() {
+  const { data, error, isLoading } = useSWR<PortfolioRiskMetrics>('/risk/metrics', fetcher);
+  return { metrics: data, isLoading, isError: error };
+}
+
+// ---- Data quality ----
+
+export function useDataQuality() {
+  const datasets = useSWR<DataQualityDataset[]>('/data-quality', fetcher);
+  const issues = useSWR<DataQualityIssue[]>('/data-quality/issues', fetcher);
   return {
-    screenings,
-    isLoading,
-    isError: error,
+    datasets: datasets.data ?? [],
+    issues: issues.data ?? [],
+    isLoading: datasets.isLoading || issues.isLoading,
+    isError: datasets.error ?? issues.error,
   };
 }
 
-// ==========================================
-// Portfolio & Paper Ledger
-// ==========================================
+// ---- Alerts & settings ----
 
-export function usePortfolio() {
-  const { data, error, isLoading } = useSWR<any>('/portfolio', fetcher);
-  const payload = data?.data || data;
-  return {
-    portfolio: payload?.portfolio || payload,
-    positions: payload?.positions || [],
-    isLoading,
-    isError: error,
-  };
+export function useAlerts() {
+  const { data, error, isLoading, mutate } = useSWR<UserAlert[]>('/alerts', fetcher);
+  return { alerts: data ?? [], isLoading, isError: error, mutate };
 }
 
+export function useAlertHistory() {
+  const { data, error, isLoading, mutate } = useSWR<AlertEvent[]>('/alerts/history', fetcher, { refreshInterval: 60000 });
+  return { events: data ?? [], isLoading, isError: error, mutate };
+}
+
+export function useSettings() {
+  const { data, error, isLoading, mutate } = useSWR<SettingsResponse>('/settings', fetcher);
+  return { settings: data, isLoading, isError: error, mutate };
+}
+
+// ---- Intraday predictions ----
+
+export function usePredictionModels() {
+  const { data, error, isLoading } = useSWR<{ models: PredictionModel[]; disclaimer: string }>('/predictions/models', fetcher);
+  return { models: data?.models ?? [], disclaimer: data?.disclaimer, isLoading, isError: error };
+}
+
+export function useLatestPredictions(horizon: number) {
+  const { data, error, isLoading } = useSWR<{ predictions: Prediction[] }>(`/predictions/latest?horizon=${horizon}`, fetcher, {
+    refreshInterval: 60000,
+  });
+  return { predictions: data?.predictions ?? [], isLoading, isError: error };
+}
+
+export function usePredictionTracking() {
+  const { data, error, isLoading } = useSWR<{ horizons: PredictionTracking[] }>('/predictions/tracking', fetcher, {
+    refreshInterval: 60000,
+  });
+  return { tracking: data?.horizons ?? [], isLoading, isError: error };
+}
+
+// ---- P1.9.24 data readiness ----
+
+export function useHistoricalReadiness() {
+  const { data, error, isLoading } = useSWR<HistoricalReadiness>('/data-quality/historical-readiness', fetcher);
+  return { readiness: data, isLoading, isError: error };
+}
+
+export function useIntradayFeedHealth() {
+  const { data, error, isLoading } = useSWR<IntradayFeedHealth>('/data-quality/intraday-feed', fetcher);
+  return { feed: data, isLoading, isError: error };
+}
+
+export function useBreakoutMonitor() {
+  const { data, error, isLoading } = useSWR<BreakoutMonitor>('/signals/breakouts/monitor', fetcher, { refreshInterval: 120000 });
+  return { monitor: data, isLoading, isError: error };
+}
+
+export function useResearchRun() {
+  const { data, error, isLoading } = useSWR<ResearchRun>('/backtesting/research', fetcher);
+  return { run: data, isLoading, isError: error };
+}

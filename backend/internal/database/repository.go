@@ -40,19 +40,33 @@ type SymbolRecord struct {
 	CreatedAt       time.Time `json:"created_at"`
 }
 
-// UpsertSymbol inserts or updates a symbol and returns its ID.
+// UpsertSymbol resolves a symbol's ID, registering it only if it does not exist yet.
+//
+// `symbols` is the canonical instrument universe: the runtime role is deliberately
+// granted SELECT only, so existing instruments are resolved with a read and never
+// rewritten (names/metadata of canonical rows are not ingestion-mutable). Only a
+// genuinely new instrument reaches the INSERT, which a least-privilege role will
+// (correctly) be refused.
 func (db *DB) UpsertSymbol(ctx context.Context, symbol, name, exchange string) (int, error) {
-	query := `
+	var id int
+	err := db.QueryRowContext(ctx,
+		`SELECT id FROM symbols WHERE symbol = $1 AND exchange = $2`,
+		symbol, exchange).Scan(&id)
+	if err == nil {
+		return id, nil
+	}
+	if err != sql.ErrNoRows {
+		return 0, fmt.Errorf("resolve symbol %s failed: %w", symbol, err)
+	}
+
+	err = db.QueryRowContext(ctx, `
 		INSERT INTO symbols (symbol, name, exchange, is_active)
 		VALUES ($1, $2, $3, true)
-		ON CONFLICT (symbol, exchange) DO UPDATE
-			SET name = EXCLUDED.name, updated_at = NOW()
+		ON CONFLICT (symbol, exchange) DO UPDATE SET symbol = EXCLUDED.symbol
 		RETURNING id
-	`
-	var id int
-	err := db.QueryRowContext(ctx, query, symbol, name, exchange).Scan(&id)
+	`, symbol, name, exchange).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("upsert symbol %s failed: %w", symbol, err)
+		return 0, fmt.Errorf("symbol %s is not in the canonical universe and could not be registered: %w", symbol, err)
 	}
 	return id, nil
 }
@@ -298,6 +312,22 @@ func (db *DB) GetLatestIntradayOHLCVTimestamp(ctx context.Context, symbolID int)
 	query := `SELECT MAX(timestamp) FROM ohlcv_intraday WHERE symbol_id = $1`
 	var ts *time.Time
 	err := db.QueryRowContext(ctx, query, symbolID).Scan(&ts)
+	if err != nil {
+		return nil, err
+	}
+	return ts, nil
+}
+
+// IntradayResumePoint is where the next 1-minute fetch should start. It reaches a few minutes behind the newest bar because
+// the provider's latest minutes arrive with zero or partial volume and are completed later, and further back to today's
+// oldest empty bar so a minute stored before it finished is repaired. 5-minute history is ignored.
+func (db *DB) IntradayResumePoint(ctx context.Context, symbolID int) (*time.Time, error) {
+	var ts *time.Time
+	err := db.QueryRowContext(ctx, `
+		SELECT LEAST(
+			(SELECT MAX(timestamp) - interval '6 minutes' FROM ohlcv_intraday WHERE symbol_id = $1 AND interval_minutes = 1),
+			(SELECT date_trunc('minute', MIN(timestamp)) - interval '1 minute' FROM ohlcv_intraday WHERE symbol_id = $1 AND interval_minutes = 1 AND quality_status = 'SUSPECT' AND volume = 0
+			   AND timestamp >= date_trunc('day', now() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata'))`, symbolID).Scan(&ts)
 	if err != nil {
 		return nil, err
 	}

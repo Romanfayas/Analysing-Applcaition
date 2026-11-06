@@ -9,25 +9,26 @@ import (
 	"time"
 
 	"github.com/halal-equity/backend/internal/models"
+	"github.com/halal-equity/backend/internal/services/market"
 )
 
 // ShariahScreeningRecord represents a stored Shariah screening result.
 type ShariahScreeningRecord struct {
-	ID                   int        `json:"id"`
-	SymbolID             int        `json:"symbol_id"`
-	RuleSetID            int        `json:"rule_set_id"`
-	Status               string     `json:"status"` // PASS, FAIL, REVIEW_REQUIRED, DATA_INSUFFICIENT
-	DebtRatio            *float64   `json:"debt_ratio"`
-	DebtRatioPass        *bool      `json:"debt_ratio_pass"`
-	InterestIncomeRatio  *float64   `json:"interest_income_ratio"`
-	InterestIncomePass   *bool      `json:"interest_income_pass"`
-	CashDepositRatio     *float64   `json:"cash_deposit_ratio"`
-	CashDepositPass      *bool      `json:"cash_deposit_pass"`
-	ReceivablesRatio     *float64   `json:"receivables_ratio"`
-	ReceivablesPass      *bool      `json:"receivables_pass"`
-	BusinessActivityPass *bool      `json:"business_activity_pass"`
-	PurificationPerShare *float64   `json:"purification_per_share"`
-	ScreenedAt           time.Time  `json:"screened_at"`
+	ID                   int       `json:"id"`
+	SymbolID             int       `json:"symbol_id"`
+	RuleSetID            int       `json:"rule_set_id"`
+	Status               string    `json:"status"` // PASS, FAIL, REVIEW_REQUIRED, DATA_INSUFFICIENT
+	DebtRatio            *float64  `json:"debt_ratio"`
+	DebtRatioPass        *bool     `json:"debt_ratio_pass"`
+	InterestIncomeRatio  *float64  `json:"interest_income_ratio"`
+	InterestIncomePass   *bool     `json:"interest_income_pass"`
+	CashDepositRatio     *float64  `json:"cash_deposit_ratio"`
+	CashDepositPass      *bool     `json:"cash_deposit_pass"`
+	ReceivablesRatio     *float64  `json:"receivables_ratio"`
+	ReceivablesPass      *bool     `json:"receivables_pass"`
+	BusinessActivityPass *bool     `json:"business_activity_pass"`
+	PurificationPerShare *float64  `json:"purification_per_share"`
+	ScreenedAt           time.Time `json:"screened_at"`
 }
 
 // SignalRecord represents a stored signal.
@@ -52,22 +53,24 @@ type SignalRecord struct {
 
 // IPORecord represents a stored IPO.
 type IPORecord struct {
-	ID                int        `json:"id"`
-	CompanyName       string     `json:"company_name"`
-	Symbol            *string    `json:"symbol"`
-	Exchange          string     `json:"exchange"`
-	Sector            *string    `json:"sector"`
-	OpenDate          *time.Time `json:"open_date"`
-	CloseDate         *time.Time `json:"close_date"`
-	ListingDate       *time.Time `json:"listing_date"`
-	PriceBandLow      *float64   `json:"price_band_low"`
-	PriceBandHigh     *float64   `json:"price_band_high"`
-	IssuePrice        *float64   `json:"issue_price"`
-	ListingPrice      *float64   `json:"listing_price"`
-	LotSize           *int       `json:"lot_size"`
-	IssueSize         *float64   `json:"issue_size"`
-	Status            string     `json:"status"`
-	ShariahStatus     *string    `json:"shariah_status"`
+	ID            int        `json:"id"`
+	CompanyName   string     `json:"company_name"`
+	Symbol        *string    `json:"symbol"`
+	Exchange      string     `json:"exchange"`
+	Sector        *string    `json:"sector"`
+	OpenDate      *time.Time `json:"open_date"`
+	CloseDate     *time.Time `json:"close_date"`
+	ListingDate   *time.Time `json:"listing_date"`
+	PriceBandLow  *float64   `json:"price_band_low"`
+	PriceBandHigh *float64   `json:"price_band_high"`
+	IssuePrice    *float64   `json:"issue_price"`
+	ListingPrice  *float64   `json:"listing_price"`
+	LotSize       *int       `json:"lot_size"`
+	IssueSize     *float64   `json:"issue_size"`
+	Status        string     `json:"status"`
+	ShariahStatus *string    `json:"shariah_status"`
+	Source        *string    `json:"source"`
+	Board         *string    `json:"board"` // MAINBOARD | SME, from the exchange's series; nil when unknown
 }
 
 // UpsertShariahScreening stores a Shariah screening result.
@@ -290,34 +293,61 @@ func (db *DB) GetActiveSignals(ctx context.Context) ([]SignalRecord, error) {
 	return signals, rows.Err()
 }
 
+// metadataJSON is the descriptive metadata stored with the issue (board and listing venue, when known).
+func (r IPORecord) metadataJSON() string {
+	m := map[string]string{}
+	if r.Board != nil && *r.Board != "" {
+		m["board"] = *r.Board
+	}
+	b, _ := json.Marshal(m)
+	return string(b)
+}
+
 // UpsertIPO stores an IPO record.
 func (db *DB) UpsertIPO(ctx context.Context, r IPORecord) (int, error) {
+	id, _, err := db.UpsertIPOReportingInsert(ctx, r)
+	return id, err
+}
+
+// UpsertIPOReportingInsert stores an IPO and reports whether the row was newly created.
+// Existing rows are refreshed with the latest dates, price band and size, but a row that has
+// already reached a terminal historical state is never moved back to an active status.
+func (db *DB) UpsertIPOReportingInsert(ctx context.Context, r IPORecord) (id int, inserted bool, err error) {
 	query := `
 		INSERT INTO ipos (company_name, symbol, exchange, sector,
 			open_date, close_date, listing_date,
 			price_band_low, price_band_high, issue_price, listing_price,
-			lot_size, issue_size, status, shariah_status)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+			lot_size, issue_size, status, shariah_status, source, metadata)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+		        $17::jsonb)
 		ON CONFLICT (company_name, exchange)
 		DO UPDATE SET
 			symbol = COALESCE(EXCLUDED.symbol, ipos.symbol),
-			status = EXCLUDED.status,
+			open_date = COALESCE(EXCLUDED.open_date, ipos.open_date),
+			close_date = COALESCE(EXCLUDED.close_date, ipos.close_date),
+			price_band_low = COALESCE(EXCLUDED.price_band_low, ipos.price_band_low),
+			price_band_high = COALESCE(EXCLUDED.price_band_high, ipos.price_band_high),
+			issue_size = COALESCE(EXCLUDED.issue_size, ipos.issue_size),
+			status = CASE WHEN ipos.status IN ('HISTORICAL_LISTED', 'LISTED', 'ARCHIVED')
+			              THEN ipos.status ELSE EXCLUDED.status END,
+			listing_date = COALESCE(EXCLUDED.listing_date, ipos.listing_date),
 			listing_price = COALESCE(EXCLUDED.listing_price, ipos.listing_price),
 			shariah_status = COALESCE(EXCLUDED.shariah_status, ipos.shariah_status),
+			source = COALESCE(EXCLUDED.source, ipos.source),
+			metadata = COALESCE(ipos.metadata, '{}'::jsonb) || EXCLUDED.metadata,
 			updated_at = NOW()
-		RETURNING id
+		RETURNING id, (xmax = 0)
 	`
-	var id int
-	err := db.QueryRowContext(ctx, query,
+	err = db.QueryRowContext(ctx, query,
 		r.CompanyName, r.Symbol, r.Exchange, r.Sector,
 		r.OpenDate, r.CloseDate, r.ListingDate,
 		r.PriceBandLow, r.PriceBandHigh, r.IssuePrice, r.ListingPrice,
-		r.LotSize, r.IssueSize, r.Status, r.ShariahStatus,
-	).Scan(&id)
+		r.LotSize, r.IssueSize, r.Status, r.ShariahStatus, r.Source, r.metadataJSON(),
+	).Scan(&id, &inserted)
 	if err != nil {
-		return 0, fmt.Errorf("upsert IPO failed: %w", err)
+		return 0, false, fmt.Errorf("upsert IPO failed: %w", err)
 	}
-	return id, nil
+	return id, inserted, nil
 }
 
 // GetIPOs retrieves IPOs filtered by status.
@@ -361,6 +391,31 @@ func (db *DB) GetIPOs(ctx context.Context, status string) ([]IPORecord, error) {
 	return ipos, rows.Err()
 }
 
+func nilIfEmpty(s string) any {
+	if s == "" {
+		return nil
+	}
+	return s
+}
+
+// ExpectedListingDate is the SEBI T+3 listing timeline: an issue must list within three working days of closing.
+// It is an expectation derived from a regulatory rule, not an exchange announcement, and is always labelled as such.
+func ExpectedListingDate(closeDate time.Time) *time.Time {
+	d := time.Date(closeDate.Year(), closeDate.Month(), closeDate.Day(), 0, 0, 0, 0, market.Location)
+	for n := 0; n < 3; {
+		d = d.AddDate(0, 0, 1)
+		if d.Weekday() == time.Saturday || d.Weekday() == time.Sunday {
+			continue
+		}
+		if holiday, _ := market.IsTradingHoliday(d); holiday {
+			continue
+		}
+		n++
+	}
+	out := time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
+	return &out
+}
+
 // GetEnrichedIPOs retrieves all IPO records with joined GMP, subscriptions, financials, and predictions.
 func (db *DB) GetEnrichedIPOs(ctx context.Context, statusFilter string) ([]map[string]any, error) {
 	query := `
@@ -379,8 +434,10 @@ func (db *DB) GetEnrichedIPOs(ctx context.Context, statusFilter string) ([]map[s
 			pred.predicted_at, pred.data_cutoff_at, pred.lifecycle_state_at_prediction, pred.inputs,
 			pred.actual_listing_price, pred.actual_listing_return, pred.prediction_error_pct,
 			-- Latest Financials
-			fin.revenue, fin.pat, fin.eps
+			fin.revenue, fin.pat, fin.eps,
+			det.data, i.listing_day_close
 		FROM ipos i
+		LEFT JOIN ipo_details det ON det.ipo_id = i.id
 		LEFT JOIN LATERAL (
 			SELECT qib_subscription, nii_subscription, retail_subscription, total_subscription, recorded_at
 			FROM ipo_subscriptions WHERE ipo_id = i.id ORDER BY recorded_at DESC LIMIT 1
@@ -416,7 +473,8 @@ func (db *DB) GetEnrichedIPOs(ctx context.Context, statusFilter string) ([]map[s
 		var pbLow, pbHigh, issuePrice, listPrice, minInv, issueSize, freshIssue, ofs *float64
 		var lotSize *int
 		var status string
-		var metadata []byte
+		var metadata, detailsRaw []byte
+		var listingDayClose *float64
 
 		// Subscriptions
 		var qibSub, niiSub, retailSub, totalSub *float64
@@ -450,6 +508,7 @@ func (db *DB) GetEnrichedIPOs(ctx context.Context, statusFilter string) ([]map[s
 			&predAt, &predCutoffAt, &predLifecycleState, &predInputs,
 			&actualListPrice, &actualListReturn, &predErrorPct,
 			&rev, &pat, &eps,
+			&detailsRaw, &listingDayClose,
 		); err != nil {
 			return nil, fmt.Errorf("scan enriched IPO failed: %w", err)
 		}
@@ -555,29 +614,93 @@ func (db *DB) GetEnrichedIPOs(ctx context.Context, statusFilter string) ([]map[s
 			}
 		}
 
+		board, boardSrc := "", ""
+		if len(metadata) > 0 {
+			var mm map[string]any
+			if json.Unmarshal(metadata, &mm) == nil {
+				if b, ok := mm["board"].(string); ok {
+					board = b
+				}
+			}
+		}
+		if board == "" {
+			// Older rows predate board capture; derive only where the source identifies the board unambiguously.
+			switch source {
+			case "NSE_EMERGE":
+				board, boardSrc = "SME", "SOURCE"
+			case "NSE_OFFICIAL_FILING":
+				board, boardSrc = "MAINBOARD", "SOURCE"
+			}
+		} else {
+			boardSrc = "NSE_SERIES"
+		}
+		var expectedListing *time.Time
+		if listingDate == nil && closeDate != nil && (status == "OPEN" || status == "CLOSED_AWAITING_LISTING") {
+			expectedListing = ExpectedListingDate(*closeDate)
+		}
+
+		var details any
+		listingAt, scheduled := "", (*time.Time)(nil)
+		if len(detailsRaw) > 0 {
+			var dm map[string]any
+			if json.Unmarshal(detailsRaw, &dm) == nil {
+				details = dm
+				if v, ok := dm["listing_at"].(string); ok {
+					listingAt = v
+				}
+				if v, ok := dm["scheduled_listing_date"].(string); ok {
+					if ts, err := time.Parse(time.RFC3339, v); err == nil {
+						scheduled = &ts
+					}
+				}
+			}
+		}
+		listingBasis := any(nil)
+		switch {
+		case listingDate != nil:
+			listingBasis = "ANNOUNCED"
+		case scheduled != nil:
+			expectedListing, listingBasis = scheduled, "SCHEDULED_IN_PROSPECTUS"
+		case expectedListing != nil:
+			listingBasis = "EXPECTED_SEBI_T_PLUS_3"
+		}
 		item := map[string]any{
-			"id":             fmt.Sprintf("%d", id),
-			"name":           compName,
-			"symbol":         symbol,
-			"exchange":       exchange,
-			"sector":         sector,
-			"open_date":      openDate,
-			"close_date":     closeDate,
-			"listing_date":   listingDate,
-			"price_band":     priceBandStr,
-			"issue_size":     issueSizeStr,
-			"issue_size_raw": issueSize,
-			"lot_size":       lotSize,
-			"min_investment": minInv,
-			"fresh_issue":    freshIssue,
-			"ofs":            ofs,
-			"status":         status,
-			"shariah_status": shariahStatus,
-			"subscription":   subObj,
-			"gmp":            gmpObj,
-			"prediction":     predObj,
-			"financials":     finObj,
-			"source":         source,
+			"listing_at":        nilIfEmpty(listingAt),
+			"details":           details,
+			"listing_price":     listPrice,
+			"listing_day_close": listingDayClose,
+			"issue_price": func() *float64 {
+				if issuePrice != nil {
+					return issuePrice
+				}
+				return pbHigh // issues are normally allotted at the top of the band until the final price is published
+			}(),
+			"board":                 nilIfEmpty(board),
+			"board_basis":           nilIfEmpty(boardSrc),
+			"expected_listing_date": expectedListing,
+			"listing_date_basis":    listingBasis,
+			"id":                    fmt.Sprintf("%d", id),
+			"name":                  compName,
+			"symbol":                symbol,
+			"exchange":              exchange,
+			"sector":                sector,
+			"open_date":             openDate,
+			"close_date":            closeDate,
+			"listing_date":          listingDate,
+			"price_band":            priceBandStr,
+			"issue_size":            issueSizeStr,
+			"issue_size_raw":        issueSize,
+			"lot_size":              lotSize,
+			"min_investment":        minInv,
+			"fresh_issue":           freshIssue,
+			"ofs":                   ofs,
+			"status":                status,
+			"shariah_status":        shariahStatus,
+			"subscription":          subObj,
+			"gmp":                   gmpObj,
+			"prediction":            predObj,
+			"financials":            finObj,
+			"source":                source,
 		}
 
 		// Apply temporal/lifecycle status filter strictly
@@ -744,7 +867,7 @@ func (db *DB) CreatePaperObservation(ctx context.Context, obs *PaperObservation)
 		"candidate_timestamp": obs.CandidateTimestamp.UTC().Format(time.RFC3339Nano),
 		"signal_timestamp":    obs.SignalTimestamp.UTC().Format(time.RFC3339Nano),
 		"data_cutoff_at":      obs.DataCutoffAt.UTC().Format(time.RFC3339Nano),
-		"provider": obs.Provider, "rule_version": obs.RuleVersion, "entry_trigger_price": obs.EntryTriggerPrice,
+		"provider":            obs.Provider, "rule_version": obs.RuleVersion, "entry_trigger_price": obs.EntryTriggerPrice,
 		"invalidation_price": obs.InvalidationPrice, "target_price": obs.TargetPrice, "shariah_status": obs.ShariahStatus,
 		"sector": obs.Sector, "liquidity_bucket": obs.LiquidityBucket, "market_regime": obs.MarketRegime,
 	}
@@ -976,4 +1099,3 @@ func (db *DB) ListEODIngestionRuns(ctx context.Context, limit int) ([]models.EOD
 	}
 	return runs, nil
 }
-

@@ -2,21 +2,40 @@
 
 import { useState, useMemo } from 'react';
 import Card, { CardHeader } from '@/components/ui/Card';
+import { shariahLabel } from '@/lib/shariah';
+import BreakoutMonitor from '@/components/BreakoutMonitor';
+import type { LivePosition } from '@/lib/api/types';
 import Badge from '@/components/ui/Badge';
 import { 
   BoltIcon, 
-  FunnelIcon, 
   ShieldCheckIcon, 
-  ShieldExclamationIcon, 
-  ChartBarIcon, 
   InformationCircleIcon, 
-  ArrowTrendingUpIcon, 
-  ExclamationCircleIcon,
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
 import { useBreakouts } from '@/lib/api/hooks';
+import type { BreakoutCandidate } from '@/lib/api/types';
+
+const LIVE_STYLE: Record<LivePosition['status'], string> = {
+  IN_ENTRY_ZONE: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200',
+  ABOVE_ENTRY_ZONE: 'bg-amber-500/10 border-amber-500/30 text-amber-200',
+  BELOW_ENTRY_ZONE: 'bg-slate-800/60 border-slate-700 text-slate-300',
+  INVALIDATED: 'bg-rose-500/10 border-rose-500/30 text-rose-200',
+  TARGET_1_REACHED: 'bg-blue-500/10 border-blue-500/30 text-blue-200',
+  TARGET_2_REACHED: 'bg-blue-500/10 border-blue-500/30 text-blue-200',
+};
+
+/** Levels come from the last completed session; this says where the price is now. */
+function LiveRow({ live }: { live: LivePosition }) {
+  return (
+    <div className={`mt-3 p-2.5 rounded-lg border text-xs ${LIVE_STYLE[live.status]}`}>
+      <span className="font-mono font-semibold">Now ₹{live.price.toFixed(2)}</span>
+      <span className="opacity-80"> ({live.change_since_scan_pct >= 0 ? '+' : ''}{live.change_since_scan_pct.toFixed(2)}% since these levels · {new Date(live.as_of).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })})</span>
+      <span className="block mt-0.5">{live.message}</span>
+    </div>
+  );
+}
 
 export default function SignalsPage() {
   const { 
@@ -25,19 +44,27 @@ export default function SignalsPage() {
     bullishBreadth, 
     sectorHeatmap, 
     totalScreened, 
+    dataAsOf,
+    computedAt,
+    staleSessions,
+    dataQuality,
+    basis,
+    excluded,
     isLoading, 
+    isValidating,
+    isError,
     mutate 
   } = useBreakouts();
 
   const [selectedStage, setSelectedStage] = useState<string>('ALL');
   const [selectedSector, setSelectedSector] = useState<string>('ALL');
-  const [shariahOnly, setShariahOnly] = useState<boolean>(true);
+  const [shariahOnly, setShariahOnly] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedCandidate, setSelectedCandidate] = useState<any | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<BreakoutCandidate | null>(null);
 
   // Filter candidates
   const filteredCandidates = useMemo(() => {
-    return (candidates || []).filter((cand: any) => {
+    return (candidates || []).filter((cand) => {
       if (selectedStage !== 'ALL' && cand.stage !== selectedStage) return false;
       if (selectedSector !== 'ALL' && cand.sector !== selectedSector) return false;
       if (shariahOnly && cand.shariah_status !== 'PASS') return false;
@@ -56,7 +83,7 @@ export default function SignalsPage() {
   // Unique sectors for filter dropdown
   const availableSectors = useMemo(() => {
     const set = new Set<string>();
-    (candidates || []).forEach((c: any) => {
+    (candidates || []).forEach((c) => {
       if (c.sector) set.add(c.sector);
     });
     return Array.from(set).sort();
@@ -82,10 +109,32 @@ export default function SignalsPage() {
           onClick={() => mutate()}
           className="self-start md:self-auto px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-colors flex items-center gap-2"
         >
-          <ClockIcon className="w-4 h-4 text-blue-400" />
-          <span>Refresh Live Scanner</span>
+          <ClockIcon className={`w-4 h-4 text-blue-400 ${isValidating ? 'animate-spin' : ''}`} />
+          <span>{isValidating ? 'Refreshing…' : 'Refresh scan'}</span>
         </button>
       </div>
+
+      {/* What the scan is based on, and how current it is */}
+      <div role="status" className={`p-3 rounded-xl border text-xs flex flex-wrap items-center gap-x-4 gap-y-1 ${
+        dataQuality === 'STALE' ? 'bg-amber-500/10 border-amber-500/30 text-amber-200' : 'bg-slate-800/40 border-slate-700/60 text-slate-300'
+      }`}>
+        <span><strong>Data as of:</strong> {dataAsOf ?? '—'} (daily bars)</span>
+        <span>
+          {dataQuality === 'STALE'
+            ? <strong>{staleSessions} trading session{staleSessions === 1 ? '' : 's'} behind: daily bars are ingested after the 16:00 IST close</strong>
+            : 'Up to date with the last completed session'}
+        </span>
+        <span>Computed {computedAt ? new Date(computedAt).toLocaleTimeString() : '—'}; refreshes every 5 minutes. Levels stay fixed through the day; the live row on each card shows the current price.</span>
+        {excluded.length > 0 && (
+          <span title={excluded.map((e) => `${e.symbol}: ${e.reason}`).join('\n')}>
+            <strong>{excluded.length} excluded</strong> (price history failed the exchange cross-check)
+          </span>
+        )}
+        {basis && <span className="basis-full text-slate-500">{basis}</span>}
+      </div>
+      {isError && <p className="text-sm text-rose-400">The breakout scanner could not be reached.</p>}
+
+      <BreakoutMonitor />
 
       {/* Stage Breakdown & Market Breadth Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -128,7 +177,7 @@ export default function SignalsPage() {
             subtitle="Aggregated breakout score and participation across industries" 
           />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
-            {sectorHeatmap.map((sec: any) => {
+            {sectorHeatmap.map((sec) => {
               const isSelected = selectedSector === sec.sector;
               const strengthColor = sec.strength === 'STRONG' 
                 ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300' 
@@ -226,11 +275,10 @@ export default function SignalsPage() {
             </div>
           ) : filteredCandidates.length > 0 ? (
             <div className="space-y-3">
-              {filteredCandidates.map((cand: any) => {
+              {filteredCandidates.map((cand) => {
                 const isSelected = activeSelected?.symbol === cand.symbol;
                 const isConfirmed = cand.stage === 'CONFIRMED_BREAKOUT';
                 const isCandidate = cand.stage === 'BREAKOUT_CANDIDATE';
-                const isPass = cand.shariah_status === 'PASS';
 
                 return (
                   <div
@@ -256,8 +304,8 @@ export default function SignalsPage() {
                           }`}>
                             {cand.stage.replace('_', ' ')}
                           </span>
-                          <Badge variant={isPass ? 'pass' : (cand.shariah_status === 'FAIL' ? 'fail' : 'neutral')}>
-                            {cand.shariah_status}
+                          <Badge variant={shariahLabel(cand.shariah_status).variant}>
+                            {shariahLabel(cand.shariah_status).text}
                           </Badge>
                         </div>
                         <p className="text-xs text-slate-400">
@@ -271,8 +319,8 @@ export default function SignalsPage() {
                       <div className="text-left sm:text-right flex sm:flex-col justify-between items-center sm:items-end">
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-slate-400">Score:</span>
-                          <span className={`text-base font-bold ${cand.overall_score >= 70 ? 'text-emerald-400' : (cand.overall_score > 0 ? 'text-blue-400' : 'text-slate-500')}`}>
-                            {cand.overall_score}/100
+                          <span className={`text-base font-bold ${(cand.structure_score ?? 0) >= 70 ? 'text-emerald-400' : ((cand.structure_score ?? 0) >= 50 ? 'text-blue-400' : 'text-slate-400')}`}>
+                            {cand.structure_score != null ? `${cand.structure_score}/100` : '—'}
                           </span>
                         </div>
                         <span className="text-[11px] text-slate-400">
@@ -284,7 +332,7 @@ export default function SignalsPage() {
                     {/* Trade Levels Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 pt-3 border-t border-slate-800 text-xs">
                       <div>
-                        <span className="text-slate-500 block text-[10px]">Entry Zone</span>
+                        <span className="text-slate-500 block text-[10px]" title={`Computed from the close of ${dataAsOf ?? 'the last session'}`}>Entry Zone (as of {dataAsOf ?? 'last close'})</span>
                         <span className="font-semibold text-white">₹{cand.entry_zone?.[0]?.toFixed(2)} - ₹{cand.entry_zone?.[1]?.toFixed(2)}</span>
                       </div>
                       <div>
@@ -300,6 +348,7 @@ export default function SignalsPage() {
                         <span className="font-semibold text-emerald-300">₹{cand.target_2?.toFixed(2)}</span>
                       </div>
                     </div>
+                    {cand.live && <LiveRow live={cand.live} />}
                   </div>
                 );
               })}
@@ -339,17 +388,17 @@ export default function SignalsPage() {
                     <span className="px-2 py-0.5 rounded bg-black/40 font-bold">{activeSelected.stage.replace('_', ' ')}</span>
                   </div>
                   <div className="mt-2 pt-2 border-t border-white/10 flex justify-between items-center">
-                    <span>Overall Setup Score</span>
-                    <span className="text-base font-bold text-white">{activeSelected.overall_score}/100</span>
+                    <span title="Price-structure evidence only. Not a probability of profit and not a Shariah view.">Setup Score (structure)</span>
+                    <span className="text-base font-bold text-white">{activeSelected.structure_score != null ? `${activeSelected.structure_score}/100` : '—'}</span>
                   </div>
                 </div>
 
                 {/* Score Breakdown (Transparent & Explainable) */}
-                {activeSelected.scoreBreakdown && Object.keys(activeSelected.scoreBreakdown).length > 0 && (
+                {activeSelected.score_breakdown && Object.keys(activeSelected.score_breakdown).length > 0 && (
                   <div className="space-y-2">
                     <h5 className="font-semibold text-slate-400 uppercase text-[11px] tracking-wider">Explainable Score Breakdown</h5>
                     <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50 space-y-2">
-                      {Object.entries(activeSelected.scoreBreakdown).map(([key, val]: [string, any]) => (
+                      {Object.entries(activeSelected.score_breakdown).map(([key, val]) => (
                         <div key={key} className="flex justify-between items-center">
                           <span className="text-slate-400 capitalize">{key.replace('_', ' ')}</span>
                           <strong className="text-white">{val} pts</strong>
@@ -441,14 +490,16 @@ export default function SignalsPage() {
                     <span>Shariah Hard Gate</span>
                   </div>
                   <p className="text-slate-400">
-                    Status: <strong className={activeSelected.shariah_status === 'PASS' ? 'text-emerald-400' : 'text-rose-400'}>
-                      {activeSelected.shariah_status}
+                    Status: <strong className={activeSelected.shariah_status === 'PASS' ? 'text-emerald-400' : activeSelected.shariah_status === 'FAIL' ? 'text-rose-400' : 'text-slate-300'}>
+                      {shariahLabel(activeSelected.shariah_status).text}
                     </strong>
                   </p>
                   <p className="text-[11px] text-slate-500 mt-1">
                     {activeSelected.shariah_status === 'PASS'
-                      ? "Passed AAOIFI financial ratio screens (Debt/Cap, Interest Income, Cash, Receivables)."
-                      : "Strict trading block: Non-compliant securities receive a score of 0 and cannot be recommended regardless of technical breakout conviction."}
+                      ? "Passed the AAOIFI-based screens (debt, cash, interest income, receivables) on reported figures."
+                      : activeSelected.shariah_status === 'FAIL'
+                        ? "Not compliant, so it is not recommended as a buy however strong the chart setup is. The structure score is still shown for study."
+                        : "Not evaluated: the reported figures needed to decide are missing, so no compliance is assumed and it is not recommended as a buy."}
                   </p>
                 </div>
 

@@ -120,7 +120,7 @@ func setupRouter(cfg *config.Config, jwtManager *auth.JWTManager, db *database.D
 	// API v1
 	r.Route("/api/v1", func(r chi.Router) {
 		// Public routes
-		r.Mount("/auth", handlers.NewAuthHandler().Routes())
+		r.Mount("/auth", handlers.NewAuthHandler(db, jwtManager, cfg.JWTExpiry(), cfg.AllowRegistration).Routes())
 		r.Get("/market-data/health", handlers.NewStocksHandler(db, quantClient).GetMarketHealth)
 		r.Mount("/providers", handlers.NewProvidersHandler().Routes())
 
@@ -134,6 +134,9 @@ func setupRouter(cfg *config.Config, jwtManager *auth.JWTManager, db *database.D
 			r.Mount("/shariah", handlers.NewShariahHandler(db, quantClient).Routes())
 			r.Mount("/portfolio", handlers.NewPortfolioHandler(db, quantClient).Routes())
 			r.Mount("/backtesting", handlers.NewBacktestingHandler(db, quantClient).Routes())
+			r.Mount("/backtest", handlers.NewBacktestingHandler(db, quantClient).Routes())
+			r.Mount("/evidence", handlers.NewEvidenceHandler(db).Routes())
+			r.Mount("/predictions", handlers.NewPredictionHandler(db).Routes())
 			r.Mount("/paper-trading", handlers.NewPaperTradingHandler(db, quantClient).Routes())
 			r.Mount("/paper-observations", handlers.NewPaperObservationsHandler(db, quantClient).Routes())
 			r.Mount("/risk", handlers.NewRiskHandler(db, quantClient).Routes())
