@@ -1,0 +1,27 @@
+# Jobs box: the worker binary (market ingestion, IPO, predictions, breakout tracker, alerts) + quant for its calls.
+# No frontend/backend here. The database is reached through the tunnel container (service name "postgres").
+services:
+  postgres:
+    image: halal-tunnel:1
+    build: {context: ./deploy/instabox/tunnel}
+    command: ["/tunnel.sh"]
+    ports: !reset []
+    volumes: !reset []
+    environment: !override ["DB_SSH_USER=${DB_SSH_USER:?set in .env}", "FLEET_GATEWAY=ssh.instabox.sh", "FLEET_PORT=2222"]
+    healthcheck: {test: ["CMD-SHELL", "nc -z 127.0.0.1 5432"], interval: 10s, timeout: 3s, retries: 5}
+    logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}
+  worker:
+    depends_on: !override {postgres: {condition: service_healthy}}
+    environment: ["JWT_SECRET=${JWT_SECRET}"]
+    logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}
+  quant:
+    ports: !override ["127.0.0.1:8000:8000"]
+    volumes: !reset []
+    command: ["uvicorn", "src.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on: !override {postgres: {condition: service_healthy}}
+    logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}
+  redis: {profiles: ["api-box-only"]}
+  backend: {profiles: ["api-box-only"]}
+  frontend: {profiles: ["api-box-only"]}
+  prometheus: {profiles: ["monitoring"]}
+  grafana: {profiles: ["monitoring"]}

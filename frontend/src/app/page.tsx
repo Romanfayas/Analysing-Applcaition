@@ -7,6 +7,7 @@ import {
   BoltIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 import StatCard from '@/components/ui/StatCard';
 import Card, { CardHeader } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -99,7 +100,7 @@ export default function Dashboard() {
         <StatCard
           title="Breakout Setups"
           value={breakoutsFailed ? DASH : String(activeOpportunities)}
-          change={breakoutsFailed ? 'scan unavailable' : `${stageCounts.CONFIRMED_BREAKOUT || 0} confirmed`}
+          change={breakoutsFailed ? 'scan unavailable' : `${stageCounts.CONFIRMED_BREAKOUT || 0} confirmed · ${stageCounts.BREAKOUT_CANDIDATE || 0} upcoming`}
           icon={<BoltIcon className="w-6 h-6 text-amber-400" />}
         />
         <StatCard
@@ -169,11 +170,11 @@ export default function Dashboard() {
               ) : breakoutsFailed ? (
                 <div className="py-4 text-center text-rose-400">The breakout scan is unavailable.</div>
               ) : candidates.length > 0 ? (
-                candidates.slice(0, 5).map((cand) => (
+                [...candidates].sort((a, b) => (a.stage === 'CONFIRMED_BREAKOUT' || a.stage === 'BREAKOUT_CANDIDATE' ? 0 : 1) - (b.stage === 'CONFIRMED_BREAKOUT' || b.stage === 'BREAKOUT_CANDIDATE' ? 0 : 1)).slice(0, 5).map((cand) => (
                   <div key={cand.symbol} className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-blue-500/30 transition-colors group">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <span className="font-bold text-white group-hover:text-blue-400 transition-colors">{cand.symbol}</span>
+                        <Link href={`/stocks/${cand.symbol}?tab=breakouts`} className="font-bold text-white group-hover:text-blue-400 transition-colors">{cand.symbol}</Link>
                         {(cand.live?.price ?? cand.current_price) !== undefined && <span className="text-xs text-slate-400 ml-2">{inr(cand.live?.price ?? cand.current_price)}</span>}
                         {cand.live && <span className={`block text-[11px] mt-0.5 ${cand.live.status === 'IN_ENTRY_ZONE' ? 'text-emerald-400' : cand.live.status === 'INVALIDATED' ? 'text-rose-400' : 'text-amber-300'}`}>{LIVE_TEXT[cand.live.status]}</span>}
                       </div>
@@ -181,6 +182,7 @@ export default function Dashboard() {
                         {cand.stage.replaceAll('_', ' ')}
                       </Badge>
                     </div>
+                    {cand.reasons?.[0] && <div className="text-[11px] text-slate-300 mb-2">{cand.reasons[0]}</div>}
                     <div className="flex justify-between items-center text-xs text-slate-400">
                       <span>Setup score: <strong className="text-white">{cand.structure_score != null ? `${cand.structure_score}/100` : '—'}</strong></span>
                       <span>RVOL: <strong className="text-white">{cand.rvol !== undefined ? `${cand.rvol.toFixed(2)}x` : DASH}</strong></span>
@@ -193,6 +195,7 @@ export default function Dashboard() {
               ) : (
                 <div className="py-4 text-center text-slate-500">No active breakout setups identified.</div>
               )}
+              <Link href="/breakouts" className="block text-center text-xs text-blue-400 hover:text-blue-300">All upcoming and confirmed breakouts, with reasons and results →</Link>
             </div>
           </Card>
         </div>

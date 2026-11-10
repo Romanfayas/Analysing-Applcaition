@@ -15,7 +15,7 @@ const breakoutRunKind = "BREAKOUT_FOLLOW_THROUGH"
 
 // GetBreakoutMonitor reports every tracked breakout, what happened to it, and the multi-year evidence next to it.
 func (h *SignalsHandler) GetBreakoutMonitor(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.ListTrackedBreakouts(r.Context(), 100)
+	rows, err := h.db.ListTrackedBreakouts(r.Context(), 100, "")
 	if err != nil {
 		log.Error().Err(err).Msg("breakout monitor failed")
 		response.Error(w, http.StatusInternalServerError, "failed to load the breakout monitor")

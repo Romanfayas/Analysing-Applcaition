@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Card, { CardHeader } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -10,11 +11,17 @@ import { BeakerIcon, CheckCircleIcon, ExclamationTriangleIcon, XMarkIcon } from 
 import { useStock } from '@/lib/api/hooks';
 import { send } from '@/lib/api/client';
 import ResearchDepthCard from '@/components/stock/ResearchDepthCard';
+import StockBreakoutsTab from '@/components/stock/StockBreakoutsTab';
+import StockNewsTab from '@/components/stock/StockNewsTab';
+import StockEventsTab from '@/components/stock/StockEventsTab';
 import { calculateDeliveryCosts } from '@/lib/costs';
 
 export default function StockResearchPage({ params }: { params: Promise<{ symbol: string }> }) {
   const resolvedParams = use(params);
   const { stock, isLoading, isError } = useStock(resolvedParams.symbol);
+  const initialTab = useSearchParams().get('tab');
+  const [tab, setTab] = useState<'overview' | 'breakouts' | 'news' | 'events'>(
+    initialTab === 'breakouts' || initialTab === 'news' || initialTab === 'events' ? initialTab : 'overview');
 
   const [tradeModalOpen, setTradeModalOpen] = useState(false);
   const [tradeSide, setTradeSide] = useState<'BUY' | 'SELL'>('BUY');
@@ -154,6 +161,17 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
           </button>
         </div>
       </div>
+
+      {/* Tabs: Overview, Breakouts, News, Events */}
+      <div className="flex gap-2 border-b border-white/10">
+        {([['overview', 'Overview'], ['breakouts', 'Breakouts'], ['news', 'News'], ['events', 'Events']] as const).map(([id, label]) => (
+          <button key={id} onClick={() => setTab(id)} className={`px-4 py-2 text-sm -mb-px border-b-2 ${tab === id ? 'border-sky-400 text-white' : 'border-transparent text-slate-400 hover:text-white'}`}>{label}</button>
+        ))}
+      </div>
+      {tab === 'breakouts' && <StockBreakoutsTab symbol={stock.symbol} />}
+      {tab === 'news' && <StockNewsTab symbol={stock.symbol} />}
+      {tab === 'events' && <StockEventsTab symbol={stock.symbol} />}
+      {tab === 'overview' && (<>
 
       {/* Stale / Delayed Price Warning Notice */}
       {(stock.freshness === 'STALE' || stock.freshness === 'UNAVAILABLE') && (
@@ -360,6 +378,8 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
       </Card>
 
       {/* Paper Trading Modal */}
+      </>)}
+
       {tradeModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl relative">

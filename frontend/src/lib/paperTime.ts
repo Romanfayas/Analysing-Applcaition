@@ -5,7 +5,8 @@ export const SOURCE_LABEL: Record<string, string> = {
   INTRADAY_5M: '5-min bar',
   EXCHANGE_DAILY_CLOSE: 'NSE official close',
   VENDOR_DAILY_CLOSE: 'vendor daily close',
-  LIVE_LATEST: 'latest price',
+  LIVE_LATEST: 'latest stored price (the bar time is shown; it is not a live quote when the market is closed)',
+  PLAN_FILL_EXCHANGE_DAILY: 'automatic plan fill at the NSE daily bar level',
 };
 
 /** Current Indian market time as the value format of <input type="datetime-local">. */

@@ -44,9 +44,10 @@ export default function BreakoutMonitor() {
           <span className="text-[11px] text-slate-500 block">{c.no_follow_through} faded · {c.not_tradeable} opened above target</span>
         </div>
         <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-          <span className="text-xs text-slate-400 block">Average result of finished signals</span>
-          <span className={`text-xl font-mono ${(c.avg_return_pct_closed ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{pct(c.avg_return_pct_closed)}</span>
-          <span className="text-[11px] text-slate-500 block">{decided} signals, before costs{c.avg_excess_vs_nifty_pct_closed != null ? `; ${pct(c.avg_excess_vs_nifty_pct_closed)} vs NIFTY` : ''}</span>
+          <span className="text-xs text-slate-400 block">Average result of finished signals, after costs</span>
+          <span className={`text-xl font-mono ${(c.all?.avg_net_pct ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{pct(c.all?.avg_net_pct)}</span>
+          <span className="text-[11px] text-slate-500 block">{c.all?.closed ?? decided} trades; {pct(c.avg_return_pct_closed)} before costs{c.avg_excess_vs_nifty_pct_closed != null ? `; ${pct(c.avg_excess_vs_nifty_pct_closed)} vs NIFTY` : ''}</span>
+          <span className="text-[11px] text-slate-500 block">live only: {c.live && c.live.closed > 0 ? `${pct(c.live.avg_net_pct)} over ${c.live.closed}` : 'none closed yet'}; {c.repeat_signals_excluded ?? 0} repeat signal(s) not counted</span>
         </div>
         {h && (
           <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">

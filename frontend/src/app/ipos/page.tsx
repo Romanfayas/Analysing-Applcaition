@@ -127,7 +127,7 @@ export default function IPOPage() {
           <div>
             <span className="font-semibold text-white">NSE India IPO Feed Status: </span>
             <span className="text-emerald-400 font-mono font-bold">
-              {health?.feed_status || 'OPERATIONAL'}
+              {health?.feed_status || 'UNKNOWN'}
             </span>
             <span className="text-slate-400 ml-2">
               (Provider: <code className="text-slate-300 font-mono">NSE_OFFICIAL_IPO_API</code>)
@@ -135,12 +135,12 @@ export default function IPOPage() {
           </div>
         </div>
         <div className="text-slate-400 flex items-center gap-4">
-          <span>Active Bidding Issues: <strong className="text-white">{health?.active_issues_count ?? 0}</strong></span>
+          <span title="Issues that have not listed yet: bidding open, or bidding closed and waiting to list">Issues not yet listed: <strong className="text-white">{health?.active_issues_count ?? '—'}</strong></span>
           <span>•</span>
-          <span>Archived Historical: <strong className="text-white">{health?.historical_count ?? 6}</strong></span>
+          <span>Archived Historical: <strong className="text-white">{health?.historical_count ?? '—'}</strong></span>
           <span>•</span>
           <span className="text-slate-400">
-            Last Checked: <strong className="text-slate-300 font-mono">{health?.latest_run?.completed_at ? new Date(health.latest_run.completed_at).toLocaleTimeString() : 'Recent'}</strong>
+            Last Checked: <strong className="text-slate-300 font-mono">{health?.latest_run?.completed_at ? new Date(health.latest_run.completed_at).toLocaleTimeString() : '—'}</strong>
           </span>
         </div>
       </div>
@@ -357,9 +357,15 @@ export default function IPOPage() {
                       {ipo.listing_date ? (
                         <p className="font-semibold text-slate-300">{fmtDay(ipo.listing_date)} <span className="text-[10px] text-emerald-400 font-normal">announced</span></p>
                       ) : ipo.expected_listing_date ? (
+                        ipo.expected_listing_date.slice(0, 10) < new Date().toISOString().slice(0, 10) ? (
+                          <p className="font-semibold text-slate-300" title="The scheduled date has passed. No price source we can read has confirmed the listing (BSE SME issues are not on NSE feeds).">
+                            {fmtDay(ipo.expected_listing_date)} <span className="text-[10px] text-rose-300 font-normal">date passed, listing not confirmed</span>
+                          </p>
+                        ) : (
                         <p className="font-semibold text-slate-300" title="The exchange has not yet announced the date.">
                           ≈ {fmtDay(ipo.expected_listing_date)} <span className="text-[10px] text-amber-300 font-normal">{ipo.listing_date_basis === 'SCHEDULED_IN_PROSPECTUS' ? 'scheduled' : 'expected (T+3)'}</span>
                         </p>
+                        )
                       ) : (
                         <p className="font-semibold text-slate-300">{ipo.status === 'DRHP_FILED' ? 'Pending SEBI clearance' : 'Not yet announced'}</p>
                       )}

@@ -5,9 +5,11 @@
 package main
 
 import (
-	breakoutworker "github.com/halal-equity/backend/internal/workers/breakouts"
 	"context"
 	"fmt"
+	"github.com/halal-equity/backend/internal/workers/autopaper"
+	breakoutworker "github.com/halal-equity/backend/internal/workers/breakouts"
+	"github.com/halal-equity/backend/internal/workers/news"
 	"os"
 	"os/signal"
 	"strconv"
@@ -118,6 +120,12 @@ func main() {
 
 	// Record every confirmed breakout and follow what happens next
 	go breakoutworker.NewWorker(db, quant.NewClient(cfg.QuantEngineURL), 10*time.Minute).Run(ctx)
+
+	// Automatic paper trading of the platform's own breakout signals (control plan always, plus the learner's active version).
+	go autopaper.NewWorker(db, 15*time.Minute).Run(ctx)
+
+	// Headlines, official announcements and events for every stock, tracked breakout stocks first.
+	go news.NewWorker(db, news.NewRefresher(db), 15*time.Minute).Run(ctx)
 
 	// Evaluate user price alerts against the latest stored prices
 	go alerts.NewEvaluator(db, notifier, 5*time.Minute).Run(ctx)

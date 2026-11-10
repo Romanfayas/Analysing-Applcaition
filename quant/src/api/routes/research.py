@@ -218,3 +218,24 @@ async def refresh_breakout_evidence():
             conn.close()
 
     return await asyncio.get_running_loop().run_in_executor(None, job)
+
+
+@router.post("/learning/run")
+async def run_learning_loop():
+    """Governed learning loop (P1.9.28): lessons, walk-forward test of the pre-registered strategy menu, promotion/probation decision.
+    Writes only to the append-only learning tables. Takes about a minute."""
+    import asyncio
+    import os
+
+    import psycopg2
+
+    from src.engines.research.learning import run
+
+    def job():
+        conn = psycopg2.connect(os.environ["DATABASE_URL"])
+        try:
+            return run(conn)
+        finally:
+            conn.close()
+
+    return await asyncio.get_running_loop().run_in_executor(None, job)

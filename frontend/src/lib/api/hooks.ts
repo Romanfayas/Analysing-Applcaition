@@ -10,6 +10,12 @@ import type {
   IpoHealth,
   IpoRun,
   IpoView,
+  AutoPaperPortfolio,
+  BreakoutsOverview,
+  LearningSummary,
+  StockBreakouts,
+  StockEvents,
+  StockNews,
   LedgerPosition,
   MarketHealthResponse,
   MarketOverview,
@@ -216,4 +222,36 @@ export function useBreakoutMonitor() {
 export function useResearchRun() {
   const { data, error, isLoading } = useSWR<ResearchRun>('/backtesting/research', fetcher);
   return { run: data, isLoading, isError: error };
+}
+
+// ---- Learning loop ----
+export function useLearning() {
+  const { data, error, isLoading, mutate } = useSWR<LearningSummary>('/learning/summary', fetcher, { refreshInterval: 300000 });
+  return { learning: data, isLoading, isError: error, mutate };
+}
+
+// ---- Breakouts, news, events, automatic paper trading ----
+export function useBreakoutsOverview() {
+  const { data, error, isLoading, mutate } = useSWR<BreakoutsOverview>('/breakouts/overview', fetcher, { refreshInterval: 120000 });
+  return { overview: data, isLoading, isError: error, mutate };
+}
+
+export function useStockBreakouts(symbol: string) {
+  const { data, error, isLoading } = useSWR<StockBreakouts>(symbol ? `/breakouts/stock/${symbol}` : null, fetcher, { refreshInterval: 300000 });
+  return { data, isLoading, isError: error };
+}
+
+export function useStockNews(symbol: string) {
+  const { data, error, isLoading } = useSWR<StockNews>(symbol ? `/stock-feed/${symbol}/news` : null, fetcher, { refreshInterval: 300000 });
+  return { data, isLoading, isError: error };
+}
+
+export function useStockEvents(symbol: string) {
+  const { data, error, isLoading } = useSWR<StockEvents>(symbol ? `/stock-feed/${symbol}/events` : null, fetcher, { refreshInterval: 600000 });
+  return { data, isLoading, isError: error };
+}
+
+export function useAutoPaper() {
+  const { data, error, isLoading } = useSWR<{ portfolios: AutoPaperPortfolio[] }>('/auto-paper/summary', fetcher, { refreshInterval: 300000 });
+  return { portfolios: data?.portfolios ?? [], isLoading, isError: error };
 }

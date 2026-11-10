@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AUTH_COOKIE, BACKEND_API_URL, isLive } from '@/lib/auth/session';
+import { AUTH_COOKIE, BACKEND_API_URL, cookieOptions, isLive, isSecureRequest } from '@/lib/auth/session';
 
 // Backend-for-frontend: the browser talks only to this route; the JWT is attached server-side
 // from the httpOnly session cookie. Anything the client sends in Authorization/Cookie is discarded.
@@ -38,7 +38,13 @@ async function handleRequest(request: NextRequest, { params }: { params: Promise
     const contentType = upstream.headers.get('content-type');
     if (contentType) responseHeaders.set('content-type', contentType);
     responseHeaders.set('Cache-Control', 'no-store');
-    return new NextResponse(body, { status: upstream.status, headers: responseHeaders });
+    const response = new NextResponse(body, { status: upstream.status, headers: responseHeaders });
+    if (upstream.status === 401) {
+      // The backend rejected the session (expired, or the account was deleted/disabled). The edge gate only reads the cookie's
+      // expiry date, so without this the browser would bounce /login -> / -> 401 forever. Drop the cookie so /login is reachable.
+      response.cookies.set(AUTH_COOKIE, '', { ...cookieOptions(isSecureRequest(request)), maxAge: 0, expires: new Date(0) });
+    }
+    return response;
   } catch (error) {
     console.error('Proxy error:', error);
     return NextResponse.json({ error: 'Proxy request to backend failed' }, { status: 502 });

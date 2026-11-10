@@ -658,3 +658,23 @@ func (c *Client) RefreshBreakoutEvidence(ctx context.Context) error {
 	}
 	return nil
 }
+
+// RefreshLearning runs the governed learning loop: new lessons, the walk-forward test of the strategy menu, and the promotion /
+// probation decision. It takes about a minute and writes only to the append-only learning tables.
+func (c *Client) RefreshLearning(ctx context.Context) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/api/v1/research/learning/run", bytes.NewReader([]byte("{}")))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := predictionHTTP.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("learning run returned %d: %s", resp.StatusCode, string(body))
+	}
+	return nil
+}

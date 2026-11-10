@@ -11,6 +11,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/api ./cmd/api
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/worker ./cmd/worker
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/exchange_evidence ./cmd/exchange_evidence
 
 # ---- Runtime ----
 FROM alpine:3.19
@@ -21,6 +22,7 @@ WORKDIR /app
 
 COPY --from=builder /app/bin/api /app/bin/api
 COPY --from=builder /app/bin/worker /app/bin/worker
+COPY --from=builder /app/bin/exchange_evidence /app/bin/exchange_evidence
 COPY --from=builder /app/migrations /app/migrations
 
 EXPOSE 8080

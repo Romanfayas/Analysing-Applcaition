@@ -4,9 +4,11 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-chi/httprate"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
 	"github.com/halal-equity/backend/internal/auth"
@@ -16,8 +18,29 @@ type contextKey string
 
 const UserContextKey contextKey = "user"
 
-// AuthMiddleware validates JWT tokens and adds user info to context.
+// AccountCheck reports whether the account behind a token still exists and is active.
+type AccountCheck func(ctx context.Context, id uuid.UUID) (active bool, err error)
+
+// accountCacheTTL bounds how long a deleted or disabled account's token keeps working.
+const accountCacheTTL = 30 * time.Second
+
+type accountEntry struct {
+	active bool
+	until  time.Time
+}
+
+// AuthMiddleware validates JWT tokens and adds user info to context. It trusts the token alone.
 func AuthMiddleware(jwtManager *auth.JWTManager) func(http.Handler) http.Handler {
+	return AuthMiddlewareWithAccounts(jwtManager, nil)
+}
+
+// AuthMiddlewareWithAccounts also rejects a validly signed token whose account was deleted or deactivated, so a stale browser
+// session gets a clean 401 (and is sent to the login page) instead of failing deeper with foreign-key errors.
+// If the account lookup itself fails the request is refused with 503 rather than waved through.
+func AuthMiddlewareWithAccounts(jwtManager *auth.JWTManager, check AccountCheck) func(http.Handler) http.Handler {
+	var mu sync.Mutex
+	cache := map[uuid.UUID]accountEntry{}
+	now := time.Now
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
@@ -36,6 +59,27 @@ func AuthMiddleware(jwtManager *auth.JWTManager) func(http.Handler) http.Handler
 			if err != nil {
 				http.Error(w, `{"error":"invalid or expired token"}`, http.StatusUnauthorized)
 				return
+			}
+
+			if check != nil {
+				mu.Lock()
+				e, hit := cache[claims.UserID]
+				mu.Unlock()
+				if !hit || now().After(e.until) {
+					active, err := check(r.Context(), claims.UserID)
+					if err != nil {
+						http.Error(w, `{"error":"could not verify the account"}`, http.StatusServiceUnavailable)
+						return
+					}
+					e = accountEntry{active: active, until: now().Add(accountCacheTTL)}
+					mu.Lock()
+					cache[claims.UserID] = e
+					mu.Unlock()
+				}
+				if !e.active {
+					http.Error(w, `{"error":"this account no longer exists or is disabled: please sign in again"}`, http.StatusUnauthorized)
+					return
+				}
 			}
 
 			ctx := context.WithValue(r.Context(), UserContextKey, claims)

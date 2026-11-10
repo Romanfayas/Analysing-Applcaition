@@ -105,16 +105,27 @@ func (w *Worker) record(ctx context.Context) error {
 		ids[s.Symbol] = s.ID
 	}
 	for _, c := range scan.Candidates {
-		if c.Stage != "CONFIRMED_BREAKOUT" || len(c.EntryZone) != 2 {
+		if len(c.EntryZone) != 2 {
 			continue
 		}
 		id, ok := ids[c.Symbol]
 		if !ok {
 			continue
 		}
-		if err := w.db.RecordBreakout(ctx, database.BreakoutSignal{SymbolID: id, SignalDate: day, SignalClose: c.CurrentPrice, EntryLow: c.EntryZone[0], EntryHigh: c.EntryZone[1],
-			Stop: c.InvalidationLevel, T1: c.Target1, T2: c.Target2, Score: c.StructureScore, RVOL: c.RVOL, Shariah: c.ShariahStatus}); err != nil {
-			return err
+		switch c.Stage {
+		case "CONFIRMED_BREAKOUT":
+			if err := w.db.RecordBreakout(ctx, database.BreakoutSignal{SymbolID: id, SignalDate: day, SignalClose: c.CurrentPrice, EntryLow: c.EntryZone[0], EntryHigh: c.EntryZone[1],
+				Stop: c.InvalidationLevel, T1: c.Target1, T2: c.Target2, Score: c.StructureScore, RVOL: c.RVOL, Shariah: c.ShariahStatus,
+				Reasons: c.Reasons, Stage: c.Stage, Resistance: c.ResistanceLevel, ATR: c.ATR, Breakdown: c.ScoreBreakdown}); err != nil {
+				return err
+			}
+		case "BREAKOUT_CANDIDATE":
+			// An upcoming breakout: tracked from the day it is flagged, and scored later on whether the engine's own confirmed breakout followed.
+			if err := w.db.RecordWatchFlag(ctx, database.WatchFlag{SymbolID: id, FlaggedDate: day, Close: c.CurrentPrice, Resistance: c.ResistanceLevel, Stop: c.InvalidationLevel,
+				EntryLow: c.EntryZone[0], EntryHigh: c.EntryZone[1], Target1: c.Target1, Target2: c.Target2, Score: c.StructureScore, RVOL: c.RVOL, ATR: c.ATR,
+				Reasons: c.Reasons, Breakdown: c.ScoreBreakdown, Shariah: c.ShariahStatus}); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -130,5 +141,9 @@ func (w *Worker) maybeRefreshStudy(ctx context.Context) {
 	w.lastStudyDay = day
 	if err := w.quant.RefreshBreakoutEvidence(ctx); err != nil {
 		log.Error().Err(err).Msg("breakout tracker: study refresh failed")
+	}
+	// After the study: lessons from newly resolved signals, then the walk-forward test and promotion/probation decision.
+	if err := w.quant.RefreshLearning(ctx); err != nil {
+		log.Error().Err(err).Msg("learning loop: run failed")
 	}
 }

@@ -7,6 +7,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -20,12 +21,14 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/google/uuid"
 	"github.com/halal-equity/backend/internal/auth"
 	"github.com/halal-equity/backend/internal/config"
 	"github.com/halal-equity/backend/internal/database"
 	"github.com/halal-equity/backend/internal/handlers"
 	"github.com/halal-equity/backend/internal/middleware"
 	"github.com/halal-equity/backend/internal/services/quant"
+	"github.com/halal-equity/backend/internal/workers/news"
 )
 
 func main() {
@@ -126,7 +129,16 @@ func setupRouter(cfg *config.Config, jwtManager *auth.JWTManager, db *database.D
 
 		// Protected routes
 		r.Group(func(r chi.Router) {
-			r.Use(middleware.AuthMiddleware(jwtManager))
+			r.Use(middleware.AuthMiddlewareWithAccounts(jwtManager, func(ctx context.Context, id uuid.UUID) (bool, error) {
+				u, err := db.GetUserByID(ctx, id)
+				if errors.Is(err, database.ErrUserNotFound) {
+					return false, nil
+				}
+				if err != nil {
+					return false, err
+				}
+				return u.IsActive, nil
+			}))
 
 			r.Mount("/stocks", handlers.NewStocksHandler(db, quantClient).Routes())
 			r.Mount("/ipos", handlers.NewIPOHandler(db, quantClient).Routes())
@@ -137,6 +149,10 @@ func setupRouter(cfg *config.Config, jwtManager *auth.JWTManager, db *database.D
 			r.Mount("/backtest", handlers.NewBacktestingHandler(db, quantClient).Routes())
 			r.Mount("/evidence", handlers.NewEvidenceHandler(db).Routes())
 			r.Mount("/predictions", handlers.NewPredictionHandler(db).Routes())
+			r.Mount("/learning", handlers.NewLearningHandler(db).Routes())
+			r.Mount("/breakouts", handlers.NewBreakoutsHandler(db, quantClient).Routes())
+			r.Mount("/auto-paper", handlers.NewAutoPaperHandler(db).Routes())
+			r.Mount("/stock-feed", handlers.NewStockFeedHandler(db, news.NewRefresher(db)).Routes())
 			r.Mount("/paper-trading", handlers.NewPaperTradingHandler(db, quantClient).Routes())
 			r.Mount("/paper-observations", handlers.NewPaperObservationsHandler(db, quantClient).Routes())
 			r.Mount("/risk", handlers.NewRiskHandler(db, quantClient).Routes())

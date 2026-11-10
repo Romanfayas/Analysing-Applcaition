@@ -852,6 +852,7 @@ export interface BreakoutMonitor {
   scorecard: {
     tracked: number; open: number; worked: number; failed: number; no_follow_through: number; not_tradeable: number;
     avg_return_pct_closed: number | null; avg_excess_vs_nifty_pct_closed: number | null; worked_rate_pct: number | null;
+    repeat_signals_excluded?: number; live?: ScoreGroup; history_replay?: ScoreGroup; all?: ScoreGroup; note?: string;
   };
   history: { overall: EvidenceStats; by_period: { DISCOVERY: EvidenceStats; HOLDOUT: EvidenceStats }; shariah_pass_only: { overall: EvidenceStats; holdout: EvidenceStats } } | null;
   history_run_at: string | null;
@@ -921,4 +922,97 @@ export interface IpoDetails {
   listing_at?: string;
   gmp_source?: string;
   gmp_source_url?: string;
+}
+
+// ---- Learning loop (P1.9.28) ----
+export interface StrategyVersion {
+  id: number; name: string; origin: 'FROZEN_CONTROL' | 'LEARNER_SPACE'; params: { plan: string; entry: string; market: string };
+  status: string; status_reason: string; actor: string; status_at: string | null;
+}
+export interface LearningGate { pass: boolean; detail: string; interval?: { estimate?: number; low: number; high: number } | null; recent_choices?: string[] }
+export interface LearningBlock {
+  origin: string; completed: boolean; chosen: string; basis: string;
+  policy_trades: number; control_trades: number; policy_mean_net_pct: number | null; control_mean_net_pct: number | null;
+}
+export interface PnlAudit {
+  label: string; trades: number; capital_inr?: number; notional_per_trade_inr?: number; gross_pnl_inr?: number; total_costs_inr?: number; net_pnl_inr?: number;
+  ending_equity_inr?: number; reconciled_to_ledger?: boolean; reconciliation_difference_inr?: number; peak_concurrent_positions?: number;
+  max_drawdown?: { max_drawdown_pct: number; peak_date: string; trough_date: string } | null; capital_warning?: string | null; cost_model?: string;
+}
+export interface LearningRunResult {
+  spec: string; space: string; data_through: string; candidates_tried: number; current_selection: string; selection_basis: string;
+  walk_forward_blocks: LearningBlock[]; gates: Record<string, LearningGate>; gates_passed: boolean;
+  policy_oos: { trades: number; mean_net_pct: number | null; ci: { low: number; high: number } | null };
+  control_oos: { trades: number; mean_net_pct: number | null };
+  difference_ci: { estimate: number; low: number; high: number } | null;
+  probation: { forward_trades: number; judged: boolean; failed: boolean; active_mean_net_pct: number | null; control_mean_net_pct: number | null; rule: string } | null;
+  pnl_audit: PnlAudit[]; multiple_testing_note: string; limitations: string[];
+}
+export interface LessonTag { tag: string; n: number; worked: number; failed: number }
+export interface Lesson { symbol: string; signal_date: string; origin: string; verdict: string; return_pct: number | null; lesson: string; tags: string[] }
+export interface LearningSummary {
+  versions: StrategyVersion[]; active: StrategyVersion | null; control: StrategyVersion | null;
+  last_run: LearningRunResult | null; last_run_id: number | null; last_run_at: string | null; last_decision: string | null;
+  runs: { id: number; data_through: string; decision: string; created_at: string }[];
+  lesson_tags: LessonTag[]; recent_lessons: Lesson[]; lessons_total: number;
+  recent_status_events: { id: number; version: string; status: string; reason: string; actor: string; at: string }[];
+}
+
+// ---- Breakouts, news, events, automatic paper trading (P1.9.29) ----
+export interface BreakoutReading {
+  symbol: string; stage: string; current_price: number; resistance_level: number; support_level: number; distance_to_resistance_pct: number;
+  rvol: number; atr: number; consolidation_bars: number; entry_zone: number[]; invalidation_level: number; target_1: number; target_2: number;
+  risk_reward_ratio: number; structure_score: number | null; score_breakdown: Record<string, number>; shariah_status: string;
+  reasons: string[]; invalidation_conditions: string[]; market_regime?: string; liquidity_adt_cr?: number; sector?: string;
+  live?: { price: number; status: string; message: string; as_of: string } | null;
+}
+export interface WatchFlag {
+  symbol: string; flagged_date: string; origin: 'LIVE' | 'HISTORY_REPLAY'; flagged_close: number; resistance_level: number; stop_level: number;
+  entry_low: number | null; entry_high: number | null; target_1: number | null; target_2: number | null; structure_score: number | null; rvol: number | null;
+  reasons: string[]; score_breakdown: Record<string, number>; shariah_status: string | null;
+  status: 'WATCHING' | 'BROKE_OUT' | 'INVALIDATED' | 'EXPIRED'; sessions_elapsed: number; last_close: number | null; broke_out_session: string | null;
+  sessions_to_breakout: number | null; ret_5d_pct: number | null; ret_10d_pct: number | null; max_gain_pct: number | null; max_drawdown_pct: number | null;
+  counts_in_stats: boolean; distance_to_resistance_pct: number | null;
+}
+export interface TrackedSignal extends TrackedBreakout {
+  reasons: string[]; resistance_level: number | null; atr: number | null; score_breakdown: Record<string, number> | null;
+  counts_in_stats: boolean; excluded_reason: string | null; net_return_pct: number | null;
+}
+export interface ScoreGroup { closed: number; wins: number; avg_gross_pct: number | null; avg_net_pct: number | null; net_win_rate_pct: number | null; total_net_inr_on_1l_each: number }
+export interface WatchScorecard { watching: number; broke_out: number; invalidated: number; expired: number; hit_rate_pct: number | null; avg_10d_move_pct: number | null; repeat_flags_excluded: number; note: string }
+export interface BreakoutsOverview {
+  confirmed: { signals: TrackedSignal[]; scorecard: BreakoutMonitor['scorecard'] & { repeat_signals_excluded: number; live: ScoreGroup; history_replay: ScoreGroup; all: ScoreGroup; note: string } };
+  upcoming: { flags: WatchFlag[]; scorecard_all?: WatchScorecard; scorecard_live?: WatchScorecard; scorecard_history_replay?: WatchScorecard };
+  candidate_lift?: { result: { base_rate_next5_pct: number | null; candidate_flags: number; candidate_hit_next5_pct: number | null; candidate_hit_next10_pct: number | null; candidate_mean_10d_move_pct: number | null; note: string; data_through: string }; run_at: string };
+  today: { available: boolean; error?: string; data_as_of?: string | null; data_quality?: string; computed_at?: string; basis?: string; total_screened?: number; stage_counts?: Record<string, number>;
+    confirmed?: BreakoutReading[]; upcoming?: BreakoutReading[]; excluded?: { symbol: string; reason: string }[] };
+  auto_paper?: { portfolio_id: number; label: string; closed_count: number; wins: number; net_pnl_closed: number; return_on_capital_pct: number; open_positions: number; reconciled: boolean; processed_through: string }[];
+}
+export interface StockTest {
+  verdict: 'INSUFFICIENT_DATA' | 'POSITIVE_AFTER_COSTS' | 'NEGATIVE_AFTER_COSTS' | 'NO_EDGE_DEMONSTRATED'; verdict_text: string; plan: string; series_through: string;
+  confirmed_breakouts: { trades: number; wins: number; win_rate_pct: number | null; mean_net_pct: number | null; net_ci95: { low: number; high: number } | null; total_net_inr_on_1L_each?: number;
+    by_period: Record<string, { trades: number; mean_net_pct: number | null }>; last_trades: { entry: string; exit: string; why: string; net_pct: number }[] };
+  upcoming_flags: { resolved_flags: number; broke_out: number; hit_rate_pct: number | null; mean_10d_move_pct: number | null; note: string };
+}
+export interface StockBreakouts {
+  symbol: string; name: string; today?: { available: boolean; data_as_of?: string | null; reading?: BreakoutReading; reason?: string };
+  signals: TrackedSignal[]; flags: WatchFlag[]; test: { result: StockTest; as_of: string } | null;
+}
+export interface FeedStatus { last_success: string | null; last_error: string | null }
+export interface StockNews {
+  symbol: string; name: string; headlines: { title: string; publisher: string | null; url: string; source: string; published_at: string | null }[];
+  filings: { announced_at: string; category: string | null; subject: string; attachment_url: string | null }[];
+  status: Record<string, FeedStatus>; sources: { headlines: string; filings: string };
+}
+export interface StockEvents {
+  symbol: string; name: string; upcoming: StockEvent[]; recent: StockEvent[]; status: Record<string, FeedStatus>; source: string;
+}
+export interface StockEvent { kind: 'BOARD_MEETING' | 'CORPORATE_ACTION'; event_date: string; title: string; detail: string | null; source: string }
+export interface AutoPaperPortfolio {
+  portfolio_id: number; label: string; plan: Record<string, string>; initial_capital: number; cash: number; processed_through: string;
+  open_positions: { symbol: string; shares: number; avg_cost: number; entry_date: string; signal_date: string }[];
+  closed_trades: { symbol: string; origin: string; signal_date: string; entry_date: string; exit_date: string; shares: number; entry_price: number; exit_price: number; fees: number; net_pnl: number; net_pct: number; exit_reason: string }[];
+  skipped: { symbol: string; signal_date: string; leg: string; reason: string }[];
+  closed_count: number; wins: number; net_pnl_closed: number; total_fees: number; return_on_capital_pct: number; max_drawdown_realized_pct: number;
+  expected_cash_from_trades: number; cash_reconciles_to_ledger: boolean; note: string;
 }
