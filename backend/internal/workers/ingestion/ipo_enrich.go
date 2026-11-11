@@ -204,6 +204,8 @@ func (w *IPOWorker) enrichOne(ctx context.Context, ipo database.ActiveIPO, row *
 		time.Sleep(600 * time.Millisecond)
 	}
 	if o == nil && u == nil {
+		// No detail page for this issue (typical for BSE-only SME issues): it can still have listed, so check the market.
+		w.detectListing(ctx, ipo, IPORecordDetail{})
 		return
 	}
 	merged := MergeIPODetail(o, u, band)
