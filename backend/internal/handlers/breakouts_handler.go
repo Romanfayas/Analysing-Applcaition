@@ -325,9 +325,13 @@ func (h *BreakoutsHandler) Upcoming(w http.ResponseWriter, r *http.Request) {
 				}
 				out[i].Name = rec.Name
 				if h.refresher != nil {
-					rctx, cancel := context.WithTimeout(ctx, 12*time.Second)
-					h.refresher.Refresh(rctx, *rec, news.Freshness)
-					cancel()
+					// Fetching fresh headlines takes seconds per stock, so it must not hold the page: show what is stored now and let the
+					// refresh finish in the background (it skips stocks refreshed in the last 15 minutes) for the next view.
+					go func(rec database.SymbolRecord) {
+						bg, cancel := context.WithTimeout(context.Background(), 40*time.Second)
+						defer cancel()
+						h.refresher.Refresh(bg, rec, news.Freshness)
+					}(*rec)
 				}
 				if n, err := h.db.ListNews(ctx, rec.ID, 4); err == nil {
 					out[i].News = n
