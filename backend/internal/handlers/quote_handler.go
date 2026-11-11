@@ -47,7 +47,7 @@ func withChange(q *ExchangeQuote, price, prev float64) {
 	}
 }
 
-// bseQuote reads the BSE listing (Yahoo ticker SYMBOL.BO): the newest daily bar is the latest price and the one before it the previous close.
+// bseQuote reads the BSE listing (Yahoo ticker SYMBOL.BO): the chart header of today's session gives the latest price and the previous close.
 func bseQuote(symbol string) ExchangeQuote {
 	bseMu.Lock()
 	if e, ok := bseCache[symbol]; ok {
@@ -63,19 +63,12 @@ func bseQuote(symbol string) ExchangeQuote {
 	bseMu.Unlock()
 
 	q := ExchangeQuote{Exchange: "BSE", Source: "Yahoo Finance " + symbol + ".BO (delayed)"}
-	now := time.Now()
-	bars, err := bseProvider.GetDailyByTicker(symbol+".BO", now.AddDate(0, 0, -10), now.Add(24*time.Hour))
-	n := len(bars)
-	switch {
-	case err != nil || n == 0:
+	snap, err := bseProvider.GetSnapshot(symbol + ".BO")
+	if err != nil {
 		q.Note = "The BSE price could not be fetched right now."
-	default:
-		prev := 0.0
-		if n >= 2 {
-			prev = bars[n-2].Close
-		}
-		withChange(&q, bars[n-1].Close, prev)
-		at := bars[n-1].Timestamp.In(istZone).Format("2006-01-02")
+	} else {
+		withChange(&q, snap.Price, snap.PrevClose)
+		at := snap.At.In(istZone).Format("2006-01-02 15:04")
 		q.AsOf = &at
 	}
 	bseMu.Lock()
