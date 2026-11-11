@@ -11,8 +11,9 @@
   --color-blue-600: #2563EB;
   --color-rose-500: #F43F5E;
 
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-heading: "Outfit", "Inter", sans-serif;
+  /* system UI font: the public proxy forbids caching, so an 84 KB web font was re-downloaded on every page load */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Outfit", system-ui, sans-serif;
 }
 
 /* Base styles for premium dark mode */
