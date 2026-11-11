@@ -452,6 +452,12 @@ def run(conn) -> Dict[str, Any]:
              "resolution": bw.resolve(conn, analysis)}
     stats = bw.stock_stats(analysis, signals, nifty)
     watch["stock_tests_stored"] = bw.store_stock_stats(conn, stats, through.isoformat())
+    try:    # a failure here must never stop the learner's own decision below
+        from src.engines.research import pattern_replay as pr
+        watch["pattern_replay"] = pr.run_from_analysis(conn, analysis, nifty, through)
+    except Exception as exc:
+        conn.rollback()
+        watch["pattern_replay"] = {"error": str(exc)[:300]}
     rates = bw.universe_rates(analysis)
     with conn.cursor() as cur:
         cur.execute("INSERT INTO research_runs (kind, version, series_version, result) VALUES (%s, %s, %s, %s)",

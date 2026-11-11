@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"math"
 	"net/http"
 	"sort"
@@ -41,6 +42,64 @@ type LargeMinute struct {
 	Notional float64 `json:"notional_inr"`
 	Times    float64 `json:"times_normal"`
 	Side     string  `json:"candle"` // UP | DOWN | FLAT: the colour of the candle, which is all a price bar can say about direction
+}
+
+// RangeSummary is what the header of the chart shows for the selected range: where it started and ended, the extremes, the volume, and the move.
+type RangeSummary struct {
+	Open       float64 `json:"open"`
+	Close      float64 `json:"close"`
+	High       float64 `json:"high"`
+	Low        float64 `json:"low"`
+	Volume     int64   `json:"volume"`
+	BasePrice  float64 `json:"base_price"`
+	BaseLabel  string  `json:"base_label"`
+	Change     float64 `json:"change"`
+	ChangePct  float64 `json:"change_pct"`
+	FirstLabel string  `json:"from"`
+	LastLabel  string  `json:"to"`
+}
+
+// summarizeRange describes candles against a base price (the close before the range began). With no base the first candle's open is used.
+func summarizeRange(candles []ChartCandle, base float64, baseLabel string) *RangeSummary {
+	if len(candles) == 0 {
+		return nil
+	}
+	sm := &RangeSummary{Open: candles[0].O, Close: candles[len(candles)-1].C, High: candles[0].H, Low: candles[0].L}
+	for _, c := range candles {
+		sm.High, sm.Low = math.Max(sm.High, c.H), math.Min(sm.Low, c.L)
+		sm.Volume += c.V
+	}
+	if base <= 0 {
+		base, baseLabel = sm.Open, "first candle's open"
+	}
+	sm.BasePrice, sm.BaseLabel = base, baseLabel
+	sm.Change = sm.Close - base
+	sm.ChangePct = sm.Change / base * 100
+	for _, c := range []ChartCandle{candles[0], candles[len(candles)-1]} {
+		label := c.Date
+		if c.TS != 0 {
+			label = time.Unix(c.TS, 0).In(istZone).Format("2006-01-02 15:04")
+		}
+		if sm.FirstLabel == "" {
+			sm.FirstLabel = label
+		}
+		sm.LastLabel = label
+	}
+	return sm
+}
+
+// closeBefore is the close of the last daily bar dated before `day` (an IST date), or 0 when none is stored.
+func (h *StocksHandler) closeBefore(ctx context.Context, symbolID int, day string) float64 {
+	bars, err := h.db.GetDailyBars(ctx, symbolID, 400, false)
+	if err != nil {
+		return 0
+	}
+	for i := len(bars) - 1; i >= 0; i-- {
+		if istDate(bars[i].Timestamp) < day {
+			return bars[i].Close
+		}
+	}
+	return 0
 }
 
 func minuteOfDay(t time.Time) int {
@@ -273,7 +332,16 @@ func (h *StocksHandler) GetChart(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		out["interval"], out["candles"] = label, aggregateIntraday(show, minutes)
+		candles := aggregateIntraday(show, minutes)
+		out["interval"], out["candles"] = label, candles
+		if len(candles) > 0 {
+			first := time.Unix(candles[0].TS, 0).In(istZone).Format("2006-01-02")
+			baseLabel := "previous session's close"
+			if rng == "1W" {
+				baseLabel = "close before the 5 sessions"
+			}
+			out["summary"] = summarizeRange(candles, h.closeBefore(ctx, sym.ID, first), baseLabel)
+		}
 		if rng == "1D" {
 			pct, minN := 99.0, 2_000_000.0
 			if v, err := strconv.ParseFloat(r.URL.Query().Get("pct"), 64); err == nil && v >= 90 && v <= 99.9 {
@@ -288,17 +356,22 @@ func (h *StocksHandler) GetChart(w http.ResponseWriter, r *http.Request) {
 		}
 	case "1M", "6M", "1Y", "ALL":
 		limit := map[string]int{"1M": 22, "6M": 126, "1Y": 252, "ALL": 1000}[rng]
-		bars, err := h.db.GetDailyBars(ctx, sym.ID, limit, false)
+		bars, err := h.db.GetDailyBars(ctx, sym.ID, limit+1, false) // one extra bar: the close before the range began
 		if err != nil {
 			log.Error().Err(err).Msg("chart: daily failed")
 			response.Error(w, http.StatusInternalServerError, "failed to load the chart")
 			return
+		}
+		base, baseLabel := 0.0, ""
+		if len(bars) > limit {
+			base, baseLabel, bars = bars[0].Close, "close before the range", bars[1:]
 		}
 		candles := make([]ChartCandle, 0, len(bars))
 		for _, b := range bars {
 			candles = append(candles, ChartCandle{Date: istDate(b.Timestamp), O: b.Open, H: b.High, L: b.Low, C: b.Close, V: b.Volume})
 		}
 		out["interval"], out["candles"] = "1 day", candles
+		out["summary"] = summarizeRange(candles, base, baseLabel)
 	default:
 		response.ValidationError(w, "range must be one of 1D, 1W, 1M, 6M, 1Y, ALL")
 		return

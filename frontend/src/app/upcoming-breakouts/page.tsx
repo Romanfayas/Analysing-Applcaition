@@ -3,7 +3,8 @@
 import Link from '@/components/Link';
 import { useUpcomingBreakouts } from '@/lib/api/hooks';
 import { Reasons, ScoreBars, Shariah, inr } from '@/components/breakouts/BreakoutCard';
-import type { UpcomingItem } from '@/lib/api/types';
+import PatternTests, { StockHistory } from '@/components/breakouts/PatternTests';
+import type { ReplaySetup, UpcomingItem } from '@/lib/api/types';
 
 const ago = (iso: string | null) => {
   if (!iso) return '';
@@ -12,6 +13,10 @@ const ago = (iso: string | null) => {
   if (h < 48) return `${Math.round(h)} h ago`;
   return `${Math.round(h / 24)} d ago`;
 };
+
+const todayList = (cands: UpcomingItem[], closest: UpcomingItem[], confirmed: string[]): Record<ReplaySetup, string[]> => ({
+  CLOSEST: closest.map((c) => c.result.symbol), UPCOMING: cands.map((c) => c.result.symbol), CONFIRMED: confirmed,
+});
 
 function StockCard({ item, kind }: { item: UpcomingItem; kind: 'candidate' | 'closest' }) {
   const r = item.result;
@@ -76,6 +81,7 @@ function StockCard({ item, kind }: { item: UpcomingItem; kind: 'candidate' | 'cl
           <Link href={`/stocks/${r.symbol}?tab=news`} className="inline-block text-xs text-sky-300 hover:underline">All news, filings and events for {r.symbol} →</Link>
         </div>
       </div>
+      <StockHistory symbol={r.symbol} setup={kind === 'candidate' ? 'UPCOMING' : 'CLOSEST'} />
       {r.invalidation_conditions?.length > 0 && <div className="text-[11px] text-slate-500">Invalidated if: {r.invalidation_conditions.join('; ')}</div>}
     </div>
   );
@@ -99,6 +105,8 @@ export default function UpcomingBreakoutsPage() {
             <div>Based on the last completed session: <b className="text-white">{data.data_as_of ?? 'unknown'}</b> · {data.total_screened} stocks screened. These levels come from daily bars, so the list is rebuilt each evening once the exchange file is loaded.</div>
             <div className="text-slate-500">{data.note}</div>
           </div>
+
+          <PatternTests today={todayList(data.candidates, data.closest, data.confirmed_symbols ?? [])} />
 
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-white">Upcoming: engine candidates ({data.candidates.length})</h2>

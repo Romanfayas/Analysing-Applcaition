@@ -13,7 +13,7 @@ import type {
   AutoPaperPortfolio,
   BreakoutsOverview,
   UpcomingBreakouts,
-  ChartRange,
+  ChartRange, StockQuote, PatternReplay, ReplaySetup, ReplayTrade,
   StockChart,
   StockDeals,
   LearningSummary,
@@ -274,5 +274,23 @@ export function useStockChart(symbol: string | null, range: ChartRange) {
 
 export function useStockDeals(symbol: string | null) {
   const { data, error, isLoading } = useSWR<StockDeals>(symbol ? `/stock-feed/${encodeURIComponent(symbol)}/deals` : null, fetcher, { refreshInterval: 600000, revalidateOnFocus: false });
+  return { data, error, isLoading };
+}
+
+export function useStockQuote(symbol: string | null) {
+  const { data, error, isLoading } = useSWR<StockQuote>(symbol ? `/stocks/${encodeURIComponent(symbol)}/quote` : null, fetcher, { refreshInterval: 60000, revalidateOnFocus: false });
+  return { data, error, isLoading };
+}
+
+export function usePatternReplay() {
+  const { data, error, isLoading } = useSWR<PatternReplay>('/breakouts/replay', fetcher, { refreshInterval: 600000, revalidateOnFocus: false });
+  return { data, error, isLoading };
+}
+
+export function useReplayTrades(setup: ReplaySetup | null, symbol?: string, limit = 150) {
+  const q = new URLSearchParams({ limit: String(limit) });
+  if (setup) q.set('setup', setup);
+  if (symbol) q.set('symbol', symbol);
+  const { data, error, isLoading } = useSWR<{ trades: ReplayTrade[] }>(setup ? `/breakouts/replay/trades?${q.toString()}` : null, fetcher, { revalidateOnFocus: false });
   return { data, error, isLoading };
 }

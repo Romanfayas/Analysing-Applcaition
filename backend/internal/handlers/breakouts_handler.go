@@ -37,6 +37,8 @@ func (h *BreakoutsHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Get("/overview", h.Overview)
 	r.Get("/upcoming", h.Upcoming)
+	r.Get("/replay", h.Replay)
+	r.Get("/replay/trades", h.ReplayTrades)
 	r.Get("/stock/{symbol}", h.Stock)
 	return r
 }
@@ -300,9 +302,13 @@ func (h *BreakoutsHandler) Upcoming(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var candidates []quant.BreakoutResult
+	confirmed := []string{}
 	for _, c := range scan.Candidates {
-		if c.Stage == "BREAKOUT_CANDIDATE" {
+		switch c.Stage {
+		case "BREAKOUT_CANDIDATE":
 			candidates = append(candidates, c)
+		case "CONFIRMED_BREAKOUT":
+			confirmed = append(confirmed, c.Symbol)
 		}
 	}
 	closest := closestToBreakout(scan, 12)
@@ -353,7 +359,7 @@ func (h *BreakoutsHandler) Upcoming(w http.ResponseWriter, r *http.Request) {
 	flags, _ := h.db.ListWatch(ctx, "", "WATCHING", 50)
 	response.JSON(w, http.StatusOK, map[string]any{
 		"data_as_of": scan.DataAsOf, "computed_at": scan.ComputedAt, "total_screened": scan.TotalScreened,
-		"candidates": build(candidates), "closest": build(closest), "watching_flags": flags,
+		"candidates": build(candidates), "closest": build(closest), "confirmed_symbols": confirmed, "watching_flags": flags,
 		"note": "Upcoming = the engine's own BREAKOUT_CANDIDATE stage. Closest to breaking out = stocks it only watches, ranked by distance to resistance. Neither is a forecast: the nightly test has not shown that either predicts profit.",
 	})
 }
@@ -410,4 +416,41 @@ func (h *StockFeedHandler) Deals(w http.ResponseWriter, r *http.Request) {
 		"source": "NSE bulk-deal and block-deal files (official). Bulk = a client trades 0.5% or more of the company's shares in a day; block = a large negotiated trade in the special window. The NSE file shows the latest day only, so this record builds up from the first day the app captured it.",
 		"caveat": "Investor type is a guess from the client's registered name (mutual fund, insurer, foreign fund). Many institutions trade below the reporting limits, and a deal lists the client, not the reason.",
 	})
+}
+
+// Replay is the paper-test of each stage on the stocks' own past: how often the price went through resistance as predicted and what the simulated trades returned.
+func (h *BreakoutsHandler) Replay(w http.ResponseWriter, r *http.Request) {
+	sum, at, err := h.db.LatestPatternReplay(r.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("pattern replay summary")
+		response.Error(w, http.StatusInternalServerError, "failed to load the paper-test results")
+		return
+	}
+	if sum == nil {
+		response.JSON(w, http.StatusOK, map[string]any{"available": false, "reason": "The paper test runs every evening after the exchange file is loaded; the first result is not ready yet."})
+		return
+	}
+	sum["available"], sum["computed_at"] = true, at
+	response.JSON(w, http.StatusOK, sum)
+}
+
+// ReplayTrades lists the simulated trades behind the summary, optionally for one setup and/or one stock.
+func (h *BreakoutsHandler) ReplayTrades(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	setup := strings.ToUpper(strings.TrimSpace(q.Get("setup")))
+	if setup != "" && setup != "CLOSEST" && setup != "UPCOMING" && setup != "CONFIRMED" {
+		response.Error(w, http.StatusBadRequest, "setup must be CLOSEST, UPCOMING or CONFIRMED")
+		return
+	}
+	limit, _ := strconv.Atoi(q.Get("limit"))
+	if limit <= 0 || limit > 500 {
+		limit = 100
+	}
+	trades, err := h.db.PatternReplayTrades(r.Context(), setup, strings.ToUpper(strings.TrimSpace(q.Get("symbol"))), limit)
+	if err != nil {
+		log.Error().Err(err).Msg("pattern replay trades")
+		response.Error(w, http.StatusInternalServerError, "failed to load the paper trades")
+		return
+	}
+	response.JSON(w, http.StatusOK, map[string]any{"trades": trades})
 }

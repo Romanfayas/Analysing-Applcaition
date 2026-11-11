@@ -1025,7 +1025,7 @@ export interface UpcomingItem {
 }
 export interface UpcomingBreakouts {
   data_as_of: string | null; computed_at: string; total_screened: number; note: string;
-  candidates: UpcomingItem[]; closest: UpcomingItem[]; watching_flags: WatchFlag[];
+  candidates: UpcomingItem[]; closest: UpcomingItem[]; confirmed_symbols: string[]; watching_flags: WatchFlag[];
 }
 
 export type ChartRange = '1D' | '1W' | '1M' | '6M' | '1Y' | 'ALL';
@@ -1035,8 +1035,15 @@ export interface ChartSession {
   date: string; total_volume: number; total_notional_inr: number; up_candle_volume_pct: number; large_minutes: number;
   large_up_notional_inr: number; large_down_notional_inr: number; large_share_of_day_pct: number; baseline_sessions: number;
 }
+export interface RangeSummary {
+  open: number; close: number; high: number; low: number; volume: number; base_price: number; base_label: string; change: number; change_pct: number; from: string; to: string;
+}
+export interface ExchangeQuote {
+  exchange: 'NSE' | 'BSE'; available: boolean; price?: number; prev_close?: number; change?: number; change_pct?: number; as_of?: string; source: string; note?: string;
+}
+export interface StockQuote { symbol: string; name: string; nse: ExchangeQuote; bse: ExchangeQuote; week52?: { high: number; low: number; sessions: number } }
 export interface StockChart {
-  symbol: string; range: ChartRange; interval: string; candles: ChartCandle[];
+  symbol: string; range: ChartRange; interval: string; candles: ChartCandle[]; summary?: RangeSummary | null;
   session?: ChartSession | null; large_minutes?: LargeMinute[] | null; params?: { percentile: number; min_notional_inr: number };
 }
 export interface LargeDeal {
@@ -1047,4 +1054,27 @@ export interface StockDeals {
   symbol: string; name: string; days: number; deals: LargeDeal[]; record_starts: string;
   by_client_type: Record<string, { buy_inr: number; sell_inr: number; deals: number }>;
   institution_buy_inr: number; institution_sell_inr: number; institution_net_inr: number; source: string; caveat: string;
+}
+
+export type ReplaySetup = 'CLOSEST' | 'UPCOMING' | 'CONFIRMED';
+export interface ReplayStats {
+  signals: number; pending: number; triggered: number; triggered_pct: number | null; hit_target: number; stopped: number; time_exit: number; not_triggered: number;
+  failed_before_entry: number; still_open: number; wins: number; win_rate_pct: number | null; mean_net_pct: number | null; median_net_pct: number | null;
+  mean_excess_vs_nifty_pct: number | null; total_net_inr_on_1L_each: number; mean_days_held: number | null; mean_10d_move_pct: number | null;
+  net_ci95: { low: number; high: number } | null; verdict: 'INSUFFICIENT_DATA' | 'POSITIVE_AFTER_COSTS' | 'NEGATIVE_AFTER_COSTS' | 'NO_EDGE_DEMONSTRATED';
+}
+export interface ReplaySymbolStats {
+  signals: number; triggered: number; triggered_pct: number | null; hit_target: number; stopped: number; time_exit: number; win_rate_pct: number | null; mean_net_pct: number | null;
+  total_net_inr_on_1L_each: number; pending: number;
+}
+export interface PatternReplay {
+  available: boolean; reason?: string; as_of?: string; computed_at?: string; recent_from?: string;
+  rules?: { trigger_sessions: number; hold_sessions: number; closest_max_distance_pct: number; notional_per_trade_inr: number; text: Record<ReplaySetup, string> };
+  setups?: Record<ReplaySetup, { all: ReplayStats; recent: ReplayStats; by_symbol: Record<string, ReplaySymbolStats>; verdict_text: string }>;
+}
+export interface ReplayTrade {
+  symbol: string; setup: ReplaySetup; signal_date: string; signal_close: number; distance_pct: number | null; resistance: number | null; stop: number | null; target_1: number | null;
+  outcome: 'HIT_TARGET' | 'STOPPED' | 'TIME_EXIT' | 'NOT_TRIGGERED' | 'FAILED_BEFORE_ENTRY' | 'SKIPPED' | 'OPEN' | 'PENDING'; triggered: boolean;
+  entry_date: string | null; entry_time: string | null; entry_price: number | null; exit_date: string | null; exit_time: string | null; exit_price: number | null;
+  bars_held: number | null; gross_pct: number | null; net_pct: number | null; excess_vs_nifty_pct: number | null; move_10d_pct: number | null; note: string | null;
 }

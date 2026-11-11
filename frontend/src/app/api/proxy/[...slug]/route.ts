@@ -9,7 +9,7 @@ const FORWARDED_REQUEST_HEADERS = ['content-type', 'accept', 'accept-language'];
 
 // Read-only endpoints that each cost 0.7-2.5 s on the server (many queries across the database tunnel). Their data changes at most every
 // minute, so a few seconds of per-session caching, with concurrent requests sharing one call, makes every repeat visit instant.
-const CACHEABLE = new Set(['stocks', 'signals', 'data-quality/intraday-feed', 'breakouts/overview', 'breakouts/upcoming', 'signals/breakouts', 'signals/breakouts/monitor', 'learning/summary']);
+const CACHEABLE = new Set(['stocks', 'breakouts/replay', 'signals', 'data-quality/intraday-feed', 'breakouts/overview', 'breakouts/upcoming', 'signals/breakouts', 'signals/breakouts/monitor', 'learning/summary']);
 const CACHE_TTL_MS = 20_000;
 const cache = new Map<string, { at: number; pending?: Promise<{ status: number; type: string | null; body: Buffer }>; value?: { status: number; type: string | null; body: Buffer } }>();
 

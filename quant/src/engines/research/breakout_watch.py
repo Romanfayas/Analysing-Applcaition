@@ -47,14 +47,14 @@ class SymbolSeries:
     c: np.ndarray
     v: np.ndarray
     stage: List[Optional[str]]                    # stage on each bar t (None before 40 bars of history)
-    detail: Dict[int, Dict[str, Any]]            # t -> engine detail, kept only for CANDIDATE / CONFIRMED days
+    detail: Dict[int, Dict[str, Any]]            # t -> engine detail, kept for CANDIDATE / CONFIRMED days and WATCHLIST days near resistance
 
 
 def _detail(res) -> Dict[str, Any]:
     ez = list(res.entry_zone) if res.entry_zone else [None, None]
     return {"stage": res.stage, "stop": float(res.invalidation_level), "t1": float(res.target_1), "t2": float(res.target_2),
             "entry_low": None if ez[0] is None else float(ez[0]), "entry_high": None if ez[1] is None else float(ez[1]),
-            "resistance": float(res.resistance_level), "atr": float(res.atr), "rvol": float(res.rvol),
+            "resistance": float(res.resistance_level), "atr": float(res.atr), "rvol": float(res.rvol), "dist": float(res.distance_to_resistance_pct),
             "score": None if res.structure_score is None else float(res.structure_score),
             "breakdown": {k: float(v) for k, v in (res.score_breakdown or {}).items()},
             "reasons": list(res.reasons or []), "invalidation": list(res.invalidation_conditions or [])}
@@ -72,7 +72,8 @@ def analyze_symbol(sym: str, symbol_id: int, g: pd.DataFrame) -> SymbolSeries:
         res = BreakoutEngine(symbol=str(sym), open_prices=o[lb:t + 1].tolist(), high_prices=h[lb:t + 1].tolist(), low_prices=l[lb:t + 1].tolist(),
                              close_prices=c[lb:t + 1].tolist(), volumes=v[lb:t + 1].tolist(), shariah_status="PASS").analyze()
         stage[t] = res.stage
-        if res.stage in (CANDIDATE, CONFIRMED):
+        # WATCHLIST days within 6% under resistance are the "closest to breaking out" readings; pattern_replay paper-tests them
+        if res.stage in (CANDIDATE, CONFIRMED) or (res.stage == BreakoutState.WATCHLIST and 0 < res.distance_to_resistance_pct <= 6.0):
             detail[t] = _detail(res)
     return SymbolSeries(str(sym), int(symbol_id), dates, o, h, l, c, v, stage, detail)
 
@@ -191,7 +192,7 @@ def resolve(conn, analysis: Dict[str, SymbolSeries]) -> Dict[str, int]:
                 out["no_data"] += 1
                 continue
             t = int(idx[0])
-            if t not in s.detail:      # the series (adjusted/exchange) does not call it a candidate that day: leave it, never rewrite the claim
+            if t not in s.detail or s.detail[t]["stage"] != CANDIDATE:      # the series (adjusted/exchange) does not call it a candidate that day: leave it, never rewrite the claim
                 out["no_data"] += 1
                 continue
             o = candidate_outcome(s, t)
@@ -216,7 +217,7 @@ def backfill_reasons(conn, analysis: Dict[str, SymbolSeries]) -> int:
             if s is None:
                 continue
             idx = np.where(s.dates == sdate)[0]
-            if len(idx) == 0 or int(idx[0]) not in s.detail:
+            if len(idx) == 0 or s.detail.get(int(idx[0]), {}).get("stage") not in (CANDIDATE, CONFIRMED):
                 continue
             d = s.detail[int(idx[0])]
             cur.execute("""UPDATE breakout_tracking SET reasons=%s, stage=%s, resistance_level=%s, atr=%s, score_breakdown=%s WHERE id=%s AND reasons IS NULL""",

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { createChart, createSeriesMarkers, ColorType, CandlestickSeries, HistogramSeries, type IChartApi, type SeriesMarker, type Time, type UTCTimestamp } from 'lightweight-charts';
+import { useEffect, useRef, useState } from 'react';
+import { createChart, createSeriesMarkers, ColorType, CandlestickSeries, HistogramSeries, type IChartApi, type ISeriesApi, type SeriesMarker, type Time, type UTCTimestamp } from 'lightweight-charts';
 import type { ChartCandle, LargeMinute } from '@/lib/api/types';
 
 const IST_OFFSET = 19800; // the chart draws Unix time as UTC, so shift it to show Indian time
@@ -11,6 +11,10 @@ const timeOf = (c: { ts?: number; date?: string }): Time => (c.ts != null ? ((c.
 export default function PriceChart({ candles, large = [], intraday, height = 420 }: { candles: ChartCandle[]; large?: LargeMinute[]; intraday: boolean; height?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const volRef = useRef<ISeriesApi<'Histogram'> | null>(null);
+  const [showVolume, setShowVolume] = useState(true);
+  const [legend, setLegend] = useState<ChartCandle | null>(null);
+  const last = candles.length > 0 ? candles[candles.length - 1] : null;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -27,6 +31,7 @@ export default function PriceChart({ candles, large = [], intraday, height = 420
 
     const vol = chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: 'vol', lastValueVisible: false, priceLineVisible: false });
     chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
+    volRef.current = vol;
     vol.setData(candles.map((c) => ({ time: timeOf(c), value: c.v, color: c.c >= c.o ? 'rgba(16,185,129,0.45)' : 'rgba(244,63,94,0.45)' })));
 
     if (large.length > 0) {
@@ -41,10 +46,36 @@ export default function PriceChart({ candles, large = [], intraday, height = 420
     }
     chart.timeScale().fitContent();
 
+    // hovering a candle shows its open, high, low, close and volume (like a broker app)
+    const byTime = new Map<string, ChartCandle>();
+    candles.forEach((c) => byTime.set(String(timeOf(c)), c));
+    chart.subscribeCrosshairMove((p) => setLegend(p.time != null ? byTime.get(String(p.time)) ?? null : null));
+
     const onResize = () => chart.applyOptions({ width: ref.current?.clientWidth });
     window.addEventListener('resize', onResize);
     return () => { window.removeEventListener('resize', onResize); chart.remove(); };
   }, [candles, large, intraday, height]);
 
-  return <div ref={ref} className="w-full" />;
+  useEffect(() => { volRef.current?.applyOptions({ visible: showVolume }); }, [showVolume, candles]);
+
+  const shown = legend ?? last;
+  const up = shown ? shown.c >= shown.o : true;
+  const f = (v: number) => v.toFixed(2);
+  return (
+    <div className="relative">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 pb-2 text-xs font-mono">
+        {shown && (
+          <>
+            <span className="text-slate-500 font-sans">{shown.ts != null ? new Date((shown.ts + IST_OFFSET) * 1000).toISOString().slice(0, 16).replace('T', ' ') : shown.date}</span>
+            {([['O', shown.o], ['H', shown.h], ['L', shown.l], ['C', shown.c]] as const).map(([k, v]) => (
+              <span key={k}><span className="text-slate-500">{k} </span><span className={up ? 'text-emerald-400' : 'text-rose-400'}>{f(v)}</span></span>))}
+            <span><span className="text-slate-500">Vol </span><span className="text-slate-200">{shown.v.toLocaleString('en-IN')}</span></span>
+          </>)}
+        <label className="ml-auto flex items-center gap-1.5 font-sans text-slate-300 cursor-pointer select-none">
+          <input type="checkbox" checked={showVolume} onChange={(e) => setShowVolume(e.target.checked)} /> Volume
+        </label>
+      </div>
+      <div ref={ref} className="w-full" />
+    </div>
+  );
 }

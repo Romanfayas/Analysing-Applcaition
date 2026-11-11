@@ -58,3 +58,17 @@ func TestFlagLargeMinutesNeedsHistoryAndBothThresholds(t *testing.T) {
 		t.Errorf("flags without a baseline: %+v", none)
 	}
 }
+
+func TestSummarizeRangeMeasuresAgainstTheCloseBeforeTheRange(t *testing.T) {
+	c := []ChartCandle{{Date: "2026-11-09", O: 100, H: 104, L: 99, C: 103, V: 10}, {Date: "2026-11-10", O: 103, H: 108, L: 101, C: 105, V: 20}}
+	sm := summarizeRange(c, 100, "close before the range")
+	if sm.Close != 105 || sm.High != 108 || sm.Low != 99 || sm.Volume != 30 || sm.Change != 5 || sm.ChangePct != 5 || sm.FirstLabel != "2026-11-09" || sm.LastLabel != "2026-11-10" {
+		t.Fatalf("unexpected summary %+v", sm)
+	}
+	if got := summarizeRange(c, 0, ""); got.BasePrice != 100 || got.BaseLabel != "first candle's open" {
+		t.Fatalf("with no base the first open must be used, got %+v", got)
+	}
+	if summarizeRange(nil, 100, "x") != nil {
+		t.Fatal("no candles, no summary")
+	}
+}

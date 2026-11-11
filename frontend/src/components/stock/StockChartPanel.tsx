@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Card from '@/components/ui/Card';
 import PriceChart from '@/components/charts/PriceChart';
-import { useStockChart, useStockDeals } from '@/lib/api/hooks';
-import type { ChartRange, LargeDeal } from '@/lib/api/types';
+import { useStockChart, useStockDeals, useStockQuote } from '@/lib/api/hooks';
+import type { ChartRange, ExchangeQuote, LargeDeal } from '@/lib/api/types';
 
 const RANGES: { id: ChartRange; label: string }[] = [
   { id: '1D', label: '1D' }, { id: '1W', label: '1W' }, { id: '1M', label: '1M' }, { id: '6M', label: '6M' }, { id: '1Y', label: '1Y' }, { id: 'ALL', label: 'All' },
@@ -20,6 +20,42 @@ const INSTITUTIONAL = new Set(['MUTUAL_FUND', 'INSURANCE', 'FOREIGN_INVESTOR']);
 
 const cr = (v: number) => (Math.abs(v) >= 1e7 ? `₹${(v / 1e7).toFixed(2)} Cr` : `₹${(v / 1e5).toFixed(1)} L`);
 const num = (v: number) => v.toLocaleString('en-IN');
+
+const signed = (v: number, d = 2) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(d)}`;
+const tone = (v: number | undefined) => (v == null ? 'text-slate-400' : v >= 0 ? 'text-emerald-400' : 'text-rose-400');
+
+function ExchangePrice({ q }: { q: ExchangeQuote }) {
+  return (
+    <div className="rounded-lg bg-slate-900/60 p-3 min-w-[170px]" title={q.source}>
+      <div className="text-[11px] text-slate-500">{q.exchange} price</div>
+      {q.available && q.price != null ? (
+        <>
+          <div className="font-mono text-xl text-white">₹{q.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          {q.change != null && q.change_pct != null && <div className={`font-mono text-xs ${tone(q.change)}`}>{signed(q.change)} ({signed(q.change_pct)}%) today</div>}
+          {q.as_of && <div className="text-[10px] text-slate-500 mt-0.5">as of {q.as_of}</div>}
+        </>
+      ) : <div className="text-xs text-slate-400 mt-1">{q.note ?? 'Not available'}</div>}
+    </div>
+  );
+}
+
+function QuoteBar({ symbol }: { symbol: string }) {
+  const { data } = useStockQuote(symbol);
+  if (!data) return null;
+  const gap = data.nse.price != null && data.bse.price != null ? data.bse.price - data.nse.price : null;
+  return (
+    <div className="flex flex-wrap items-stretch gap-3">
+      <ExchangePrice q={data.nse} />
+      <ExchangePrice q={data.bse} />
+      {data.week52 && (
+        <div className="rounded-lg bg-slate-900/60 p-3 min-w-[170px]">
+          <div className="text-[11px] text-slate-500">52-week range ({data.week52.sessions} sessions)</div>
+          <div className="font-mono text-sm text-slate-100 mt-1">₹{data.week52.low.toFixed(2)} – ₹{data.week52.high.toFixed(2)}</div>
+          {gap != null && <div className="text-[10px] text-slate-500 mt-1">BSE − NSE: {signed(gap)}</div>}
+        </div>)}
+    </div>
+  );
+}
 
 function Deals({ symbol }: { symbol: string }) {
   const { data, isLoading, error } = useStockDeals(symbol);
@@ -81,6 +117,16 @@ export default function StockChartPanel({ symbol }: { symbol: string }) {
           <p className="text-[11px] text-slate-400 mt-0.5">{RANGE_NOTE[range]} {data && `(${data.candles.length} candles)`}{isValidating && ' · updating…'}</p>
         </div>
         {range === '1D' && <span className="text-[10px] text-slate-500 font-mono">Arrows = top-1% volume minutes (rare for this stock)</span>}
+      </div>
+      <div className="px-4 pt-3 space-y-3">
+        <QuoteBar symbol={symbol} />
+        {data?.summary && (
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-xs">
+            {[['Change over this range', `${signed(data.summary.change)} (${signed(data.summary.change_pct)}%)`, tone(data.summary.change)], ['Open', data.summary.open.toFixed(2)], ['High', data.summary.high.toFixed(2)],
+              ['Low', data.summary.low.toFixed(2)], ['Close', data.summary.close.toFixed(2)], ['Volume', num(data.summary.volume)]].map(([k, v, c]) => (
+              <div key={k} className="rounded-lg bg-slate-900/60 p-2"><div className="text-slate-500">{k}</div><div className={`font-mono text-sm ${c ?? 'text-slate-100'}`}>{v}</div></div>))}
+            <div className="col-span-2 md:col-span-6 text-[10px] text-slate-500">Change is measured from the {data.summary.base_label} (₹{data.summary.base_price.toFixed(2)}); range {data.summary.from} to {data.summary.to}.</div>
+          </div>)}
       </div>
       <div className="p-2 min-h-[420px]">
         {isLoading && !data ? <div className="h-[420px] flex items-center justify-center text-slate-500">Loading chart…</div>
