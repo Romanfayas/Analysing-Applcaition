@@ -15,7 +15,7 @@ def cost(entry, px, days):          # flat 0.5% round trip keeps the arithmetic 
     return (px / entry - 1) * 100 - 0.5
 
 
-def series(n=80, stages=None, o=None, h=None, l=None, c=None, stop=95.0, t1=110.0, res=100.0, dist=1.0):
+def series(n=80, stages=None, o=None, h=None, l=None, c=None, stop=95.0, t1=107.5, res=100.0, dist=1.0):
     dates = np.array([str(date(2026, 1, 1) + timedelta(days=i)) for i in range(n)])
     cl = np.array(c if c is not None else [98.0] * n, float)
     op = np.array(o if o is not None else cl, float)
@@ -48,7 +48,7 @@ def test_buy_stop_fills_at_resistance_and_exits_at_target():
     s = series(stages={45: WATCH}, h=h)
     row, end = pr.simulate_signal(s, 45, "CLOSEST", cost)
     assert row["outcome"] == "HIT_TARGET" and row["entry_date"] == s.dates[47] and row["entry_price"] == pytest.approx(100.0)
-    assert row["exit_date"] == s.dates[50] and row["exit_price"] == pytest.approx(110.0) and row["net_pct"] == pytest.approx(9.5) and end == 50
+    assert row["exit_date"] == s.dates[50] and row["exit_price"] == pytest.approx(107.5) and row["net_pct"] == pytest.approx(7.0) and end == 50
 
 
 def test_gap_above_resistance_fills_at_the_open_not_at_resistance():
@@ -65,11 +65,35 @@ def test_never_reaching_resistance_in_five_sessions_is_not_triggered():
     assert row["outcome"] == "NOT_TRIGGERED" and not row["triggered"] and row["net_pct"] is None and end == 50
 
 
-def test_close_under_the_stop_cancels_the_order():
-    c = arr(80, base=98.0, t46=94.0)
+def test_a_fall_of_one_risk_unit_below_the_flag_price_cancels_the_order():
+    c = arr(80, base=98.0, t46=92.0)                     # R is 5, so a close at or under 98 - 5 = 93 cancels
     s = series(stages={45: WATCH}, c=c)
     row, _ = pr.simulate_signal(s, 45, "CLOSEST", cost)
     assert row["outcome"] == "FAILED_BEFORE_ENTRY"
+
+
+def test_a_stop_above_the_price_does_not_cancel_every_order_at_once():
+    s = series(stages={45: WATCH}, stop=99.0, res=104.0, t1=110.0)   # stock 6% under resistance: the engine's stop is ABOVE the price
+    s.detail[45]["atr"] = 4.0
+    row, _ = pr.simulate_signal(s, 45, "CLOSEST", cost)
+    assert row["outcome"] == "NOT_TRIGGERED"
+
+
+def test_stop_and_target_are_placed_around_the_price_actually_paid():
+    o = arr(80, base=98.0, t46=101.0)
+    c = arr(80, base=99.0)
+    s = series(stages={45: CONFIRMED}, o=o, c=c, h=[x + 0.5 for x in c], l=[x - 0.5 for x in c])
+    row, _ = pr.simulate_signal(s, 45, "CONFIRMED", cost)
+    assert row["entry_price"] == pytest.approx(101.0) and row["stop_level"] == pytest.approx(96.0) and row["target_1"] == pytest.approx(108.5)
+    pub, _ = pr.simulate_signal(s, 45, "CONFIRMED", cost, rebase=False)
+    assert pub["stop_level"] == pytest.approx(95.0) and pub["target_1"] == pytest.approx(107.5)
+
+
+def test_a_confirmed_breakout_that_opens_above_the_published_target_is_skipped_only_on_the_published_levels():
+    o = arr(80, base=98.0, t46=108.0)
+    s = series(stages={45: CONFIRMED}, o=o, c=arr(80, base=108.0))
+    assert pr.simulate_signal(s, 45, "CONFIRMED", cost, rebase=False)[0]["outcome"] == "SKIPPED"
+    assert pr.simulate_signal(s, 45, "CONFIRMED", cost)[0]["outcome"] != "SKIPPED"
 
 
 def test_filled_bar_that_also_reaches_the_stop_is_a_loss():
@@ -121,5 +145,5 @@ def test_stats_count_what_happened_and_never_claim_a_verdict_on_a_small_sample()
     rows += pr.replay_symbol(series(stages={45: WATCH}), cost)
     st = pr.stats([r for r in rows if r["setup"] == "CLOSEST"])
     assert st["signals"] == 4 and st["triggered"] == 3 and st["triggered_pct"] == 75.0 and st["hit_target"] == 3 and st["not_triggered"] == 1
-    assert st["win_rate_pct"] == 100.0 and st["mean_net_pct"] == pytest.approx(9.5) and st["verdict"] == "INSUFFICIENT_DATA"
-    assert st["total_net_inr_on_1L_each"] == pytest.approx(3 * 9500.0)
+    assert st["win_rate_pct"] == 100.0 and st["mean_net_pct"] == pytest.approx(7.0) and st["verdict"] == "INSUFFICIENT_DATA"
+    assert st["total_net_inr_on_1L_each"] == pytest.approx(3 * 7000.0)

@@ -1059,7 +1059,7 @@ export interface StockDeals {
 export type ReplaySetup = 'CLOSEST' | 'UPCOMING' | 'CONFIRMED';
 export interface ReplayStats {
   signals: number; pending: number; triggered: number; triggered_pct: number | null; hit_target: number; stopped: number; time_exit: number; not_triggered: number;
-  failed_before_entry: number; still_open: number; wins: number; win_rate_pct: number | null; mean_net_pct: number | null; median_net_pct: number | null;
+  failed_before_entry: number; skipped: number; still_open: number; wins: number; win_rate_pct: number | null; mean_net_pct: number | null; median_net_pct: number | null;
   mean_excess_vs_nifty_pct: number | null; total_net_inr_on_1L_each: number; mean_days_held: number | null; mean_10d_move_pct: number | null;
   net_ci95: { low: number; high: number } | null; verdict: 'INSUFFICIENT_DATA' | 'POSITIVE_AFTER_COSTS' | 'NEGATIVE_AFTER_COSTS' | 'NO_EDGE_DEMONSTRATED';
 }
@@ -1070,7 +1070,8 @@ export interface ReplaySymbolStats {
 export interface PatternReplay {
   available: boolean; reason?: string; as_of?: string; computed_at?: string; recent_from?: string;
   rules?: { trigger_sessions: number; hold_sessions: number; closest_max_distance_pct: number; notional_per_trade_inr: number; text: Record<ReplaySetup, string> };
-  setups?: Record<ReplaySetup, { all: ReplayStats; recent: ReplayStats; by_symbol: Record<string, ReplaySymbolStats>; verdict_text: string }>;
+  setups?: Record<ReplaySetup, { all: ReplayStats; recent: ReplayStats; by_symbol: Record<string, ReplaySymbolStats>; verdict_text: string;
+    engine_levels_unchanged?: { signals: number; triggered: number; win_rate_pct: number | null; mean_net_pct: number | null; skipped: number; verdict: string } }>;
 }
 export interface ReplayTrade {
   symbol: string; setup: ReplaySetup; signal_date: string; signal_close: number; distance_pct: number | null; resistance: number | null; stop: number | null; target_1: number | null;

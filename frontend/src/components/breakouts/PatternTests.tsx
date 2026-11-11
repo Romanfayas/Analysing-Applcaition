@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import Link from '@/components/Link';
 import { usePatternReplay, useReplayTrades } from '@/lib/api/hooks';
-import type { ReplaySetup, ReplayStats, ReplayTrade } from '@/lib/api/types';
+import type { ReplaySetup, ReplayStats, ReplaySymbolStats, ReplayTrade } from '@/lib/api/types';
 
 export const SETUP_LABEL: Record<ReplaySetup, string> = { CLOSEST: 'Closest to breaking out', UPCOMING: 'Upcoming breakout', CONFIRMED: 'Confirmed (already predicted)' };
 const OUTCOME: Record<ReplayTrade['outcome'], { text: string; cls: string }> = {
   HIT_TARGET: { text: 'Hit target', cls: 'text-emerald-400' }, STOPPED: { text: 'Stopped out', cls: 'text-rose-400' }, TIME_EXIT: { text: 'Sold after 10 sessions', cls: 'text-slate-300' },
   NOT_TRIGGERED: { text: 'Never broke out (no trade)', cls: 'text-slate-500' }, FAILED_BEFORE_ENTRY: { text: 'Fell to stop first (no trade)', cls: 'text-slate-500' },
-  SKIPPED: { text: 'Skipped', cls: 'text-slate-500' }, OPEN: { text: 'Still running', cls: 'text-sky-300' }, PENDING: { text: 'Waiting', cls: 'text-sky-300' },
+  SKIPPED: { text: 'Skipped (no trade)', cls: 'text-slate-500' }, OPEN: { text: 'Still held', cls: 'text-sky-300' }, PENDING: { text: 'Waiting', cls: 'text-sky-300' },
 };
 const VERDICT: Record<ReplayStats['verdict'], { text: string; cls: string }> = {
   INSUFFICIENT_DATA: { text: 'Too few trades to judge', cls: 'border-slate-500/40 text-slate-300 bg-slate-500/10' },
@@ -33,21 +33,29 @@ export function TradesTable({ trades, showSymbol }: { trades: ReplayTrade[]; sho
           <tr className="text-left text-slate-500 border-b border-white/10">
             {showSymbol && <th className="py-1.5 pr-3">Stock</th>}
             <th className="py-1.5 pr-3">Signal day</th><th className="pr-3">Bought (date, IST time)</th><th className="pr-3 text-right">Buy price</th>
-            <th className="pr-3">Sold (date, IST time)</th><th className="pr-3 text-right">Sell price</th><th className="pr-3">Result</th><th className="pr-3 text-right">Days</th><th className="text-right">Net after costs</th>
+            <th className="pr-3 text-right">Stop / Target</th><th className="pr-3">Sold (date, IST time)</th><th className="pr-3 text-right">Sell price</th>
+            <th className="pr-3">Result</th><th className="pr-3 text-right">Days</th><th className="text-right">Net after costs</th>
           </tr>
         </thead>
         <tbody>
-          {trades.map((t, i) => (
-            <tr key={`${t.symbol}-${t.setup}-${t.signal_date}-${i}`} className="border-b border-white/5" title={t.note ?? undefined}>
-              {showSymbol && <td className="py-1.5 pr-3"><Link href={`/stocks/${encodeURIComponent(t.symbol)}`} className="text-sky-300 hover:underline">{t.symbol}</Link></td>}
-              <td className="py-1.5 pr-3 font-mono text-slate-300">{t.signal_date}{t.distance_pct != null && t.setup !== 'CONFIRMED' && <span className="ml-1 text-[10px] text-slate-500">{t.distance_pct.toFixed(1)}% under</span>}</td>
-              <td className="pr-3 font-mono text-slate-300">{when(t.entry_date, t.entry_time)}</td><td className="pr-3 text-right font-mono">{px(t.entry_price)}</td>
-              <td className="pr-3 font-mono text-slate-300">{when(t.exit_date, t.exit_time)}</td><td className="pr-3 text-right font-mono">{px(t.exit_price)}</td>
-              <td className={`pr-3 ${OUTCOME[t.outcome].cls}`}>{OUTCOME[t.outcome].text}</td><td className="pr-3 text-right font-mono">{t.bars_held ?? '—'}</td>
-              <td className={`text-right font-mono font-semibold ${tone(t.net_pct)}`}>{pct(t.net_pct)}</td>
-            </tr>))}
+          {trades.map((t, i) => {
+            const bought = t.entry_price != null;
+            const open = t.outcome === 'OPEN';
+            return (
+              <tr key={`${t.symbol}-${t.setup}-${t.signal_date}-${i}`} className="border-b border-white/5" title={t.note ?? undefined}>
+                {showSymbol && <td className="py-1.5 pr-3"><Link href={`/stocks/${encodeURIComponent(t.symbol)}`} className="text-sky-300 hover:underline">{t.symbol}</Link></td>}
+                <td className="py-1.5 pr-3 font-mono text-slate-300">{t.signal_date}{t.distance_pct != null && t.setup !== 'CONFIRMED' && <span className="ml-1 text-[10px] text-slate-500">{t.distance_pct.toFixed(1)}% under</span>}</td>
+                <td className="pr-3 font-mono text-slate-300">{bought ? when(t.entry_date, t.entry_time) : '—'}</td><td className="pr-3 text-right font-mono">{px(t.entry_price)}</td>
+                <td className="pr-3 text-right font-mono text-slate-400">{bought && t.stop != null && t.target_1 != null ? `${t.stop.toFixed(2)} / ${t.target_1.toFixed(2)}` : '—'}</td>
+                <td className="pr-3 font-mono text-slate-300">{open ? 'not sold yet' : bought ? when(t.exit_date, t.exit_time) : '—'}</td>
+                <td className="pr-3 text-right font-mono">{open && t.exit_price != null ? <span className="text-slate-400" title="Latest close, not a sale">{px(t.exit_price)}*</span> : px(t.exit_price)}</td>
+                <td className={`pr-3 ${OUTCOME[t.outcome].cls}`}>{OUTCOME[t.outcome].text}</td><td className="pr-3 text-right font-mono">{t.bars_held ?? '—'}</td>
+                <td className={`text-right font-mono font-semibold ${tone(t.net_pct)}`}>{pct(t.net_pct)}{open && t.net_pct != null ? '*' : ''}</td>
+              </tr>);
+          })}
         </tbody>
       </table>
+      {trades.some((t) => t.outcome === 'OPEN') && <p className="mt-1 text-[10px] text-slate-500">* still held: marked at the latest close, not sold, and left out of the statistics.</p>}
     </div>
   );
 }
@@ -62,6 +70,7 @@ function StatGrid({ s, setup }: { s: ReplayStats; setup: ReplaySetup }) {
     ['Total on ₹1 lakh per trade', rupees(s.total_net_inr_on_1L_each), tone(s.total_net_inr_on_1L_each)],
     ['Average vs holding the Nifty', pct(s.mean_excess_vs_nifty_pct), tone(s.mean_excess_vs_nifty_pct)],
     ['Average held', s.mean_days_held == null ? '—' : `${s.mean_days_held} sessions`],
+    ['No trade: never reached / cancelled / skipped', `${s.not_triggered} / ${s.failed_before_entry} / ${s.skipped}`],
   ];
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
@@ -76,7 +85,6 @@ export default function PatternTests({ today }: { today?: Record<ReplaySetup, st
   const [setup, setSetup] = useState<ReplaySetup>('CLOSEST');
   const [stock, setStock] = useState('');
   const [view, setView] = useState<'all' | 'recent'>('all');
-  const trades = useReplayTrades(data?.available ? setup : null, stock || undefined, 300);
 
   if (isLoading) return <div className="glass-card p-4 text-sm text-slate-400">Loading the paper-test results…</div>;
   if (error || !data) return <div className="glass-card p-4 text-sm text-rose-300">Could not load the paper-test results.</div>;
@@ -84,7 +92,6 @@ export default function PatternTests({ today }: { today?: Record<ReplaySetup, st
 
   const cur = data.setups[setup];
   const st = view === 'recent' ? cur.recent : cur.all;
-  const stocks = Object.keys(cur.by_symbol).sort();
   const nowList = today?.[setup] ?? [];
   return (
     <section className="space-y-3">
@@ -126,16 +133,11 @@ export default function PatternTests({ today }: { today?: Record<ReplaySetup, st
         <StatGrid s={st} setup={setup} />
         {st.net_ci95 && <p className="text-[11px] text-slate-500">95% range of the average net result: {pct(st.net_ci95.low)} to {pct(st.net_ci95.high)}. {cur.verdict_text}</p>}
         {!st.net_ci95 && <p className="text-[11px] text-slate-500">{cur.verdict_text}</p>}
-        {nowList.length > 0 && <p className="text-xs text-slate-300">Showing this state today: {nowList.map((s, i) => (<span key={s}>{i > 0 && ', '}<button className="text-sky-300 hover:underline" onClick={() => setStock(s)}>{s}</button></span>))} (tap a name to see that stock&apos;s own past trades).</p>}
+        {nowList.length > 0 && <p className="text-xs text-slate-300">In this state today: {nowList.map((s, i) => (<span key={s}>{i > 0 && ', '}<button className="text-sky-300 hover:underline" onClick={() => setStock(s)}>{s}</button></span>))} (tap a name to open its paper trades below).</p>}
+        {cur.engine_levels_unchanged && (
+          <p className="text-[11px] text-slate-500">For comparison, with the engine&apos;s stop and target exactly as published (anchored at resistance even when the stock is bought higher): {cur.engine_levels_unchanged.triggered} trades, average {pct(cur.engine_levels_unchanged.mean_net_pct)} after costs, {cur.engine_levels_unchanged.skipped} skipped because the price had already passed the target. The numbers above place the stop and target around the price actually paid.</p>)}
 
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <label className="text-slate-400" htmlFor="replay-stock">Stock</label>
-          <select id="replay-stock" value={stock} onChange={(e) => setStock(e.target.value)} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-slate-200">
-            <option value="">All stocks</option>
-            {stocks.map((s) => <option key={s} value={s}>{s} ({cur.by_symbol[s].signals} · {cur.by_symbol[s].mean_net_pct == null ? 'no trades' : pct(cur.by_symbol[s].mean_net_pct)})</option>)}
-          </select>
-        </div>
-        {trades.isLoading ? <div className="text-sm text-slate-400">Loading trades…</div> : <TradesTable trades={trades.data?.trades ?? []} showSymbol={!stock} />}
+        <StockTable setup={setup} bySymbol={cur.by_symbol} today={nowList} open={stock} onOpen={setStock} />
         <p className="text-[11px] text-slate-500 leading-relaxed">
           Buy and sell days come from daily exchange bars; the time of day comes from 1-minute bars, which exist only since 6 Aug 2026, so older trades show no time. If one day reaches both the stop and the target, the stop is assumed first. A trade still running is left out of the numbers.
           A good past result is not a forecast: the engine is judged by whether the net result after costs is clearly above zero, and the stocks and period here are limited.
@@ -162,6 +164,52 @@ export function StockHistory({ symbol, setup }: { symbol: string; setup: ReplayS
         {s && s.signals > 0 && <button onClick={() => setOpen((o) => !o)} className="ml-auto text-sky-300 hover:underline">{open ? 'Hide trades' : 'Show every paper trade'}</button>}
       </div>
       {open && (trades.isLoading ? <div className="text-xs text-slate-400">Loading…</div> : <TradesTable trades={trades.data?.trades ?? []} showSymbol={false} />)}
+    </div>
+  );
+}
+
+/** One row per stock; opening a row shows that stock's own paper trades in place. */
+function StockTable({ setup, bySymbol, today, open, onOpen }: { setup: ReplaySetup; bySymbol: Record<string, ReplaySymbolStats>; today: string[]; open: string; onOpen: (s: string) => void }) {
+  const rows = Object.entries(bySymbol).sort(([a, x], [b, y]) => (today.includes(b) ? 1 : 0) - (today.includes(a) ? 1 : 0) || y.signals - x.signals || a.localeCompare(b));
+  const trades = useReplayTrades(open ? setup : null, open || undefined, 200);
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-left text-slate-500 border-b border-white/10">
+            <th className="py-1.5 pr-3">Stock (tap to open its paper trades)</th><th className="pr-3 text-right">Times seen</th><th className="pr-3 text-right">Broke out</th>
+            <th className="pr-3 text-right">Hit / stopped / timed out</th><th className="pr-3 text-right">Made money</th><th className="pr-3 text-right">Avg per trade</th><th className="text-right">Total on ₹1L each</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(([sym, r]) => {
+            const isOpen = open === sym;
+            return [
+              <tr key={sym} onClick={() => onOpen(isOpen ? '' : sym)} className={`border-b border-white/5 cursor-pointer hover:bg-white/5 ${isOpen ? 'bg-sky-500/10' : ''}`} aria-expanded={isOpen}>
+                <td className="py-2 pr-3"><span className="text-slate-500 mr-1">{isOpen ? '▾' : '▸'}</span><span className="font-semibold text-slate-100">{sym}</span>
+                  {today.includes(sym) && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full border border-amber-500/40 text-amber-300 bg-amber-500/10">in this state today</span>}</td>
+                <td className="pr-3 text-right font-mono">{r.signals}{r.pending > 0 ? <span className="text-sky-300"> +{r.pending} waiting</span> : ''}</td>
+                <td className="pr-3 text-right font-mono">{r.triggered_pct == null ? '—' : `${r.triggered} (${r.triggered_pct}%)`}</td>
+                <td className="pr-3 text-right font-mono">{r.hit_target} / {r.stopped} / {r.time_exit}</td>
+                <td className="pr-3 text-right font-mono">{r.win_rate_pct == null ? '—' : `${r.win_rate_pct}%`}</td>
+                <td className={`pr-3 text-right font-mono ${tone(r.mean_net_pct)}`}>{pct(r.mean_net_pct)}</td>
+                <td className={`text-right font-mono ${tone(r.total_net_inr_on_1L_each)}`}>{r.triggered > 0 ? rupees(r.total_net_inr_on_1L_each) : '—'}</td>
+              </tr>,
+              isOpen && (
+                <tr key={`${sym}-trades`} className="bg-slate-950/40">
+                  <td colSpan={7} className="p-3">
+                    <div className="mb-2 flex items-center gap-3 text-xs">
+                      <span className="font-semibold text-white">{sym}: every paper trade, {SETUP_LABEL[setup].toLowerCase()}</span>
+                      <Link href={`/stocks/${encodeURIComponent(sym)}?tab=breakouts`} className="text-sky-300 hover:underline">Open {sym} page →</Link>
+                    </div>
+                    {trades.isLoading ? <div className="text-xs text-slate-400">Loading…</div> : <TradesTable trades={trades.data?.trades ?? []} showSymbol={false} />}
+                  </td>
+                </tr>),
+            ];
+          })}
+        </tbody>
+      </table>
+      {rows.length === 0 && <div className="text-sm text-slate-400">No stock has shown this state yet.</div>}
     </div>
   );
 }

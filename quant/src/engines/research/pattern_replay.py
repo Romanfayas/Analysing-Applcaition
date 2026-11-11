@@ -10,8 +10,12 @@ Trade rules (written down before looking at results, never tuned):
   reaches it (at the open if the stock gaps above). A close at or under the stop before it fills cancels it. A bar that fills and also trades down
   to the stop is counted as stopped out (worst case).
 * confirmed: bought at the next session's open, the same control plan the nightly study uses.
-* exits (all three): the engine's stop (invalidation) or Target 1, whichever the bars reach first, with the stop winning a tie; otherwise the close
-  of the 10th session after entry. Gap-through fills are at the open.
+* exits (all three): a stop and Target 1 placed around the price actually paid -- the engine's own risk distance R below it for the stop and 1.5 R above
+  it for the target, which is the engine's 1.5:1 plan carried to the real fill. (The engine anchors its published stop and target at the resistance
+  level; a confirmed breakout is bought above that level, so the published levels leave a reward of well under half the risk.) Whichever the bars reach
+  first, with the stop winning a tie; otherwise the close of the 10th session after entry. Gap-through fills are at the open.
+* a pending order is cancelled if the price closes one risk unit R below where it was flagged, or under the engine's stop when that is lower. (A stock still
+  several percent under resistance can have an engine stop above its price, which would cancel every order at once.)
 * costs come from the same ledger as the nightly study; a stock re-flagged while its previous trade is still live is a repeat and is not traded again.
 * Net results are compared with holding the Nifty 50 over the same days.
 
@@ -64,12 +68,14 @@ def _pct(a: float, b: float) -> float:
     return (b / a - 1) * 100
 
 
-def simulate_signal(s: SymbolSeries, t: int, setup: str, cost) -> Tuple[Dict[str, Any], int]:
+def simulate_signal(s: SymbolSeries, t: int, setup: str, cost, rebase: bool = True) -> Tuple[Dict[str, Any], int]:
     """One paper trade for the signal on bar t. Returns the trade row and the last bar it used (the next trade must start after it)."""
     d = s.detail[t]
     o, h, l, c = s.o, s.h, s.l, s.c
     last = len(s.dates) - 1
     stop, target, trig = float(d["stop"]), float(d["t1"]), float(d["entry_low"])
+    risk = max(trig - stop, 0.5 * float(d.get("atr") or 0.0))       # the engine's risk unit R (entry level minus invalidation, at least half an ATR)
+    cancel = min(stop, float(c[t]) - risk)
     row: Dict[str, Any] = {
         "symbol": s.symbol, "symbol_id": s.symbol_id, "setup": setup, "signal_date": str(s.dates[t]), "signal_close": float(c[t]), "distance_pct": d.get("dist"),
         "resistance": float(d["resistance"]), "stop_level": stop, "target_1": target, "outcome": "PENDING", "triggered": False, "entry_date": None, "entry_time": None,
@@ -84,8 +90,8 @@ def simulate_signal(s: SymbolSeries, t: int, setup: str, cost) -> Tuple[Dict[str
         fill, entry = t + 1, float(o[t + 1])
     else:
         for i in range(t + 1, min(t + TRIGGER_SESSIONS, last) + 1):
-            if float(c[i]) <= stop:
-                row.update(outcome="FAILED_BEFORE_ENTRY", note="Closed under the stop before reaching resistance")
+            if float(c[i]) <= cancel:
+                row.update(outcome="FAILED_BEFORE_ENTRY", note="Fell a full risk unit below the flag price before reaching resistance; order cancelled")
                 return row, i
             if float(h[i]) >= trig:
                 fill, entry = i, max(float(o[i]), trig)
@@ -95,9 +101,12 @@ def simulate_signal(s: SymbolSeries, t: int, setup: str, cost) -> Tuple[Dict[str
                 row.update(outcome="NOT_TRIGGERED", note="Did not reach resistance within 5 sessions")
                 return row, t + TRIGGER_SESSIONS
             return row, last
+    if rebase and risk > 0:
+        stop, target = entry - risk, entry + 1.5 * risk
     if entry <= stop or target <= entry:
-        row.update(outcome="SKIPPED", triggered=True, entry_date=str(s.dates[fill]), note="Gapped to a price outside the stop/target range; no trade")
+        row.update(outcome="SKIPPED", note="Opened above the engine's Target 1, so its plan no longer applies; no trade")
         return row, fill
+    row.update(stop_level=stop, target_1=target)
     exit_i, px, why = None, 0.0, ""
     if setup != "CONFIRMED" and float(l[fill]) <= stop:
         exit_i, px, why = fill, stop, "STOPPED"            # filled and fell to the stop on the same bar: worst case
@@ -131,14 +140,14 @@ def make_cost():
     return cost
 
 
-def replay_symbol(s: SymbolSeries, cost, nifty: Optional[pd.Series] = None) -> List[Dict[str, Any]]:
+def replay_symbol(s: SymbolSeries, cost, nifty: Optional[pd.Series] = None, rebase: bool = True) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     for setup in SETUPS:
         busy = -1
         for t in range(40, len(s.dates)):
             if t <= busy or not is_signal(s, t, setup):
                 continue
-            row, end = simulate_signal(s, t, setup, cost)
+            row, end = simulate_signal(s, t, setup, cost, rebase)
             busy = end
             if nifty is not None and row["entry_date"] and row["exit_date"] and row["net_pct"] is not None:
                 a, b = be._asof(nifty, row["entry_date"]), be._asof(nifty, row["exit_date"])
@@ -148,11 +157,11 @@ def replay_symbol(s: SymbolSeries, cost, nifty: Optional[pd.Series] = None) -> L
     return rows
 
 
-def replay_universe(analysis: Dict[str, SymbolSeries], nifty: Optional[pd.Series] = None) -> List[Dict[str, Any]]:
+def replay_universe(analysis: Dict[str, SymbolSeries], nifty: Optional[pd.Series] = None, rebase: bool = True) -> List[Dict[str, Any]]:
     cost = make_cost()
     rows: List[Dict[str, Any]] = []
     for sym in sorted(analysis):
-        rows.extend(replay_symbol(analysis[sym], cost, nifty))
+        rows.extend(replay_symbol(analysis[sym], cost, nifty, rebase))
     return rows
 
 
@@ -175,7 +184,7 @@ def stats(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         "triggered": len(closed), "triggered_pct": None if not n_sig else round(len(closed) / n_sig * 100, 1),
         "hit_target": sum(1 for r in closed if r["outcome"] == "HIT_TARGET"), "stopped": sum(1 for r in closed if r["outcome"] == "STOPPED"),
         "time_exit": sum(1 for r in closed if r["outcome"] == "TIME_EXIT"), "not_triggered": sum(1 for r in rows if r["outcome"] == "NOT_TRIGGERED"),
-        "failed_before_entry": sum(1 for r in rows if r["outcome"] == "FAILED_BEFORE_ENTRY"), "still_open": sum(1 for r in rows if r["outcome"] == "OPEN"),
+        "failed_before_entry": sum(1 for r in rows if r["outcome"] == "FAILED_BEFORE_ENTRY"), "skipped": sum(1 for r in rows if r["outcome"] == "SKIPPED"), "still_open": sum(1 for r in rows if r["outcome"] == "OPEN"),
         "wins": wins, "win_rate_pct": None if not net else round(wins / len(net) * 100, 1),
         "mean_net_pct": None if not net else round(float(np.mean(net)), 3), "median_net_pct": None if not net else round(float(np.median(net)), 3),
         "mean_excess_vs_nifty_pct": None if not exc else round(float(np.mean(exc)), 3),
@@ -208,7 +217,7 @@ VERDICT_TEXT = {
 }
 
 
-def build_summary(rows: List[Dict[str, Any]], as_of: str, all_dates: List[str]) -> Dict[str, Any]:
+def build_summary(rows: List[Dict[str, Any]], as_of: str, all_dates: List[str], published: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
     recent_from = all_dates[-RECENT_SESSIONS] if len(all_dates) >= RECENT_SESSIONS else (all_dates[0] if all_dates else "")
     out: Dict[str, Any] = {"as_of": as_of, "version": "PATTERN_REPLAY_V1", "recent_from": recent_from, "setups": {}, "rules": {
         "trigger_sessions": TRIGGER_SESSIONS, "hold_sessions": HOLD_SESSIONS, "closest_max_distance_pct": CLOSEST_MAX_DIST_PCT,
@@ -222,6 +231,9 @@ def build_summary(rows: List[Dict[str, Any]], as_of: str, all_dates: List[str]) 
         allst = stats(mine)
         rec = stats([r for r in mine if r["signal_date"] >= recent_from])
         out["setups"][setup] = {"all": allst, "recent": rec, "by_symbol": by_symbol, "verdict_text": VERDICT_TEXT[allst["verdict"]]}
+        if published is not None:
+            pst = stats([r for r in published if r["setup"] == setup])
+            out["setups"][setup]["engine_levels_unchanged"] = {k: pst[k] for k in ("signals", "triggered", "win_rate_pct", "mean_net_pct", "skipped", "verdict")}
     return out
 
 
@@ -297,8 +309,9 @@ def store(conn, rows: List[Dict[str, Any]], summary: Dict[str, Any]) -> int:
 
 def run_from_analysis(conn, analysis: Dict[str, SymbolSeries], nifty: Optional[pd.Series], through: date) -> Dict[str, Any]:
     rows = replay_universe(analysis, nifty)
+    published = replay_universe(analysis, nifty, rebase=False)       # for comparison only: the engine's levels exactly as published
     add_times(conn, rows, analysis)
     all_dates = sorted({str(d) for s in analysis.values() for d in s.dates})
-    summary = build_summary(rows, through.isoformat(), all_dates)
+    summary = build_summary(rows, through.isoformat(), all_dates, published)
     run_id = store(conn, rows, summary)
     return {"run_id": run_id, "trades": len(rows), "by_setup": {k: v["all"]["signals"] for k, v in summary["setups"].items()}}
