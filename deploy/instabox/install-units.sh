@@ -48,13 +48,12 @@ ExecStart=$1
 WantedBy=default.target
 EOT
 }
-timer fleet-ping "OnBootSec=2min
-OnUnitActiveSec=10min" "$F/fleet-ping.sh"
+# Fixed clock times, not "N min after the last run": a boot-relative timer never fires again once the units are re-installed or the box wakes from suspend.
+timer fleet-ping "OnCalendar=*:0/10:00" "$F/fleet-ping.sh"
 ENABLE="halal-fleet-health.service halal-fleet-ping.timer"
 case "$ROLE" in
   api)  stack "$HALAL_HOME/app/dc up -d"
-        timer watchdog "OnBootSec=3min
-OnUnitActiveSec=5min" "$F/fleet-watchdog.sh"
+        timer watchdog "OnCalendar=*:0/5:00" "$F/fleet-watchdog.sh"
         timer backup-pull "OnCalendar=*-*-* 15:15:00" "$F/backup-pull.sh"
         timer check-open  "OnCalendar=Mon..Fri *-*-* 04:20:00" "$F/session-check.sh open"
         timer check-close "OnCalendar=Mon..Fri *-*-* 10:40:00" "$F/session-check.sh close"
