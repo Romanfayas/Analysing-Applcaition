@@ -80,7 +80,7 @@ export default function StockChartPanel({ symbol }: { symbol: string }) {
           <h3 className="font-heading font-semibold text-white">Price chart</h3>
           <p className="text-[11px] text-slate-400 mt-0.5">{RANGE_NOTE[range]} {data && `(${data.candles.length} candles)`}{isValidating && ' · updating…'}</p>
         </div>
-        {range === '1D' && <span className="text-[10px] text-slate-500 font-mono">Arrows = unusually large minutes (volume far above normal)</span>}
+        {range === '1D' && <span className="text-[10px] text-slate-500 font-mono">Arrows = top-1% volume minutes (rare for this stock)</span>}
       </div>
       <div className="p-2 min-h-[420px]">
         {isLoading && !data ? <div className="h-[420px] flex items-center justify-center text-slate-500">Loading chart…</div>
@@ -107,7 +107,7 @@ export default function StockChartPanel({ symbol }: { symbol: string }) {
                     ['Their share of the day', `${s.large_share_of_day_pct.toFixed(1)}%`], ['Volume in up-candles', `${s.up_candle_volume_pct.toFixed(0)}%`]].map(([k, v]) => (
                     <div key={k} className="rounded-lg bg-slate-900/60 p-2"><div className="text-slate-500">{k}</div><div className="font-mono text-slate-100 text-sm">{v}</div></div>))}
                 </div>
-                {large.length === 0 ? <div className="text-sm text-slate-400">No minute traded 5× its normal volume and ₹20 lakh or more in this session.</div> : (
+                {large.length === 0 ? <div className="text-sm text-slate-400">No minute ranked in the top 1% of this stock&apos;s minutes (same half hour, last 20 sessions) with ₹20 lakh or more traded.</div> : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead><tr className="text-left text-slate-500 border-b border-white/10"><th className="py-1.5 pr-3">Time (IST)</th><th className="pr-3 text-right">Shares</th><th className="pr-3 text-right">Value</th><th className="pr-3 text-right">× normal</th><th>Candle</th></tr></thead>

@@ -1037,7 +1037,7 @@ export interface ChartSession {
 }
 export interface StockChart {
   symbol: string; range: ChartRange; interval: string; candles: ChartCandle[];
-  session?: ChartSession | null; large_minutes?: LargeMinute[] | null; params?: { times_normal: number; min_notional_inr: number };
+  session?: ChartSession | null; large_minutes?: LargeMinute[] | null; params?: { percentile: number; min_notional_inr: number };
 }
 export interface LargeDeal {
   trade_date: string; kind: 'BULK' | 'BLOCK'; client_name: string; side: 'BUY' | 'SELL'; quantity: number; price: number; value_inr: number;

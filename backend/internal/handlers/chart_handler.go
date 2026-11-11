@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"math"
 	"net/http"
 	"sort"
 	"strconv"
@@ -84,6 +85,23 @@ func aggregateIntraday(bars []database.IntradayBar, minutes int) []ChartCandle {
 	return out
 }
 
+// percentile returns the p-th percentile (0-100, nearest rank) of v.
+func percentile(v []int64, p float64) float64 {
+	if len(v) == 0 {
+		return 0
+	}
+	s := append([]int64(nil), v...)
+	sort.Slice(s, func(i, j int) bool { return s[i] < s[j] })
+	rank := int(math.Ceil(p/100*float64(len(s)))) - 1
+	if rank < 0 {
+		rank = 0
+	}
+	if rank >= len(s) {
+		rank = len(s) - 1
+	}
+	return float64(s[rank])
+}
+
 func median(v []int64) float64 {
 	if len(v) == 0 {
 		return 0
@@ -109,10 +127,11 @@ type ChartSession struct {
 	BaselineSessions int     `json:"baseline_sessions"`
 }
 
-// flagLargeMinutes compares each minute of the latest session with the median volume of the same half hour over the previous sessions.
-// A minute is flagged when it trades at least `mult` times that and at least `minNotional` rupees. Price bars carry total volume only: this shows
+// flagLargeMinutes compares each minute of the latest session with that stock's own minutes in the same half hour over the previous sessions.
+// A minute is flagged when its volume ranks in the top (100-pct)% of those, is at least 3x their median, and trades at least `minNotional` rupees.
+// (A plain "N times the median" rule fires on a fifth of all minutes: minute volume is very heavy-tailed.) Price bars carry total volume only: this shows
 // that something large traded, never who traded or whether it was a purchase.
-func flagLargeMinutes(bars []database.IntradayBar, mult, minNotional float64) (*ChartSession, []LargeMinute) {
+func flagLargeMinutes(bars []database.IntradayBar, pct, minNotional float64) (*ChartSession, []LargeMinute) {
 	byDay := map[string][]database.IntradayBar{}
 	var days []string
 	for _, b := range bars {
@@ -144,8 +163,9 @@ func flagLargeMinutes(bars []database.IntradayBar, mult, minNotional float64) (*
 		}
 	}
 	slotMed := make([]float64, len(slotVols))
+	slotTop := make([]float64, len(slotVols))
 	for i, v := range slotVols {
-		slotMed[i] = median(v)
+		slotMed[i], slotTop[i] = median(v), percentile(v, pct)
 	}
 	sum := &ChartSession{Date: today, BaselineSessions: len(hist)}
 	var up, down int64
@@ -165,11 +185,12 @@ func flagLargeMinutes(bars []database.IntradayBar, mult, minNotional float64) (*
 		if len(hist) < 3 {
 			continue
 		}
-		med := slotMed[(minuteOfDay(b.Timestamp)-sessionStartMin)/30]
+		slot := (minuteOfDay(b.Timestamp) - sessionStartMin) / 30
+		med := slotMed[slot]
 		if med < 1 {
 			med = 1
 		}
-		if float64(b.Volume) >= mult*med && notional >= minNotional {
+		if float64(b.Volume) >= slotTop[slot] && float64(b.Volume) >= 3*med && notional >= minNotional {
 			out = append(out, LargeMinute{TS: b.Timestamp.Unix(), Time: b.Timestamp.In(istZone).Format("15:04"), Volume: b.Volume, Notional: notional, Times: float64(b.Volume) / med, Side: side})
 			sum.LargeCount++
 			largeN += notional
@@ -254,16 +275,16 @@ func (h *StocksHandler) GetChart(w http.ResponseWriter, r *http.Request) {
 		}
 		out["interval"], out["candles"] = label, aggregateIntraday(show, minutes)
 		if rng == "1D" {
-			mult, minN := 5.0, 2_000_000.0
-			if v, err := strconv.ParseFloat(r.URL.Query().Get("mult"), 64); err == nil && v >= 2 && v <= 20 {
-				mult = v
+			pct, minN := 99.0, 2_000_000.0
+			if v, err := strconv.ParseFloat(r.URL.Query().Get("pct"), 64); err == nil && v >= 90 && v <= 99.9 {
+				pct = v
 			}
 			if v, err := strconv.ParseFloat(r.URL.Query().Get("min_notional"), 64); err == nil && v >= 100_000 && v <= 1_000_000_000 {
 				minN = v
 			}
-			session, large := flagLargeMinutes(bars, mult, minN)
+			session, large := flagLargeMinutes(bars, pct, minN)
 			out["session"], out["large_minutes"] = session, large
-			out["params"] = map[string]float64{"times_normal": mult, "min_notional_inr": minN}
+			out["params"] = map[string]float64{"percentile": pct, "min_notional_inr": minN}
 		}
 	case "1M", "6M", "1Y", "ALL":
 		limit := map[string]int{"1M": 22, "6M": 126, "1Y": 252, "ALL": 1000}[rng]

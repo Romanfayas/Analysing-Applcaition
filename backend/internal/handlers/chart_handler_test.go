@@ -46,14 +46,14 @@ func TestFlagLargeMinutesNeedsHistoryAndBothThresholds(t *testing.T) {
 		}
 		bars = append(bars, bar("2026-11-06", 10, m, o, c, v))
 	}
-	sum, large := flagLargeMinutes(bars, 5, 2_000_000)
+	sum, large := flagLargeMinutes(bars, 99, 2_000_000)
 	if sum == nil || sum.BaselineSessions != 5 || len(large) != 1 {
 		t.Fatalf("want one flagged minute over 5 baseline sessions, got %+v %+v", sum, large)
 	}
 	if large[0].Time != "10:10" || large[0].Side != "UP" || large[0].Times < 49 {
 		t.Errorf("wrong flag: %+v", large[0])
 	}
-	_, none := flagLargeMinutes(bars[len(bars)-60:], 5, 2_000_000) // no earlier sessions: nothing can be called unusual
+	_, none := flagLargeMinutes(bars[len(bars)-60:], 99, 2_000_000) // no earlier sessions: nothing can be called unusual
 	if len(none) != 0 {
 		t.Errorf("flags without a baseline: %+v", none)
 	}
