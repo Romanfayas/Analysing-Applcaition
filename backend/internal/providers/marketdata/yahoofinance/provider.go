@@ -269,7 +269,11 @@ func (p *Provider) fetchChart(symbol string, buildURL func(yahooSymbol string) s
 	if err != nil {
 		return nil, err
 	}
+	return p.fetchChartTicker(yahooSymbol, buildURL)
+}
 
+// fetchChartTicker fetches a chart for a full Yahoo ticker as given (for example "JOHNSONCAB.BO"), with no NSE suffix added.
+func (p *Provider) fetchChartTicker(yahooSymbol string, buildURL func(yahooSymbol string) string) ([]OHLCV, error) {
 	url := buildURL(yahooSymbol)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -309,13 +313,13 @@ func (p *Provider) fetchChart(symbol string, buildURL func(yahooSymbol string) s
 	}
 
 	if len(chart.Chart.Result) == 0 {
-		return nil, fmt.Errorf("no data returned for %s", symbol)
+		return nil, fmt.Errorf("no data returned for %s", yahooSymbol)
 	}
 
 	result := chart.Chart.Result[0]
 	quotes := result.Indicators.Quote
 	if len(quotes) == 0 {
-		return nil, fmt.Errorf("no quote data for %s", symbol)
+		return nil, fmt.Errorf("no quote data for %s", yahooSymbol)
 	}
 
 	q := quotes[0]

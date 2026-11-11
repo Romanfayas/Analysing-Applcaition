@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 
 	"github.com/halal-equity/backend/internal/database"
@@ -90,7 +89,7 @@ func latestScalar(values interface{}) *float64 {
 }
 
 func (h *StocksHandler) lookupSymbol(w http.ResponseWriter, r *http.Request) (*database.SymbolRecord, bool) {
-	code := strings.ToUpper(strings.TrimSpace(chi.URLParam(r, "symbol")))
+	code := strings.ToUpper(strings.TrimSpace(symbolParam(r)))
 	sym, err := h.db.GetSymbolByCode(r.Context(), code, "NSE")
 	if errors.Is(err, sql.ErrNoRows) {
 		response.NotFound(w, "symbol")

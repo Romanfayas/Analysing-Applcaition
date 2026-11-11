@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -20,17 +22,19 @@ import (
 // BreakoutsHandler serves the Breakouts pages: today's upcoming and confirmed breakouts with their reasons, everything tracked so far
 // with outcomes, per-stock tests, and the automatic paper portfolios.
 type BreakoutsHandler struct {
-	db    *database.DB
-	quant *quant.Client
+	db        *database.DB
+	quant     *quant.Client
+	refresher *news.Refresher
 }
 
-func NewBreakoutsHandler(db *database.DB, q *quant.Client) *BreakoutsHandler {
-	return &BreakoutsHandler{db: db, quant: q}
+func NewBreakoutsHandler(db *database.DB, q *quant.Client, refresher *news.Refresher) *BreakoutsHandler {
+	return &BreakoutsHandler{db: db, quant: q, refresher: refresher}
 }
 
 func (h *BreakoutsHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Get("/overview", h.Overview)
+	r.Get("/upcoming", h.Upcoming)
 	r.Get("/stock/{symbol}", h.Stock)
 	return r
 }
@@ -107,7 +111,7 @@ func todayView(scan *BreakoutScan) map[string]any {
 // Stock is the per-stock Breakouts tab: today's reading, every signal and flag for this stock, and its own test results.
 func (h *BreakoutsHandler) Stock(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	sym := strings.ToUpper(strings.TrimSpace(chi.URLParam(r, "symbol")))
+	sym := strings.ToUpper(strings.TrimSpace(symbolParam(r)))
 	rec, err := h.db.GetSymbolByTicker(ctx, sym)
 	if err != nil || rec == nil {
 		response.Error(w, http.StatusNotFound, "unknown symbol")
@@ -181,7 +185,7 @@ func (h *StockFeedHandler) Routes() chi.Router {
 }
 
 func (h *StockFeedHandler) symbol(w http.ResponseWriter, r *http.Request) (*database.SymbolRecord, bool) {
-	rec, err := h.db.GetSymbolByTicker(r.Context(), strings.ToUpper(strings.TrimSpace(chi.URLParam(r, "symbol"))))
+	rec, err := h.db.GetSymbolByTicker(r.Context(), strings.ToUpper(strings.TrimSpace(symbolParam(r))))
 	if err != nil || rec == nil {
 		response.Error(w, http.StatusNotFound, "unknown symbol")
 		return nil, false
@@ -252,4 +256,97 @@ func (h *StockFeedHandler) Events(w http.ResponseWriter, r *http.Request) {
 	}
 	response.JSON(w, http.StatusOK, map[string]any{"symbol": rec.Symbol, "name": rec.Name, "upcoming": up, "recent": past, "status": h.feedStatus(ctx, rec.ID, "EVENTS"),
 		"source": "NSE event calendar and corporate actions: official exchange records. Dates are as announced and can change."})
+}
+
+// closestToBreakout ranks the stocks the engine only WATCHES: still below resistance, nearest first, then by structure score. They are not
+// forecasts; the page labels them as "closest to breaking out" and keeps them apart from the engine's own BREAKOUT_CANDIDATE stage.
+func closestToBreakout(scan *BreakoutScan, limit int) []quant.BreakoutResult {
+	var out []quant.BreakoutResult
+	for _, c := range scan.Candidates {
+		if c.Stage == "WATCHLIST" && c.ResistanceLevel > 0 && c.DistanceToResistancePct > 0 && c.DistanceToResistancePct <= 6 {
+			out = append(out, c)
+		}
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].DistanceToResistancePct != out[j].DistanceToResistancePct {
+			return out[i].DistanceToResistancePct < out[j].DistanceToResistancePct
+		}
+		si, sj := 0.0, 0.0
+		if out[i].StructureScore != nil {
+			si = *out[i].StructureScore
+		}
+		if out[j].StructureScore != nil {
+			sj = *out[j].StructureScore
+		}
+		return si > sj
+	})
+	if len(out) > limit {
+		out = out[:limit]
+	}
+	return out
+}
+
+// Upcoming is the page for stocks about to break out: the engine's own upcoming candidates, then the ones closest to resistance, each
+// with the engine's reasons and the stock's latest headlines, official filings and next event.
+func (h *BreakoutsHandler) Upcoming(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	scan, err := getBreakoutScan(ctx, h.db, h.quant)
+	if err != nil {
+		log.Warn().Err(err).Msg("upcoming breakouts: scan unavailable")
+		response.Error(w, http.StatusServiceUnavailable, "the breakout scan is unavailable")
+		return
+	}
+	var candidates []quant.BreakoutResult
+	for _, c := range scan.Candidates {
+		if c.Stage == "BREAKOUT_CANDIDATE" {
+			candidates = append(candidates, c)
+		}
+	}
+	closest := closestToBreakout(scan, 12)
+
+	type item struct {
+		Result  quant.BreakoutResult `json:"result"`
+		Name    string               `json:"name"`
+		News    []database.NewsRow   `json:"news"`
+		Filings []database.FilingRow `json:"filings"`
+		Event   *database.EventRow   `json:"next_event"`
+	}
+	build := func(list []quant.BreakoutResult) []item {
+		out := make([]item, len(list))
+		var wg sync.WaitGroup
+		for i, c := range list {
+			out[i] = item{Result: c, News: []database.NewsRow{}, Filings: []database.FilingRow{}}
+			wg.Add(1)
+			go func(i int, sym string) {
+				defer wg.Done()
+				rec, err := h.db.GetSymbolByTicker(ctx, sym)
+				if err != nil || rec == nil {
+					return
+				}
+				out[i].Name = rec.Name
+				if h.refresher != nil {
+					rctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+					h.refresher.Refresh(rctx, *rec, news.Freshness)
+					cancel()
+				}
+				if n, err := h.db.ListNews(ctx, rec.ID, 4); err == nil {
+					out[i].News = n
+				}
+				if f, err := h.db.ListFilings(ctx, rec.ID, 2); err == nil {
+					out[i].Filings = f
+				}
+				if ev, err := h.db.ListEvents(ctx, rec.ID, true, 1); err == nil && len(ev) > 0 {
+					out[i].Event = &ev[0]
+				}
+			}(i, c.Symbol)
+		}
+		wg.Wait()
+		return out
+	}
+	flags, _ := h.db.ListWatch(ctx, "", "WATCHING", 50)
+	response.JSON(w, http.StatusOK, map[string]any{
+		"data_as_of": scan.DataAsOf, "computed_at": scan.ComputedAt, "total_screened": scan.TotalScreened,
+		"candidates": build(candidates), "closest": build(closest), "watching_flags": flags,
+		"note": "Upcoming = the engine's own BREAKOUT_CANDIDATE stage. Closest to breaking out = stocks it only watches, ranked by distance to resistance. Neither is a forecast: the nightly test has not shown that either predicts profit.",
+	})
 }

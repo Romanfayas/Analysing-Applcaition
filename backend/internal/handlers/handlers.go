@@ -164,7 +164,7 @@ func (h *StocksHandler) ListStocks(w http.ResponseWriter, r *http.Request) {
 
 // GetStock returns detailed information for a single stock.
 func (h *StocksHandler) GetStock(w http.ResponseWriter, r *http.Request) {
-	symbol := chi.URLParam(r, "symbol")
+	symbol := symbolParam(r)
 	ctx := r.Context()
 
 	// 1. Fetch Symbol
@@ -338,7 +338,7 @@ func (h *StocksHandler) GetStock(w http.ResponseWriter, r *http.Request) {
 // GetShariahStatus returns the Shariah screening status for a stock.
 func (h *StocksHandler) GetShariahStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	symbol := chi.URLParam(r, "symbol")
+	symbol := symbolParam(r)
 
 	symRec, err := h.db.GetSymbolByCode(ctx, symbol, "NSE")
 	if err != nil || symRec == nil {
@@ -378,7 +378,7 @@ func (h *StocksHandler) GetShariahStatus(w http.ResponseWriter, r *http.Request)
 // GetSignal returns the composite signal for a stock.
 func (h *StocksHandler) GetSignal(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	symbol := chi.URLParam(r, "symbol")
+	symbol := symbolParam(r)
 
 	symRec, err := h.db.GetSymbolByCode(ctx, symbol, "NSE")
 	if err != nil || symRec == nil {
@@ -1046,7 +1046,7 @@ func (h *BacktestingHandler) GetGateDiagnostics(w http.ResponseWriter, r *http.R
 }
 
 func (h *BacktestingHandler) GetSecurityGateDiagnostics(w http.ResponseWriter, r *http.Request) {
-	symbol := chi.URLParam(r, "symbol")
+	symbol := symbolParam(r)
 	ctx := r.Context()
 
 	var symID int

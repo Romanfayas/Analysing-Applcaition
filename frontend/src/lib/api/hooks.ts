@@ -12,6 +12,7 @@ import type {
   IpoView,
   AutoPaperPortfolio,
   BreakoutsOverview,
+  UpcomingBreakouts,
   LearningSummary,
   StockBreakouts,
   StockEvents,
@@ -254,4 +255,9 @@ export function useStockEvents(symbol: string) {
 export function useAutoPaper() {
   const { data, error, isLoading } = useSWR<{ portfolios: AutoPaperPortfolio[] }>('/auto-paper/summary', fetcher, { refreshInterval: 300000 });
   return { portfolios: data?.portfolios ?? [], isLoading, isError: error };
+}
+
+export function useUpcomingBreakouts() {
+  const { data, error, isLoading } = useSWR<UpcomingBreakouts>('/breakouts/upcoming', fetcher, { refreshInterval: 300000 });
+  return { data, error, isLoading };
 }

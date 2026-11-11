@@ -1016,3 +1016,14 @@ export interface AutoPaperPortfolio {
   closed_count: number; wins: number; net_pnl_closed: number; total_fees: number; return_on_capital_pct: number; max_drawdown_realized_pct: number;
   expected_cash_from_trades: number; cash_reconciles_to_ledger: boolean; note: string;
 }
+
+export interface UpcomingItem {
+  result: BreakoutReading; name: string;
+  news: { title: string; publisher: string | null; url: string; source: string; published_at: string | null }[];
+  filings: { announced_at: string; category: string | null; subject: string; attachment_url: string | null }[];
+  next_event: StockEvent | null;
+}
+export interface UpcomingBreakouts {
+  data_as_of: string | null; computed_at: string; total_screened: number; note: string;
+  candidates: UpcomingItem[]; closest: UpcomingItem[]; watching_flags: WatchFlag[];
+}

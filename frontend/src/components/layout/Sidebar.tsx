@@ -20,6 +20,7 @@ import {
   BellIcon,
   Cog6ToothIcon,
   ArrowRightStartOnRectangleIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 
 const navigation = [
@@ -27,6 +28,7 @@ const navigation = [
   { name: "Screener", href: "/stocks", icon: PresentationChartLineIcon },
   { name: "Predictions", href: "/predictions", icon: SparklesIcon },
   { name: "Signals", href: "/signals", icon: BoltIcon },
+  { name: "Upcoming Breakouts", href: "/upcoming-breakouts", icon: EyeIcon },
   { name: "Breakouts", href: "/breakouts", icon: ArrowTrendingUpIcon },
   { name: "Upcoming IPOs", href: "/ipos", icon: BanknotesIcon },
   { name: "Shariah", href: "/shariah", icon: ShieldCheckIcon },

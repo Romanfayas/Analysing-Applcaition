@@ -150,7 +150,7 @@ func setupRouter(cfg *config.Config, jwtManager *auth.JWTManager, db *database.D
 			r.Mount("/evidence", handlers.NewEvidenceHandler(db).Routes())
 			r.Mount("/predictions", handlers.NewPredictionHandler(db).Routes())
 			r.Mount("/learning", handlers.NewLearningHandler(db).Routes())
-			r.Mount("/breakouts", handlers.NewBreakoutsHandler(db, quantClient).Routes())
+			r.Mount("/breakouts", handlers.NewBreakoutsHandler(db, quantClient, news.NewRefresher(db)).Routes())
 			r.Mount("/auto-paper", handlers.NewAutoPaperHandler(db).Routes())
 			r.Mount("/stock-feed", handlers.NewStockFeedHandler(db, news.NewRefresher(db)).Routes())
 			r.Mount("/paper-trading", handlers.NewPaperTradingHandler(db, quantClient).Routes())

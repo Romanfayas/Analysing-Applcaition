@@ -10,6 +10,7 @@ import (
 	"github.com/halal-equity/backend/internal/database"
 	"github.com/halal-equity/backend/internal/providers/ipowatch"
 	"github.com/halal-equity/backend/internal/providers/marketdata/nsedata"
+	"github.com/halal-equity/backend/internal/providers/marketdata/yahoofinance"
 )
 
 // IPORecordDetail is the merged record shown behind "View details". Official and unofficial facts stay separate.
@@ -252,7 +253,14 @@ func (w *IPOWorker) detectListing(ctx context.Context, ipo database.ActiveIPO, m
 	// Until the listing day has ended its close is still moving, so keep refreshing it.
 	today := time.Now().In(istLoc).Format("2006-01-02")
 	listedEarlier := ipo.ListingDate != nil && ipo.ListingDate.Format("2006-01-02") < today
-	if ipo.Symbol == "" || (ipo.ListingPrice != nil && listedEarlier) {
+	if ipo.Symbol == "" {
+		// Issues that list only on BSE SME have no NSE symbol, so the NSE-based check below can never see them trade.
+		if ipo.Status != "LISTED" {
+			w.detectBSEListing(ctx, ipo)
+		}
+		return
+	}
+	if ipo.ListingPrice != nil && listedEarlier {
 		return
 	}
 	when := ipo.ListingDate
@@ -324,4 +332,49 @@ func (w *IPOWorker) addFromList(ctx context.Context, r ipowatch.GMPRow) {
 		log.Printf("[IPO-WORKER] added %s from the secondary list (%s)", name, fmt.Sprint(d.Listing))
 	}
 	w.enrichOne(ctx, database.ActiveIPO{ID: id, CompanyName: name, Board: board, Status: status, PriceBandHigh: r.Price}, &r)
+}
+
+// listingTickerCandidates picks, from a name search, the Yahoo tickers that can belong to this company. A hit with a name must be
+// the same company; a fresh SME listing often has no name at all, so there the ticker itself must be the company's first word.
+func listingTickerCandidates(company string, quotes []yahoofinance.ListingQuote) []string {
+	var out []string
+	words := strings.Fields(ipowatch.NormalizeName(company))
+	for _, q := range quotes {
+		base := strings.ToLower(strings.TrimSuffix(strings.TrimSuffix(q.Symbol, ".BO"), ".NS"))
+		switch {
+		case q.Name != "" && ipowatch.SameCompany(q.Name, company):
+			out = append(out, q.Symbol)
+		case q.Name == "" && len(words) > 0 && base == words[0]:
+			out = append(out, q.Symbol)
+		}
+	}
+	return out
+}
+
+// detectBSEListing marks a BSE-only issue as listed once Yahoo shows real trades in it. The ticker must not have traded before the
+// issue's bidding closed, so a long-listed company with a similar name can never be mistaken for the new listing.
+func (w *IPOWorker) detectBSEListing(ctx context.Context, ipo database.ActiveIPO) {
+	if ipo.CloseDate == nil || ipo.OpenDate == nil || ipo.CloseDate.After(time.Now()) {
+		return
+	}
+	quotes, err := w.yahoo.SearchListings(ipo.CompanyName)
+	if err != nil {
+		return
+	}
+	for _, ticker := range listingTickerCandidates(ipo.CompanyName, quotes) {
+		bars, err := w.yahoo.GetDailyByTicker(ticker, ipo.OpenDate.AddDate(0, 0, -30), time.Now().AddDate(0, 0, 1))
+		if err != nil || len(bars) == 0 || bars[0].Open <= 0 {
+			continue
+		}
+		first := bars[0]
+		if first.Timestamp.In(istLoc).Format("2006-01-02") < ipo.CloseDate.Format("2006-01-02") {
+			continue // it traded before this issue closed: a different, older stock
+		}
+		if err := w.db.SetIPOListed(ctx, ipo.ID, first.Timestamp.In(istLoc), first.Open, first.Close); err != nil {
+			log.Printf("[IPO-WORKER] %s: listing not stored: %v", ipo.CompanyName, err)
+			return
+		}
+		log.Printf("[IPO-WORKER] %s listed on %s at %.2f (%s)", ipo.CompanyName, first.Timestamp.In(istLoc).Format("2006-01-02"), first.Open, ticker)
+		return
+	}
 }

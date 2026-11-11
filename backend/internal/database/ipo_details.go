@@ -13,6 +13,8 @@ type ActiveIPO struct {
 	Symbol        string
 	Board         string
 	Status        string
+	OpenDate      *time.Time
+	CloseDate     *time.Time
 	PriceBandHigh *float64
 	ListingDate   *time.Time
 	ListingPrice  *float64
@@ -22,7 +24,7 @@ type ActiveIPO struct {
 // IPOsToRefresh returns upcoming, open and unlisted issues, plus those listed in the last `listedWithin`.
 func (db *DB) IPOsToRefresh(ctx context.Context, listedWithin time.Duration) ([]ActiveIPO, error) {
 	rows, err := db.QueryContext(ctx, `
-		SELECT i.id, i.company_name, COALESCE(i.symbol, ''), COALESCE(i.metadata->>'board', ''), i.status, i.price_band_high::float8,
+		SELECT i.id, i.company_name, COALESCE(i.symbol, ''), COALESCE(i.metadata->>'board', ''), i.status, i.open_date, i.close_date, i.price_band_high::float8,
 		       i.listing_date, i.listing_price::float8, d.ipo_id IS NOT NULL
 		FROM ipos i LEFT JOIN ipo_details d ON d.ipo_id = i.id
 		WHERE i.status IN ('UPCOMING', 'OPEN', 'ACTIVE', 'CLOSED_AWAITING_LISTING')
@@ -35,7 +37,7 @@ func (db *DB) IPOsToRefresh(ctx context.Context, listedWithin time.Duration) ([]
 	var out []ActiveIPO
 	for rows.Next() {
 		var a ActiveIPO
-		if err := rows.Scan(&a.ID, &a.CompanyName, &a.Symbol, &a.Board, &a.Status, &a.PriceBandHigh, &a.ListingDate, &a.ListingPrice, &a.HasDetails); err != nil {
+		if err := rows.Scan(&a.ID, &a.CompanyName, &a.Symbol, &a.Board, &a.Status, &a.OpenDate, &a.CloseDate, &a.PriceBandHigh, &a.ListingDate, &a.ListingPrice, &a.HasDetails); err != nil {
 			return nil, err
 		}
 		out = append(out, a)

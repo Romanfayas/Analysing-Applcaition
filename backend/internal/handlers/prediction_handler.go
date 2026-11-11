@@ -171,7 +171,7 @@ func (h *PredictionHandler) Latest(w http.ResponseWriter, r *http.Request) {
 
 // BySymbol returns a symbol's recent forecasts and how they turned out.
 func (h *PredictionHandler) BySymbol(w http.ResponseWriter, r *http.Request) {
-	code := strings.ToUpper(strings.TrimSpace(chi.URLParam(r, "symbol")))
+	code := strings.ToUpper(strings.TrimSpace(symbolParam(r)))
 	if _, err := h.db.GetSymbolByCode(r.Context(), code, "NSE"); errors.Is(err, sql.ErrNoRows) {
 		response.NotFound(w, "symbol")
 		return

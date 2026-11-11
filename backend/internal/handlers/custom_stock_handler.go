@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 
 	"github.com/halal-equity/backend/internal/database"
@@ -97,7 +96,7 @@ func (h *StocksHandler) AddStock(w http.ResponseWriter, r *http.Request) {
 
 // AddStockStatus reports how far loading an added stock has got.
 func (h *StocksHandler) AddStockStatus(w http.ResponseWriter, r *http.Request) {
-	ticker := normalizeTicker(chi.URLParam(r, "symbol"))
+	ticker := normalizeTicker(symbolParam(r))
 	st, userAdded, err := h.db.GetOnboardStatus(r.Context(), ticker)
 	if err != nil {
 		response.NotFound(w, "symbol")
