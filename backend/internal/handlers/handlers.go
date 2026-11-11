@@ -40,6 +40,7 @@ func (h *StocksHandler) Routes() chi.Router {
 	r.Get("/custom/{symbol}/status", h.AddStockStatus)
 	r.Get("/{symbol}", h.GetStock)
 	r.Get("/{symbol}/candles", h.GetCandles)
+	r.Get("/{symbol}/chart", h.GetChart)
 	r.Get("/{symbol}/fundamentals", h.GetFundamentals)
 	r.Get("/{symbol}/technicals", h.GetTechnicals)
 	r.Get("/{symbol}/shariah", h.GetShariahStatus)

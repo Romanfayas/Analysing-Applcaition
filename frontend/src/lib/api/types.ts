@@ -1027,3 +1027,24 @@ export interface UpcomingBreakouts {
   data_as_of: string | null; computed_at: string; total_screened: number; note: string;
   candidates: UpcomingItem[]; closest: UpcomingItem[]; watching_flags: WatchFlag[];
 }
+
+export type ChartRange = '1D' | '1W' | '1M' | '6M' | '1Y' | 'ALL';
+export interface ChartCandle { date?: string; ts?: number; o: number; h: number; l: number; c: number; v: number }
+export interface LargeMinute { ts: number; time: string; volume: number; notional_inr: number; times_normal: number; candle: 'UP' | 'DOWN' | 'FLAT' }
+export interface ChartSession {
+  date: string; total_volume: number; total_notional_inr: number; up_candle_volume_pct: number; large_minutes: number;
+  large_up_notional_inr: number; large_down_notional_inr: number; large_share_of_day_pct: number; baseline_sessions: number;
+}
+export interface StockChart {
+  symbol: string; range: ChartRange; interval: string; candles: ChartCandle[];
+  session?: ChartSession | null; large_minutes?: LargeMinute[] | null; params?: { times_normal: number; min_notional_inr: number };
+}
+export interface LargeDeal {
+  trade_date: string; kind: 'BULK' | 'BLOCK'; client_name: string; side: 'BUY' | 'SELL'; quantity: number; price: number; value_inr: number;
+  remarks: string | null; client_type: 'MUTUAL_FUND' | 'INSURANCE' | 'FOREIGN_INVESTOR' | 'BANK_OR_FINANCIAL' | 'OTHER';
+}
+export interface StockDeals {
+  symbol: string; name: string; days: number; deals: LargeDeal[]; record_starts: string;
+  by_client_type: Record<string, { buy_inr: number; sell_inr: number; deals: number }>;
+  institution_buy_inr: number; institution_sell_inr: number; institution_net_inr: number; source: string; caveat: string;
+}

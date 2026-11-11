@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/halal-equity/backend/internal/database"
+	"github.com/halal-equity/backend/internal/services/largedeals"
 	"github.com/halal-equity/backend/internal/services/quant"
 	"github.com/halal-equity/backend/internal/workers/news"
 	"github.com/halal-equity/backend/pkg/response"
@@ -181,6 +183,7 @@ func (h *StockFeedHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Get("/{symbol}/news", h.News)
 	r.Get("/{symbol}/events", h.Events)
+	r.Get("/{symbol}/deals", h.Deals)
 	return r
 }
 
@@ -352,5 +355,59 @@ func (h *BreakoutsHandler) Upcoming(w http.ResponseWriter, r *http.Request) {
 		"data_as_of": scan.DataAsOf, "computed_at": scan.ComputedAt, "total_screened": scan.TotalScreened,
 		"candidates": build(candidates), "closest": build(closest), "watching_flags": flags,
 		"note": "Upcoming = the engine's own BREAKOUT_CANDIDATE stage. Closest to breaking out = stocks it only watches, ranked by distance to resistance. Neither is a forecast: the nightly test has not shown that either predicts profit.",
+	})
+}
+
+// Deals returns the official NSE bulk and block deals in a stock, with the investor type guessed from each client's name, and the net
+// position of institution-type clients. This is the only public record of who bought a large block; price bars never show it.
+func (h *StockFeedHandler) Deals(w http.ResponseWriter, r *http.Request) {
+	rec, ok := h.symbol(w, r)
+	if !ok {
+		return
+	}
+	ctx := r.Context()
+	days := 180
+	if v, err := strconv.Atoi(r.URL.Query().Get("days")); err == nil && v >= 7 && v <= 730 {
+		days = v
+	}
+	rows, err := h.db.ListLargeDeals(ctx, rec.ID, time.Now().AddDate(0, 0, -days), 200)
+	if err != nil {
+		log.Error().Err(err).Msg("large deals read failed")
+		response.Error(w, http.StatusInternalServerError, "failed to load deals")
+		return
+	}
+	type tally struct {
+		Buy  float64 `json:"buy_inr"`
+		Sell float64 `json:"sell_inr"`
+		N    int     `json:"deals"`
+	}
+	byType := map[string]*tally{}
+	var instBuy, instSell float64
+	for _, d := range rows {
+		t := byType[d.ClientType]
+		if t == nil {
+			t = &tally{}
+			byType[d.ClientType] = t
+		}
+		t.N++
+		if d.Side == "BUY" {
+			t.Buy += d.ValueINR
+		} else {
+			t.Sell += d.ValueINR
+		}
+		if largedeals.IsInstitution(d.ClientType) {
+			if d.Side == "BUY" {
+				instBuy += d.ValueINR
+			} else {
+				instSell += d.ValueINR
+			}
+		}
+	}
+	first, _ := h.db.LargeDealsFirstDay(ctx)
+	response.JSON(w, http.StatusOK, map[string]any{
+		"symbol": rec.Symbol, "name": rec.Name, "days": days, "deals": rows, "by_client_type": byType, "record_starts": first,
+		"institution_buy_inr": instBuy, "institution_sell_inr": instSell, "institution_net_inr": instBuy - instSell,
+		"source": "NSE bulk-deal and block-deal files (official). Bulk = a client trades 0.5% or more of the company's shares in a day; block = a large negotiated trade in the special window. The NSE file shows the latest day only, so this record builds up from the first day the app captured it.",
+		"caveat": "Investor type is a guess from the client's registered name (mutual fund, insurer, foreign fund). Many institutions trade below the reporting limits, and a deal lists the client, not the reason.",
 	})
 }

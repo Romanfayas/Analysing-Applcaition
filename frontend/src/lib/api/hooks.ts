@@ -13,6 +13,9 @@ import type {
   AutoPaperPortfolio,
   BreakoutsOverview,
   UpcomingBreakouts,
+  ChartRange,
+  StockChart,
+  StockDeals,
   LearningSummary,
   StockBreakouts,
   StockEvents,
@@ -259,5 +262,17 @@ export function useAutoPaper() {
 
 export function useUpcomingBreakouts() {
   const { data, error, isLoading } = useSWR<UpcomingBreakouts>('/breakouts/upcoming', fetcher, { refreshInterval: 300000 });
+  return { data, error, isLoading };
+}
+
+export function useStockChart(symbol: string | null, range: ChartRange) {
+  // 1D is the live session: refresh it every minute; the daily ranges change once a day.
+  const { data, error, isLoading, isValidating } = useSWR<StockChart>(symbol ? `/stocks/${encodeURIComponent(symbol)}/chart?range=${range}` : null, fetcher,
+    { refreshInterval: range === '1D' ? 60000 : 0, revalidateOnFocus: false, keepPreviousData: true });
+  return { data, error, isLoading, isValidating };
+}
+
+export function useStockDeals(symbol: string | null) {
+  const { data, error, isLoading } = useSWR<StockDeals>(symbol ? `/stock-feed/${encodeURIComponent(symbol)}/deals` : null, fetcher, { refreshInterval: 600000, revalidateOnFocus: false });
   return { data, error, isLoading };
 }

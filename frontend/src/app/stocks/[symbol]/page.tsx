@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from '@/components/Link';
 import Card, { CardHeader } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import CandlestickChart, { CandleData } from '@/components/charts/CandlestickChart';
+import StockChartPanel from '@/components/stock/StockChartPanel';
 import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 import { BeakerIcon, CheckCircleIcon, ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useStock } from '@/lib/api/hooks';
@@ -39,14 +39,6 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
 
   const isShariahPass = stock.shariah?.status === 'PASS';
   const isFundamentalsAvailable = stock.fundamentals?.status === 'AVAILABLE' || stock.fundamentals?.status === 'VALID';
-
-  const chartData: CandleData[] = stock.ohlcv?.map(d => ({
-    time: d.timestamp,
-    open: d.open,
-    high: d.high,
-    low: d.low,
-    close: d.close
-  })) || [];
 
   const handleExecuteTrade = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,30 +218,8 @@ export default function StockResearchPage({ params }: { params: Promise<{ symbol
         </div>
       )}
 
-      {/* Chart */}
-      <Card className="p-1">
-        <div className="p-4 border-b border-slate-700/50 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-          <div>
-            <h3 className="font-heading font-semibold text-white">Price Action (Daily EOD Candles)</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Source: <span className="font-mono text-slate-300">ohlcv_daily</span> table (completed daily session bars). CMP above displays latest intraday tick from <span className="font-mono text-slate-300">ohlcv_intraday</span>.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-slate-500 font-mono">Timeframe: 1D</span>
-            <Badge variant="blue">Historical Daily</Badge>
-          </div>
-        </div>
-        <div className="p-2 h-[400px]">
-          {chartData.length > 0 ? (
-            <CandlestickChart data={chartData} />
-          ) : (
-            <div className="h-full flex items-center justify-center text-slate-500">
-              DATA_UNAVAILABLE
-            </div>
-          )}
-        </div>
-      </Card>
+      {/* Chart: range selector, 1-minute candles for 1D, big-money watch and official deals */}
+      <StockChartPanel symbol={stock.symbol} />
 
       {/* Quant Gauges */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

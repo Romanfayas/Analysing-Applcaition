@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/halal-equity/backend/internal/workers/autopaper"
 	breakoutworker "github.com/halal-equity/backend/internal/workers/breakouts"
+	"github.com/halal-equity/backend/internal/workers/deals"
 	"github.com/halal-equity/backend/internal/workers/news"
 	"os"
 	"os/signal"
@@ -126,6 +127,7 @@ func main() {
 
 	// Headlines, official announcements and events for every stock, tracked breakout stocks first.
 	go news.NewWorker(db, news.NewRefresher(db), 15*time.Minute).Run(ctx)
+	go deals.NewWorker(db, 2*time.Hour).Run(ctx)
 
 	// Evaluate user price alerts against the latest stored prices
 	go alerts.NewEvaluator(db, notifier, 5*time.Minute).Run(ctx)

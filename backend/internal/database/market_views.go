@@ -344,3 +344,27 @@ func (db *DB) InsertBackfillIntradayBars(ctx context.Context, symbolID, interval
 	}
 	return stored, tx.Commit()
 }
+
+// IntradayLastSessions returns every stored intraday bar of the symbol's most recent `sessions` trading days (IST dates), oldest first.
+func (db *DB) IntradayLastSessions(ctx context.Context, symbolID, sessions int) ([]IntradayBar, error) {
+	rows, err := db.QueryContext(ctx, `
+		SELECT timestamp, interval_minutes, open, high, low, close, volume, source, quality_status::text
+		FROM ohlcv_intraday
+		WHERE symbol_id = $1 AND (timestamp AT TIME ZONE 'Asia/Kolkata')::date >= (
+			SELECT min(d) FROM (SELECT DISTINCT (timestamp AT TIME ZONE 'Asia/Kolkata')::date AS d FROM ohlcv_intraday
+			                    WHERE symbol_id = $1 ORDER BY d DESC LIMIT $2) x)
+		ORDER BY timestamp`, symbolID, sessions)
+	if err != nil {
+		return nil, fmt.Errorf("query intraday sessions failed: %w", err)
+	}
+	defer rows.Close()
+	var bars []IntradayBar
+	for rows.Next() {
+		var b IntradayBar
+		if err := rows.Scan(&b.Timestamp, &b.IntervalMinutes, &b.Open, &b.High, &b.Low, &b.Close, &b.Volume, &b.Source, &b.QualityStatus); err != nil {
+			return nil, fmt.Errorf("scan intraday bar failed: %w", err)
+		}
+		bars = append(bars, b)
+	}
+	return bars, rows.Err()
+}
