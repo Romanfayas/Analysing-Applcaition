@@ -7,7 +7,7 @@ import {
   BoltIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import StatCard from '@/components/ui/StatCard';
 import Card, { CardHeader } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';

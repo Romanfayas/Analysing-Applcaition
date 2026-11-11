@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '@/components/Link';
 import type { BreakoutReading } from '@/lib/api/types';
 
 export const inr = (v: number | null | undefined, d = 2) => (v == null ? '—' : `₹${v.toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d })}`);

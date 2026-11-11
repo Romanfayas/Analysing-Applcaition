@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
+import Link from '@/components/Link';
 import { useStocks, useMarketDataHealth } from "@/lib/api/hooks";
 import AddStockPanel from "@/components/AddStockPanel";
 import { shariahLabel } from "@/lib/shariah";

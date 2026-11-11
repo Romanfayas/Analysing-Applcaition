@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from '@/components/Link';
 import { useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
 import {

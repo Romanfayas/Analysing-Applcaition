@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { useBreakoutMonitor } from '@/lib/api/hooks';
 import type { TrackedBreakout } from '@/lib/api/types';
 import Card, { CardHeader } from '@/components/ui/Card';

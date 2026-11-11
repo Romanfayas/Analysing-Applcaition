@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { useBreakoutsOverview, useAutoPaper } from '@/lib/api/hooks';
 import BreakoutCard, { Reasons, ScoreBars, inr, pct, tone } from '@/components/breakouts/BreakoutCard';
 import type { AutoPaperPortfolio, ScoreGroup, TrackedSignal, WatchFlag } from '@/lib/api/types';

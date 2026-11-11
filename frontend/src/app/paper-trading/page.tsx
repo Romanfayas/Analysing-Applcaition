@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { send, fetcher } from '@/lib/api/client';

@@ -2,7 +2,7 @@
 
 import { use, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import Card, { CardHeader } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import CandlestickChart, { CandleData } from '@/components/charts/CandlestickChart';

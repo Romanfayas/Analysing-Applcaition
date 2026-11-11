@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/Link';
 import { CheckCircleIcon, XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import Card, { CardHeader } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
