@@ -40,7 +40,8 @@ fail() { printf '\nSTOPPED: %s\n' "$*" >&2; exit 1; }
 ROLLBACK=0; for a in "${REMOTE_FLAGS[@]:-}"; do [ "$a" = --rollback ] && ROLLBACK=1; done
 
 cd "$REPO"
-LABEL="$(git rev-parse --short HEAD 2>/dev/null || echo nogit)$([ -n "$(git status --porcelain 2>/dev/null)" ] && echo '+local-changes')"
+LABEL="$(git rev-parse --short HEAD 2>/dev/null || echo nogit)"
+[ -z "$(git status --porcelain 2>/dev/null)" ] || LABEL="$LABEL+local-changes"
 
 # ---- 1. safety guard: live trading must never be enabled by a file we are about to ship
 step() { printf '\n== %s\n' "$*"; }
