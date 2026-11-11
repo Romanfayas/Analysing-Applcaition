@@ -2,6 +2,10 @@
 # Keep-alive: every box touches the other two (SSH exec + public HTTP health) and logs the result as JSON lines.
 . "$(dirname "$0")/lib.sh"
 LOG=$LOGDIR/fleet-ping.jsonl
+# A long hole in this log means the box was suspended (Instabox stops a sandbox after about 8 h of run time): say so, once, when it wakes.
+last=$(tail -1 "$LOG" 2>/dev/null | sed -n 's/.*"ts":"\([^"]*\)".*/\1/p')
+if [ -n "$last" ]; then gap=$(( ( $(date +%s) - $(date -u -d "$last" +%s 2>/dev/null || date +%s) ) / 60 ))
+  [ "$gap" -gt 30 ] && echo "$(now) WARN this box was suspended or stopped for ${gap} min (last ping $last); live bars missed meanwhile are backfilled by the worker, forecasts for that gap are lost" >> "$LOGDIR/alerts.log"; fi
 for role in api db jobs; do
   [ "$role" = "$FLEET_SELF" ] && continue
   s0=$(date +%s)
