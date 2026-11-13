@@ -8,8 +8,8 @@ USER_="${FLEET_API_SSH_USER:-${DEPLOY_API_SSH_USER:-}}"
 if [ -z "$USER_" ] && [ -f "$HOME/.config/halal/deploy.env" ]; then . "$HOME/.config/halal/deploy.env"; USER_="${DEPLOY_API_SSH_USER:-}"; fi
 [ -n "$USER_" ] || { echo "no credential: set FLEET_API_SSH_USER (GitHub secret) or DEPLOY_API_SSH_USER in ~/.config/halal/deploy.env"; exit 2; }
 for try in 1 2 3; do
-  out=$(ssh -p "${DEPLOY_PORT:-2222}" -o BatchMode=yes -o ConnectTimeout=45 -o StrictHostKeyChecking=accept-new "$USER_@${DEPLOY_GATEWAY:-ssh.instabox.sh}" \
+  out=$(ssh -p "${DEPLOY_PORT:-2222}" -o BatchMode=yes -o ConnectTimeout=45 -o ServerAliveInterval=10 -o StrictHostKeyChecking=accept-new "$USER_@${DEPLOY_GATEWAY:-ssh.instabox.sh}" \
     'sh /data/workspace/halal/fleet/fleet-ping.sh; tail -2 /data/workspace/halal/logs/fleet-ping.jsonl' 2>&1) && { echo "$out" | sed 's/ibssh_[A-Za-z0-9]*/ibssh_***/g'; exit 0; }
-  echo "attempt $try failed: $(echo "$out" | tail -1 | sed 's/ibssh_[A-Za-z0-9]*/ibssh_***/g')"; sleep 20
+  echo "attempt $try failed: $(echo "$out" | tail -3 | tr '\n' ' ' | sed 's/ibssh_[A-Za-z0-9]*/ibssh_***/g')"; sleep 20
 done
 exit 1
